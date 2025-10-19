@@ -1,0 +1,23 @@
+syntax = "proto3";
+package filesystem.v1;
+option go_package = "github.com/bmj2728/HostServiceTest/shared/protogen/hostserve/v1;hostservev1";
+
+// HostService is a service provided by the host process and is generally preferred over granting direct file system
+// access to the plugin process
+service HostService {
+  rpc ReadDir(ReadDirRequest) returns (ReadDirResponse); //underlying returns []DirEntry, error
+}
+
+// DirEntry represents
+message DirEntry {
+  string name = 1;
+  bool is_dir = 2;
+}
+
+message ReadDirRequest {
+  string path = 1;
+}
+
+message ReadDirResponse {
+  repeated DirEntry entries = 1;
+}

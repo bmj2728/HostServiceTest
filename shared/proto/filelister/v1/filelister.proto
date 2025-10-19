@@ -1,0 +1,20 @@
+
+syntax = "proto3";
+package filelister.v1;
+option go_package = "github.com/bmj2728/HostServiceTest/shared/protogen/filelister/v1;filelisterv1";
+
+import "google/protobuf/api.proto";
+
+service FileLister {
+  rpc List(FileListRequest) returns (FileListResponse);
+}
+
+message FileListRequest {
+  string dir = 1;
+  uint32 host_service = 2;
+}
+
+message FileListResponse {
+  repeated string entry = 1;
+  optional string error = 2;
+}

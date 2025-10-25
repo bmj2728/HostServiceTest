@@ -20,4 +20,5 @@ message ReadDirRequest {
 
 message ReadDirResponse {
   repeated DirEntry entries = 1;
+  optional string error =2;
 }

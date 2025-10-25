@@ -6,8 +6,11 @@ option go_package = "github.com/bmj2728/HostServiceTest/shared/protogen/filelist
 import "google/protobuf/api.proto";
 
 service FileLister {
+  rpc EstablishHostServices(HostServiceRequest) returns (Empty);
   rpc List(FileListRequest) returns (FileListResponse);
 }
+
+message Empty {}
 
 message FileListRequest {
   string dir = 1;
@@ -17,4 +20,8 @@ message FileListRequest {
 message FileListResponse {
   repeated string entry = 1;
   optional string error = 2;
+}
+
+message HostServiceRequest {
+  uint32 host_service = 1;
 }

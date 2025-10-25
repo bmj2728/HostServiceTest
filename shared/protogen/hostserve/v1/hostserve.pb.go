@@ -121,6 +121,7 @@ func (x *ReadDirRequest) GetPath() string {
 type ReadDirResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Entries       []*DirEntry            `protobuf:"bytes,1,rep,name=entries,proto3" json:"entries,omitempty"`
+	Error         *string                `protobuf:"bytes,2,opt,name=error,proto3,oneof" json:"error,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -162,6 +163,13 @@ func (x *ReadDirResponse) GetEntries() []*DirEntry {
 	return nil
 }
 
+func (x *ReadDirResponse) GetError() string {
+	if x != nil && x.Error != nil {
+		return *x.Error
+	}
+	return ""
+}
+
 var File_hostserve_v1_hostserve_proto protoreflect.FileDescriptor
 
 const file_hostserve_v1_hostserve_proto_rawDesc = "" +
@@ -171,9 +179,11 @@ const file_hostserve_v1_hostserve_proto_rawDesc = "" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12\x15\n" +
 	"\x06is_dir\x18\x02 \x01(\bR\x05isDir\"$\n" +
 	"\x0eReadDirRequest\x12\x12\n" +
-	"\x04path\x18\x01 \x01(\tR\x04path\"D\n" +
+	"\x04path\x18\x01 \x01(\tR\x04path\"i\n" +
 	"\x0fReadDirResponse\x121\n" +
-	"\aentries\x18\x01 \x03(\v2\x17.filesystem.v1.DirEntryR\aentries2W\n" +
+	"\aentries\x18\x01 \x03(\v2\x17.filesystem.v1.DirEntryR\aentries\x12\x19\n" +
+	"\x05error\x18\x02 \x01(\tH\x00R\x05error\x88\x01\x01B\b\n" +
+	"\x06_error2W\n" +
 	"\vHostService\x12H\n" +
 	"\aReadDir\x12\x1d.filesystem.v1.ReadDirRequest\x1a\x1e.filesystem.v1.ReadDirResponseB\xc6\x01\n" +
 	"\x11com.filesystem.v1B\x0eHostserveProtoP\x01ZLgithub.com/bmj2728/HostServiceTest/shared/protogen/hostserve/v1;filesystemv1\xa2\x02\x03FXX\xaa\x02\rFilesystem.V1\xca\x02\rFilesystem\\V1\xe2\x02\x19Filesystem\\V1\\GPBMetadata\xea\x02\x0eFilesystem::V1b\x06proto3"
@@ -212,6 +222,7 @@ func file_hostserve_v1_hostserve_proto_init() {
 	if File_hostserve_v1_hostserve_proto != nil {
 		return
 	}
+	file_hostserve_v1_hostserve_proto_msgTypes[2].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{

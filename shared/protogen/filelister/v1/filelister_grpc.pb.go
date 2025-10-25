@@ -19,13 +19,15 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	FileLister_List_FullMethodName = "/filelister.v1.FileLister/List"
+	FileLister_EstablishHostServices_FullMethodName = "/filelister.v1.FileLister/EstablishHostServices"
+	FileLister_List_FullMethodName                  = "/filelister.v1.FileLister/List"
 )
 
 // FileListerClient is the client API for FileLister service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type FileListerClient interface {
+	EstablishHostServices(ctx context.Context, in *HostServiceRequest, opts ...grpc.CallOption) (*Empty, error)
 	List(ctx context.Context, in *FileListRequest, opts ...grpc.CallOption) (*FileListResponse, error)
 }
 
@@ -35,6 +37,16 @@ type fileListerClient struct {
 
 func NewFileListerClient(cc grpc.ClientConnInterface) FileListerClient {
 	return &fileListerClient{cc}
+}
+
+func (c *fileListerClient) EstablishHostServices(ctx context.Context, in *HostServiceRequest, opts ...grpc.CallOption) (*Empty, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(Empty)
+	err := c.cc.Invoke(ctx, FileLister_EstablishHostServices_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
 }
 
 func (c *fileListerClient) List(ctx context.Context, in *FileListRequest, opts ...grpc.CallOption) (*FileListResponse, error) {
@@ -51,6 +63,7 @@ func (c *fileListerClient) List(ctx context.Context, in *FileListRequest, opts .
 // All implementations must embed UnimplementedFileListerServer
 // for forward compatibility.
 type FileListerServer interface {
+	EstablishHostServices(context.Context, *HostServiceRequest) (*Empty, error)
 	List(context.Context, *FileListRequest) (*FileListResponse, error)
 	mustEmbedUnimplementedFileListerServer()
 }
@@ -62,6 +75,9 @@ type FileListerServer interface {
 // pointer dereference when methods are called.
 type UnimplementedFileListerServer struct{}
 
+func (UnimplementedFileListerServer) EstablishHostServices(context.Context, *HostServiceRequest) (*Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method EstablishHostServices not implemented")
+}
 func (UnimplementedFileListerServer) List(context.Context, *FileListRequest) (*FileListResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method List not implemented")
 }
@@ -84,6 +100,24 @@ func RegisterFileListerServer(s grpc.ServiceRegistrar, srv FileListerServer) {
 		t.testEmbeddedByValue()
 	}
 	s.RegisterService(&FileLister_ServiceDesc, srv)
+}
+
+func _FileLister_EstablishHostServices_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(HostServiceRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(FileListerServer).EstablishHostServices(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: FileLister_EstablishHostServices_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(FileListerServer).EstablishHostServices(ctx, req.(*HostServiceRequest))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
 func _FileLister_List_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -111,6 +145,10 @@ var FileLister_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "filelister.v1.FileLister",
 	HandlerType: (*FileListerServer)(nil),
 	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "EstablishHostServices",
+			Handler:    _FileLister_EstablishHostServices_Handler,
+		},
 		{
 			MethodName: "List",
 			Handler:    _FileLister_List_Handler,

@@ -22,6 +22,42 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+type Empty struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *Empty) Reset() {
+	*x = Empty{}
+	mi := &file_filelister_v1_filelister_proto_msgTypes[0]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *Empty) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Empty) ProtoMessage() {}
+
+func (x *Empty) ProtoReflect() protoreflect.Message {
+	mi := &file_filelister_v1_filelister_proto_msgTypes[0]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Empty.ProtoReflect.Descriptor instead.
+func (*Empty) Descriptor() ([]byte, []int) {
+	return file_filelister_v1_filelister_proto_rawDescGZIP(), []int{0}
+}
+
 type FileListRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Dir           string                 `protobuf:"bytes,1,opt,name=dir,proto3" json:"dir,omitempty"`
@@ -32,7 +68,7 @@ type FileListRequest struct {
 
 func (x *FileListRequest) Reset() {
 	*x = FileListRequest{}
-	mi := &file_filelister_v1_filelister_proto_msgTypes[0]
+	mi := &file_filelister_v1_filelister_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -44,7 +80,7 @@ func (x *FileListRequest) String() string {
 func (*FileListRequest) ProtoMessage() {}
 
 func (x *FileListRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_filelister_v1_filelister_proto_msgTypes[0]
+	mi := &file_filelister_v1_filelister_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -57,7 +93,7 @@ func (x *FileListRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use FileListRequest.ProtoReflect.Descriptor instead.
 func (*FileListRequest) Descriptor() ([]byte, []int) {
-	return file_filelister_v1_filelister_proto_rawDescGZIP(), []int{0}
+	return file_filelister_v1_filelister_proto_rawDescGZIP(), []int{1}
 }
 
 func (x *FileListRequest) GetDir() string {
@@ -84,7 +120,7 @@ type FileListResponse struct {
 
 func (x *FileListResponse) Reset() {
 	*x = FileListResponse{}
-	mi := &file_filelister_v1_filelister_proto_msgTypes[1]
+	mi := &file_filelister_v1_filelister_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -96,7 +132,7 @@ func (x *FileListResponse) String() string {
 func (*FileListResponse) ProtoMessage() {}
 
 func (x *FileListResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_filelister_v1_filelister_proto_msgTypes[1]
+	mi := &file_filelister_v1_filelister_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -109,7 +145,7 @@ func (x *FileListResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use FileListResponse.ProtoReflect.Descriptor instead.
 func (*FileListResponse) Descriptor() ([]byte, []int) {
-	return file_filelister_v1_filelister_proto_rawDescGZIP(), []int{1}
+	return file_filelister_v1_filelister_proto_rawDescGZIP(), []int{2}
 }
 
 func (x *FileListResponse) GetEntry() []string {
@@ -126,20 +162,68 @@ func (x *FileListResponse) GetError() string {
 	return ""
 }
 
+type HostServiceRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	HostService   uint32                 `protobuf:"varint,1,opt,name=host_service,json=hostService,proto3" json:"host_service,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *HostServiceRequest) Reset() {
+	*x = HostServiceRequest{}
+	mi := &file_filelister_v1_filelister_proto_msgTypes[3]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *HostServiceRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*HostServiceRequest) ProtoMessage() {}
+
+func (x *HostServiceRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_filelister_v1_filelister_proto_msgTypes[3]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use HostServiceRequest.ProtoReflect.Descriptor instead.
+func (*HostServiceRequest) Descriptor() ([]byte, []int) {
+	return file_filelister_v1_filelister_proto_rawDescGZIP(), []int{3}
+}
+
+func (x *HostServiceRequest) GetHostService() uint32 {
+	if x != nil {
+		return x.HostService
+	}
+	return 0
+}
+
 var File_filelister_v1_filelister_proto protoreflect.FileDescriptor
 
 const file_filelister_v1_filelister_proto_rawDesc = "" +
 	"\n" +
-	"\x1efilelister/v1/filelister.proto\x12\rfilelister.v1\x1a\x19google/protobuf/api.proto\"F\n" +
+	"\x1efilelister/v1/filelister.proto\x12\rfilelister.v1\x1a\x19google/protobuf/api.proto\"\a\n" +
+	"\x05Empty\"F\n" +
 	"\x0fFileListRequest\x12\x10\n" +
 	"\x03dir\x18\x01 \x01(\tR\x03dir\x12!\n" +
 	"\fhost_service\x18\x02 \x01(\rR\vhostService\"M\n" +
 	"\x10FileListResponse\x12\x14\n" +
 	"\x05entry\x18\x01 \x03(\tR\x05entry\x12\x19\n" +
 	"\x05error\x18\x02 \x01(\tH\x00R\x05error\x88\x01\x01B\b\n" +
-	"\x06_error2U\n" +
+	"\x06_error\"7\n" +
+	"\x12HostServiceRequest\x12!\n" +
+	"\fhost_service\x18\x01 \x01(\rR\vhostService2\xa7\x01\n" +
 	"\n" +
-	"FileLister\x12G\n" +
+	"FileLister\x12P\n" +
+	"\x15EstablishHostServices\x12!.filelister.v1.HostServiceRequest\x1a\x14.filelister.v1.Empty\x12G\n" +
 	"\x04List\x12\x1e.filelister.v1.FileListRequest\x1a\x1f.filelister.v1.FileListResponseB\xc8\x01\n" +
 	"\x11com.filelister.v1B\x0fFilelisterProtoP\x01ZMgithub.com/bmj2728/HostServiceTest/shared/protogen/filelister/v1;filelisterv1\xa2\x02\x03FXX\xaa\x02\rFilelister.V1\xca\x02\rFilelister\\V1\xe2\x02\x19Filelister\\V1\\GPBMetadata\xea\x02\x0eFilelister::V1b\x06proto3"
 
@@ -155,16 +239,20 @@ func file_filelister_v1_filelister_proto_rawDescGZIP() []byte {
 	return file_filelister_v1_filelister_proto_rawDescData
 }
 
-var file_filelister_v1_filelister_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
+var file_filelister_v1_filelister_proto_msgTypes = make([]protoimpl.MessageInfo, 4)
 var file_filelister_v1_filelister_proto_goTypes = []any{
-	(*FileListRequest)(nil),  // 0: filelister.v1.FileListRequest
-	(*FileListResponse)(nil), // 1: filelister.v1.FileListResponse
+	(*Empty)(nil),              // 0: filelister.v1.Empty
+	(*FileListRequest)(nil),    // 1: filelister.v1.FileListRequest
+	(*FileListResponse)(nil),   // 2: filelister.v1.FileListResponse
+	(*HostServiceRequest)(nil), // 3: filelister.v1.HostServiceRequest
 }
 var file_filelister_v1_filelister_proto_depIdxs = []int32{
-	0, // 0: filelister.v1.FileLister.List:input_type -> filelister.v1.FileListRequest
-	1, // 1: filelister.v1.FileLister.List:output_type -> filelister.v1.FileListResponse
-	1, // [1:2] is the sub-list for method output_type
-	0, // [0:1] is the sub-list for method input_type
+	3, // 0: filelister.v1.FileLister.EstablishHostServices:input_type -> filelister.v1.HostServiceRequest
+	1, // 1: filelister.v1.FileLister.List:input_type -> filelister.v1.FileListRequest
+	0, // 2: filelister.v1.FileLister.EstablishHostServices:output_type -> filelister.v1.Empty
+	2, // 3: filelister.v1.FileLister.List:output_type -> filelister.v1.FileListResponse
+	2, // [2:4] is the sub-list for method output_type
+	0, // [0:2] is the sub-list for method input_type
 	0, // [0:0] is the sub-list for extension type_name
 	0, // [0:0] is the sub-list for extension extendee
 	0, // [0:0] is the sub-list for field type_name
@@ -175,14 +263,14 @@ func file_filelister_v1_filelister_proto_init() {
 	if File_filelister_v1_filelister_proto != nil {
 		return
 	}
-	file_filelister_v1_filelister_proto_msgTypes[1].OneofWrappers = []any{}
+	file_filelister_v1_filelister_proto_msgTypes[2].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_filelister_v1_filelister_proto_rawDesc), len(file_filelister_v1_filelister_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   2,
+			NumMessages:   4,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

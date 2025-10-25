@@ -17,6 +17,10 @@ var handshakeConfig = plugin.HandshakeConfig{
 	MagicCookieValue: "TEST_VALUE",
 }
 
+var pluginMap = map[string]plugin.Plugin{
+	"fl-plugin": &filelister.FileListerGRPCPlugin{},
+}
+
 func main() {
 	logger := hclog.New(&hclog.LoggerOptions{
 		Name:   "host",
@@ -26,10 +30,8 @@ func main() {
 
 	// Create the plugin client
 	client := plugin.NewClient(&plugin.ClientConfig{
-		HandshakeConfig: handshakeConfig,
-		Plugins: map[string]plugin.Plugin{
-			"fl-plugin": &filelister.FileListerGRPCPlugin{},
-		},
+		HandshakeConfig:  handshakeConfig,
+		Plugins:          pluginMap,
 		Cmd:              exec.Command("./plugins/filelister/filelister"),
 		AllowedProtocols: []plugin.Protocol{plugin.ProtocolGRPC},
 		Logger:           logger,

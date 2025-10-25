@@ -49,8 +49,9 @@ func (f *FileLister) ListFiles(dir string, hostService uint32) ([]string, error)
 	for _, entry := range dirEntries {
 		if entry.IsDir() {
 			entries = append(entries, entry.Name()+"-d")
+		} else {
+			entries = append(entries, entry.Name()+"-f")
 		}
-		entries = append(entries, entry.Name()+"-f")
 	}
 
 	return entries, nil

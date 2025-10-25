@@ -172,22 +172,51 @@ go build -o plugins/filelister/filelister ./plugins/filelister
 
 **Expected Output:**
 ```
-[INFO]  host: Host service registered with broker: id=1
-[INFO]  Established host services: id=1
-[INFO]  host: Successfully listed files
-.git
-.idea
-CLAUDE.md
-buf.gen.yaml
-buf.yaml
-go.mod
-go.sum
-host
-internal
-main.go
-plugins
-shared
+2025-10-25T17:22:23.408-0400 [DEBUG] host: starting plugin: path=./plugins/filelister/filelister args=["./plugins/filelister/filelister"]
+2025-10-25T17:22:23.408-0400 [DEBUG] host: plugin started: path=./plugins/filelister/filelister pid=32126
+2025-10-25T17:22:23.409-0400 [DEBUG] host: waiting for RPC address: plugin=./plugins/filelister/filelister
+2025-10-25T17:22:23.412-0400 [DEBUG] host.filelister: plugin address: address=/tmp/plugin570982019 network=unix timestamp=2025-10-25T17:22:23.412-0400
+2025-10-25T17:22:23.412-0400 [DEBUG] host: using plugin: version=1
+2025-10-25T17:22:23.413-0400 [INFO]  host: Host service registered with broker: id=1
+2025-10-25T17:22:23.413-0400 [DEBUG] host.filelister: 2025-10-25T17:22:23.413-0400 [INFO]  Established host services: id=1
+.claude   true
+.git   true
+.idea   true
+CLAUDE.md   false
+README.md   false
+buf.gen.yaml   false
+buf.yaml   false
+go.mod   false
+go.sum   false
+host   false
+internal   true
+main.go   false
+plugins   true
+shared   true
+2025-10-25T17:22:23.415-0400 [INFO]  host: Successfully listed files
+.claude-d
+.git-d
+.idea-d
+CLAUDE.md-f
+README.md-f
+buf.gen.yaml-f
+buf.yaml-f
+go.mod-f
+go.sum-f
+host-f
+internal-d
+main.go-f
+plugins-d
+shared-d
+2025-10-25T17:22:23.415-0400 [INFO]  host: Shutting down plugin
 ```
+
+The output shows:
+- DEBUG logs tracking plugin lifecycle (starting, connecting, etc.)
+- Host service registration with broker ID
+- Intermediate output showing directory entries with boolean flags (true=directory, false=file)
+- Final formatted file listing with `-d` suffix for directories and `-f` suffix for regular files
+- Clean shutdown sequence
 
 ### Regenerate Protobuf Code
 
@@ -295,13 +324,29 @@ func (f *FileLister) ListFiles(dir string, hostService uint32) ([]string, error)
     hsClient := hostserve.NewHostServiceGRPCClient(
         hostservev1.NewHostServiceClient(conn))
 
-    // Call back to host
-    entries, err := hsClient.ReadDir(dir)
-    return entries, err
+    // Call back to host to read directory
+    dirEntries, err := hsClient.ReadDir(dir)
+    if err != nil {
+        return nil, err
+    }
+
+    // Process entries: add suffix to indicate file type
+    var entries []string
+    for _, entry := range dirEntries {
+        if entry.IsDir() {
+            entries = append(entries, entry.Name()+"-d")
+        } else {
+            entries = append(entries, entry.Name()+"-f")
+        }
+    }
+
+    return entries, nil
 }
 ```
 
-**Note:** Connections are tracked rather than immediately closed so they can be properly cleaned up in `DisconnectHostServices()`.
+**Note:**
+- Connections are tracked rather than immediately closed so they can be properly cleaned up in `DisconnectHostServices()`
+- The plugin adds `-d` suffix for directories and `-f` suffix for regular files to demonstrate that plugins can process and transform data received from host services
 
 #### 7. Host Service Executes Request
 

@@ -77,17 +77,15 @@ Each service is identified by a `uint32` ID that both sides must agree on.
 
 ### 2. Service IDs
 
-Service IDs are allocated dynamically using an atomic counter:
+Service IDs are allocated dynamically using the broker's built-in ID allocator:
 
 ```go
-var brokerIDCounter uint32 = 0
-
-func allocateServiceID() uint32 {
-    return atomic.AddUint32(&brokerIDCounter, 1)
+func setupService(broker *plugin.GRPCBroker) uint32 {
+    return broker.NextId()
 }
 ```
 
-This ensures multiple services can coexist without ID conflicts.
+The broker's `NextId()` method provides thread-safe, unique ID allocation ensuring multiple services can coexist without ID conflicts.
 
 ### 3. Two Directions of Communication
 
@@ -258,8 +256,8 @@ hostServiceID, err := grpcClientImpl.SetupHostService(hostServices)
 Inside `SetupHostService`:
 ```go
 func (c *GRPCClient) SetupHostService(hostServices hostserve.IHostServices) (uint32, error) {
-    // Allocate unique ID
-    serviceID := atomic.AddUint32(&brokerIDCounter, 1)
+    // Allocate unique ID using broker's built-in allocator
+    serviceID := c.broker.NextId()
 
     // Register with broker
     go c.broker.AcceptAndServe(serviceID, func(opts []grpc.ServerOption) *grpc.Server {

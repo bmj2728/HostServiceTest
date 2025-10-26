@@ -2,7 +2,6 @@ package filelister
 
 import (
 	"context"
-	"sync/atomic"
 
 	"github.com/bmj2728/hst/shared/pkg/hostserve"
 	filelisterv1 "github.com/bmj2728/hst/shared/protogen/filelister/v1"
@@ -10,8 +9,6 @@ import (
 	"github.com/hashicorp/go-plugin"
 	"google.golang.org/grpc"
 )
-
-var brokerIDCounter uint32 = 0
 
 // FileLister is the business interface for file listing plugins
 type FileLister interface {
@@ -86,8 +83,8 @@ func (c *GRPCClient) ListFiles(dir string) ([]string, error) {
 // SetupHostService registers a host service with the broker and returns its service ID.
 // This allows plugins to dial back to host services for bidirectional communication.
 func (c *GRPCClient) SetupHostService(hostServices hostserve.IHostServices) (uint32, error) {
-	// Allocate a unique ID for this service using atomic counter
-	serviceID := atomic.AddUint32(&brokerIDCounter, 1)
+	// Allocate a unique ID for this service using the broker's built-in ID allocator
+	serviceID := c.broker.NextId()
 
 	// Start a gRPC server for the host service via the broker at the allocated ID
 	go c.broker.AcceptAndServe(serviceID, func(opts []grpc.ServerOption) *grpc.Server {

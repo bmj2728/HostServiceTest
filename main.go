@@ -6,6 +6,7 @@ import (
 	"os/exec"
 
 	"github.com/bmj2728/hst/shared/pkg/filelister"
+	"github.com/bmj2728/hst/shared/pkg/hostconn"
 	"github.com/bmj2728/hst/shared/pkg/hostserve"
 	"github.com/hashicorp/go-hclog"
 	"github.com/hashicorp/go-plugin"
@@ -61,27 +62,10 @@ func main() {
 	// Coerce the raw interface to the FileLister type
 	fileLister := raw.(filelister.FileLister)
 
-	// We need to access the GRPCClient to set up the host service via the broker
-	grpcClientImpl, ok := raw.(*filelister.GRPCClient)
-	if !ok {
-		logger.Error("Failed to cast to GRPCClient")
+	// Setup host services for the plugin (if supported)
+	if err := hostconn.EstablishHostServices(raw, hostServices, logger); err != nil {
+		logger.Error("Failed to establish host services", "err", err)
 		os.Exit(1)
-	}
-
-	// Set up the host service server via the broker and get the allocated service ID
-	hostServiceID, err := grpcClientImpl.SetupHostService(hostServices)
-	if err != nil {
-		logger.Error("Failed to setup host service", "err", err)
-		os.Exit(1)
-	}
-	logger.Info("Host service registered with broker for normal plugin", "id", hostServiceID)
-
-	// Tell the plugin about the host service ID so it can dial back
-	// EstablishHostServices is part of the optional HostConnection interface
-	if hostConn, ok := raw.(filelister.HostConnection); ok {
-		hostConn.EstablishHostServices(hostServiceID)
-	} else {
-		logger.Warn("Plugin does not implement HostConnection, host services not available")
 	}
 
 	// End plugin 1
@@ -113,28 +97,12 @@ func main() {
 	// Coerce the raw interface to the FileLister type
 	colorlister := rawColor.(filelister.FileLister)
 
-	// We need to access the GRPCClient to set up the host service via the broker
-	grpcClientImplColor, ok := rawColor.(*filelister.GRPCClient)
-	if !ok {
-		logger.Error("Failed to cast to GRPCClient")
+	// Setup host services for the plugin (if supported)
+	if err := hostconn.EstablishHostServices(rawColor, hostServices, logger); err != nil {
+		logger.Error("Failed to establish host services", "err", err)
 		os.Exit(1)
 	}
 
-	// Set up the host service server via the broker and get the allocated service ID
-	hostServiceIDColor, err := grpcClientImplColor.SetupHostService(hostServices)
-	if err != nil {
-		logger.Error("Failed to setup host service", "err", err)
-		os.Exit(1)
-	}
-	logger.Info("Host service registered with broker for color plugin", "id", hostServiceIDColor)
-
-	// Tell the plugin about the host service ID so it can dial back
-	// EstablishHostServices is part of the optional HostConnection interface
-	if hostConnColor, ok := rawColor.(filelister.HostConnection); ok {
-		hostConnColor.EstablishHostServices(hostServiceIDColor)
-	} else {
-		logger.Warn("Plugin does not implement HostConnection, host services not available")
-	}
 	// End plugin 2
 
 	// Test the plugin by listing files in the current directory
@@ -162,14 +130,7 @@ func main() {
 
 	// Clean shutdown - disconnect from host services
 	logger.Info("Shutting down plugins")
-
-	// DisconnectHostServices is part of the optional HostConnection interface
-	if hostConn, ok := raw.(filelister.HostConnection); ok {
-		hostConn.DisconnectHostServices()
-	}
-	if hostConnColor, ok := rawColor.(filelister.HostConnection); ok {
-		hostConnColor.DisconnectHostServices()
-	}
-
+	hostconn.DisconnectHostServices(raw, logger)
+	hostconn.DisconnectHostServices(rawColor, logger)
 	os.Exit(0)
 }

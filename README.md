@@ -87,36 +87,45 @@ func setupService(broker *plugin.GRPCBroker) uint32 {
 
 The broker's `NextId()` method provides thread-safe, unique ID allocation ensuring multiple services can coexist without ID conflicts.
 
-### 3. Interface Segregation: Business Logic vs Infrastructure
+### 3. Interface Segregation & Reusable Infrastructure
 
-The framework separates plugin interfaces into two categories:
+The framework separates concerns using a dedicated `shared/pkg/hostconn` package:
 
 **FileLister Interface (Business Logic)**
 ```go
+// In shared/pkg/filelister/
 type FileLister interface {
     ListFiles(dir string) ([]string, error)
 }
 ```
 - Required for all file listing plugins
 - Contains only core business functionality
-- Clean, focused interface
 
-**HostConnection Interface (Optional Infrastructure)**
+**Host Connection Package (Reusable Infrastructure)**
 ```go
+// In shared/pkg/hostconn/ - works with ANY plugin type
+package hostconn
+
 type HostConnection interface {
     SetBroker(broker *plugin.GRPCBroker)
     EstablishHostServices(hostServiceID uint32)
     DisconnectHostServices()
 }
+
+type HostServiceRegistrar interface {
+    RegisterHostService(hostServices hostserve.IHostServices) (uint32, error)
+}
+
+// Helper functions hide complexity
+func EstablishHostServices(plugin interface{}, hostServices hostserve.IHostServices, logger hclog.Logger) error
+func DisconnectHostServices(plugin interface{}, logger hclog.Logger)
 ```
-- Optional interface for plugins needing host services
-- Separates connection management from business logic
-- Plugins without host services only implement FileLister
 
 **Benefits:**
 - **Clear separation**: Business logic separate from infrastructure
-- **Optional complexity**: Simple plugins don't need connection management
-- **Self-documenting**: Implementing HostConnection signals bidirectional communication
+- **Reusable**: hostconn package works with any plugin type (filelister, database, cache, etc.)
+- **Optional complexity**: Simple plugins don't need host services
+- **Clean host code**: Single-line helper calls instead of type casting
 
 ### 4. Two Directions of Communication
 
@@ -278,52 +287,34 @@ client := plugin.NewClient(&plugin.ClientConfig{
 #### 2. Host Registers Host Service with Broker
 
 ```go
-// Host allocates a service ID and starts serving
-hostServices := &hostserve.HostServices{}
-hostServiceID, err := grpcClientImpl.SetupHostService(hostServices)
-// Returns: hostServiceID = 1 (dynamically allocated)
-```
+import "github.com/bmj2728/hst/shared/pkg/hostconn"
 
-Inside `SetupHostService`:
-```go
-func (c *GRPCClient) SetupHostService(hostServices hostserve.IHostServices) (uint32, error) {
-    // Allocate unique ID using broker's built-in allocator
-    serviceID := c.broker.NextId()
+// After dispensing plugin
+fileLister := raw.(filelister.FileLister)
 
-    // Register with broker
-    go c.broker.AcceptAndServe(serviceID, func(opts []grpc.ServerOption) *grpc.Server {
-        server := grpc.NewServer(opts...)
-        hostservev1.RegisterHostServiceServer(server, &hostserve.HostServiceGRPCServer{
-            Impl: hostServices,
-        })
-        return server
-    })
-
-    return serviceID, nil
+// Single helper call handles everything:
+// - Checks if plugin supports host services
+// - Registers service with broker
+// - Notifies plugin of service ID
+if err := hostconn.EstablishHostServices(raw, hostServices, logger); err != nil {
+    logger.Error("Failed to establish host services", "err", err)
+    os.Exit(1)
 }
 ```
 
-#### 3. Host Tells Plugin About the Service ID
+The helper function internally:
+1. Checks if plugin implements `hostconn.HostServiceRegistrar`
+2. Calls `RegisterHostService()` to register with broker and get service ID
+3. Calls `EstablishHostServices()` on plugin to notify it of the service ID
 
-```go
-fileLister.EstablishHostServices(hostServiceID)
-```
-
-This sends the ID to the plugin via gRPC:
-```protobuf
-rpc EstablishHostServices(HostServiceRequest) returns (Empty);
-
-message HostServiceRequest {
-  uint32 host_service = 1;  // The broker service ID
-}
-```
-
-#### 4. Plugin Stores the Service ID
+#### 3. Plugin Receives and Stores Service ID
 
 ```go
 // plugins/filelister/filelister.go
 func (f *FileLister) EstablishHostServices(hostServiceID uint32) {
-    f.hostServices = hostServiceID  // Store for later use
+    conn, _ := f.broker.Dial(hostServiceID)
+    f.hostServiceClient = hostserve.NewHostServiceGRPCClient(...)
+    // Plugin can now call host services
 }
 ```
 
@@ -667,42 +658,46 @@ A powerful feature of this architecture is the ability to register the same host
 #### Example from main.go
 
 ```go
+import "github.com/bmj2728/hst/shared/pkg/hostconn"
+
 // Create a single host service implementation
 hostServices := &hostserve.HostServices{}
 
-// Plugin 1: Register the host service and get a unique service ID
+// Plugin 1: Dispense and setup
 client1 := plugin.NewClient(&plugin.ClientConfig{/* ... */})
 rpcClient1, _ := client1.Client()
 raw1, _ := rpcClient1.Dispense("fl-plugin")
 fileLister1 := raw1.(filelister.FileLister)
-grpcClientImpl1, _ := raw1.(*filelister.GRPCClient)
 
-// Register host service for plugin 1
-hostServiceID1, _ := grpcClientImpl1.SetupHostService(hostServices)
-fileLister1.EstablishHostServices(hostServiceID1)
+// Setup host services (one line!)
+hostconn.EstablishHostServices(raw1, hostServices, logger)
 
-// Plugin 2: Register the SAME host service implementation with a different ID
+// Plugin 2: Dispense and setup
 client2 := plugin.NewClient(&plugin.ClientConfig{/* ... */})
 rpcClient2, _ := client2.Client()
 raw2, _ := rpcClient2.Dispense("cl-plugin")
 colorLister := raw2.(filelister.FileLister)
-grpcClientImpl2, _ := raw2.(*filelister.GRPCClient)
 
-// Register the same host service for plugin 2 (gets different service ID)
-hostServiceID2, _ := grpcClientImpl2.SetupHostService(hostServices)
-colorLister.EstablishHostServices(hostServiceID2)
+// Setup the SAME host services for plugin 2 (one line!)
+hostconn.EstablishHostServices(raw2, hostServices, logger)
 
 // Both plugins can now call the same host service independently
 entries1, _ := fileLister1.ListFiles(".")
 entries2, _ := colorLister.ListFiles(".")
+
+// Cleanup
+hostconn.DisconnectHostServices(raw1, logger)
+hostconn.DisconnectHostServices(raw2, logger)
 ```
 
 #### How It Works
 
 1. **Single Implementation:** One instance of `hostserve.HostServices{}` is created
-2. **Multiple Registrations:** `SetupHostService()` is called once per plugin:
+2. **Helper Function:** `hostconn.EstablishHostServices()` is called once per plugin:
+   - Internally calls `RegisterHostService()` which allocates unique service IDs via broker
    - For plugin 1: Gets service ID = 1
    - For plugin 2: Gets service ID = 2
+   - Notifies each plugin of its service ID
 3. **Broker Routing:** The broker creates separate gRPC servers for each registration
 4. **Independent Access:** Each plugin dials its own service ID and gets routed to the shared implementation
 
@@ -816,9 +811,10 @@ r, err := os.OpenRoot("/allowed/directory")
 - Check that `AcceptAndServe` is called before the plugin tries to dial
 - Verify the broker is the same instance on both sides
 
-**2. "Assignment count mismatch"**
-- Check that `SetupHostService` returns `(uint32, error)` not just `error`
-- Ensure you're handling both return values
+**2. "Host services not working"**
+- Ensure plugin implements `hostconn.HostConnection` interface
+- Check that `hostconn.EstablishHostServices()` is called after dispensing plugin
+- Verify the hostServices implementation is not nil
 
 **3. "Plugin process not starting"**
 - Verify the plugin binary exists and is executable

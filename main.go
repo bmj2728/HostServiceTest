@@ -26,8 +26,11 @@ func main() {
 	logger := hclog.New(&hclog.LoggerOptions{
 		Name:   "host",
 		Output: os.Stdout,
-		Level:  hclog.Debug,
+		Level:  hclog.Info,
 	})
+
+	// Set up host services - create the implementation
+	hostServices := &hostserve.HostServices{}
 
 	//Start plugin 1
 
@@ -58,9 +61,6 @@ func main() {
 	// Coerce the raw interface to the FileLister type
 	fileLister := raw.(filelister.FileLister)
 
-	// Set up host services - create the implementation
-	hostServices := &hostserve.HostServices{}
-
 	// We need to access the GRPCClient to set up the host service via the broker
 	grpcClientImpl, ok := raw.(*filelister.GRPCClient)
 	if !ok {
@@ -74,7 +74,7 @@ func main() {
 		logger.Error("Failed to setup host service", "err", err)
 		os.Exit(1)
 	}
-	logger.Info("Host service registered with broker", "id", hostServiceID)
+	logger.Info("Host service registered with broker for normal plugin", "id", hostServiceID)
 
 	// Tell the plugin about the host service ID so it can dial back
 	fileLister.EstablishHostServices(hostServiceID)
@@ -108,9 +108,6 @@ func main() {
 	// Coerce the raw interface to the FileLister type
 	colorlister := rawColor.(filelister.FileLister)
 
-	// Set up host services - create the implementation
-	hostServicesColor := &hostserve.HostServices{}
-
 	// We need to access the GRPCClient to set up the host service via the broker
 	grpcClientImplColor, ok := rawColor.(*filelister.GRPCClient)
 	if !ok {
@@ -119,12 +116,12 @@ func main() {
 	}
 
 	// Set up the host service server via the broker and get the allocated service ID
-	hostServiceIDColor, err := grpcClientImplColor.SetupHostService(hostServicesColor)
+	hostServiceIDColor, err := grpcClientImplColor.SetupHostService(hostServices)
 	if err != nil {
 		logger.Error("Failed to setup host service", "err", err)
 		os.Exit(1)
 	}
-	logger.Info("Host service registered with broker", "id", hostServiceIDColor)
+	logger.Info("Host service registered with broker for color plugin", "id", hostServiceIDColor)
 
 	// Tell the plugin about the host service ID so it can dial back
 	colorlister.EstablishHostServices(hostServiceIDColor)
@@ -137,15 +134,15 @@ func main() {
 		os.Exit(1)
 	}
 
-	logger.Info("Successfully listed files - no color")
-	for _, entry := range entries {
-		fmt.Println(entry)
-	}
-
 	colorEntries, err := colorlister.ListFiles(".")
 	if err != nil {
 		logger.Error("Failed to list files", "err", err)
 		os.Exit(1)
+	}
+
+	logger.Info("Successfully listed files - no color")
+	for _, entry := range entries {
+		fmt.Println(entry)
 	}
 
 	logger.Info("Successfully listed files - with color")

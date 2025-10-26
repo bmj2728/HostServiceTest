@@ -21,7 +21,7 @@ type FileListerGRPCPlugin struct {
 }
 
 func (fl *FileListerGRPCPlugin) GRPCServer(broker *plugin.GRPCBroker, s *grpc.Server) error {
-	// If the implementation needs host services, provide the broker
+	// If the plugin's implementation implements HostConnection, set the broker
 	if hostConn, ok := fl.Impl.(hostconn.HostConnection); ok {
 		hostConn.SetBroker(broker)
 	}

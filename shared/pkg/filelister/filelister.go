@@ -3,22 +3,16 @@ package filelister
 import (
 	"context"
 
+	"github.com/bmj2728/hst/shared/pkg/hostconn"
 	filelisterv1 "github.com/bmj2728/hst/shared/protogen/filelister/v1"
 	"github.com/hashicorp/go-plugin"
 	"google.golang.org/grpc"
 )
 
-// FileLister is the business interface for file listing plugins
+// FileLister is the business interface for file listing plugins.
+// This interface contains only the core business logic methods.
 type FileLister interface {
-	EstablishHostServices(hostServiceID uint32)
-	DisconnectHostServices()
 	ListFiles(dir string) ([]string, error)
-}
-
-// BrokerAware is an optional interface that plugin implementations can satisfy
-// if they need access to the gRPC broker for bidirectional communication
-type BrokerAware interface {
-	SetBroker(broker *plugin.GRPCBroker)
 }
 
 type FileListerGRPCPlugin struct {
@@ -27,9 +21,9 @@ type FileListerGRPCPlugin struct {
 }
 
 func (fl *FileListerGRPCPlugin) GRPCServer(broker *plugin.GRPCBroker, s *grpc.Server) error {
-	// If the implementation needs the broker for bidirectional communication, provide it
-	if brokerAware, ok := fl.Impl.(BrokerAware); ok {
-		brokerAware.SetBroker(broker)
+	// If the implementation needs host services, provide the broker
+	if hostConn, ok := fl.Impl.(hostconn.HostConnection); ok {
+		hostConn.SetBroker(broker)
 	}
 	filelisterv1.RegisterFileListerServer(s, &GRPCServer{Impl: fl.Impl})
 	return nil

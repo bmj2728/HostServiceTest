@@ -3,6 +3,7 @@ package filelister
 import (
 	"context"
 
+	"github.com/bmj2728/hst/shared/pkg/hostconn"
 	"github.com/bmj2728/hst/shared/pkg/hostserve"
 	filelisterv1 "github.com/bmj2728/hst/shared/protogen/filelister/v1"
 	"github.com/bmj2728/hst/shared/protogen/hostserve/v1"
@@ -31,7 +32,12 @@ func (s *GRPCServer) List(ctx context.Context, request *filelisterv1.FileListReq
 }
 
 func (s *GRPCServer) EstablishHostServices(ctx context.Context, request *filelisterv1.HostServiceRequest) (*filelisterv1.Empty, error) {
-	s.Impl.EstablishHostServices(request.HostService)
+	// Only call EstablishHostServices if the plugin implements HostConnection
+	if hostConn, ok := s.Impl.(hostconn.HostConnection); ok {
+		hostConn.EstablishHostServices(request.HostService)
+	}
+	// If plugin doesn't implement HostConnection, silently succeed
+	// (plugin doesn't need host services)
 	return &filelisterv1.Empty{}, nil
 }
 
@@ -42,6 +48,12 @@ type GRPCClient struct {
 	client        filelisterv1.FileListerClient
 	broker        *plugin.GRPCBroker
 	hostServiceID uint32
+}
+
+func (c *GRPCClient) SetBroker(broker *plugin.GRPCBroker) {
+	// No-op on the host side - the broker is already set during construction
+	// This method exists to satisfy the HostConnection interface
+	c.broker = broker
 }
 
 func (c *GRPCClient) EstablishHostServices(hostServiceID uint32) {
@@ -72,9 +84,10 @@ func (c *GRPCClient) ListFiles(dir string) ([]string, error) {
 	return resp.Entry, nil
 }
 
-// SetupHostService registers a host service with the broker and returns its service ID.
+// RegisterHostService registers a host service with the broker and returns its service ID.
 // This allows plugins to dial back to host services for bidirectional communication.
-func (c *GRPCClient) SetupHostService(hostServices hostserve.IHostServices) (uint32, error) {
+// Implements hostconn.HostServiceRegistrar interface.
+func (c *GRPCClient) RegisterHostService(hostServices hostserve.IHostServices) (uint32, error) {
 	// Allocate a unique ID for this service using the broker's built-in ID allocator
 	serviceID := c.broker.NextId()
 

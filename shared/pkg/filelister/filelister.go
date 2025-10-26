@@ -13,10 +13,16 @@ import (
 
 var brokerIDCounter uint32 = 0
 
+// FileLister is the business interface for file listing plugins
 type FileLister interface {
 	EstablishHostServices(hostServiceID uint32)
 	DisconnectHostServices()
 	ListFiles(dir string, hostService uint32) ([]string, error)
+}
+
+// BrokerAware is an optional interface that plugin implementations can satisfy
+// if they need access to the gRPC broker for bidirectional communication
+type BrokerAware interface {
 	SetBroker(broker *plugin.GRPCBroker)
 }
 
@@ -26,7 +32,10 @@ type FileListerGRPCPlugin struct {
 }
 
 func (fl *FileListerGRPCPlugin) GRPCServer(broker *plugin.GRPCBroker, s *grpc.Server) error {
-	fl.Impl.SetBroker(broker)
+	// If the implementation needs the broker for bidirectional communication, provide it
+	if brokerAware, ok := fl.Impl.(BrokerAware); ok {
+		brokerAware.SetBroker(broker)
+	}
 	filelisterv1.RegisterFileListerServer(s, &GRPCServer{Impl: fl.Impl})
 	return nil
 }
@@ -74,10 +83,8 @@ func (c *GRPCClient) ListFiles(dir string, hostService uint32) ([]string, error)
 	return resp.Entry, nil
 }
 
-func (c *GRPCClient) SetBroker(broker *plugin.GRPCBroker) {
-	c.broker = broker
-}
-
+// SetupHostService registers a host service with the broker and returns its service ID.
+// This allows plugins to dial back to host services for bidirectional communication.
 func (c *GRPCClient) SetupHostService(hostServices hostserve.IHostServices) (uint32, error) {
 	// Allocate a unique ID for this service using atomic counter
 	serviceID := atomic.AddUint32(&brokerIDCounter, 1)

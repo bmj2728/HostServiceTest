@@ -12,7 +12,7 @@ type GRPCServer struct {
 }
 
 func (s *GRPCServer) List(ctx context.Context, request *filelisterv1.FileListRequest) (*filelisterv1.FileListResponse, error) {
-	entries, err := s.Impl.ListFiles(request.Dir, request.HostService)
+	entries, err := s.Impl.ListFiles(request.Dir)
 	if err != nil {
 		errMsg := err.Error()
 		return &filelisterv1.FileListResponse{

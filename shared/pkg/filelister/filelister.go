@@ -17,7 +17,7 @@ var brokerIDCounter uint32 = 0
 type FileLister interface {
 	EstablishHostServices(hostServiceID uint32)
 	DisconnectHostServices()
-	ListFiles(dir string, hostService uint32) ([]string, error)
+	ListFiles(dir string) ([]string, error)
 }
 
 // BrokerAware is an optional interface that plugin implementations can satisfy
@@ -69,10 +69,10 @@ func (c *GRPCClient) DisconnectHostServices() {
 	// Currently no cleanup needed on the client side
 }
 
-func (c *GRPCClient) ListFiles(dir string, hostService uint32) ([]string, error) {
+func (c *GRPCClient) ListFiles(dir string) ([]string, error) {
 	resp, err := c.client.List(context.Background(), &filelisterv1.FileListRequest{
 		Dir:         dir,
-		HostService: hostService,
+		HostService: c.hostServiceID,
 	})
 	if err != nil {
 		return nil, err

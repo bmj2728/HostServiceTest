@@ -12,39 +12,19 @@ import (
 )
 
 type FileLister struct {
-	broker       *plugin.GRPCBroker
-	hostServices uint32
-	connections  []*grpc.ClientConn // Track connections for cleanup
-	connMutex    sync.Mutex
+	broker            *plugin.GRPCBroker
+	hostServiceClient hostserve.IHostServices
+	conn              *grpc.ClientConn
+	connMutex         sync.Mutex
 }
 
-func (f *FileLister) ListFiles(dir string, hostService uint32) ([]string, error) {
-	// Connect to the host service using the broker
-	conn, err := f.broker.Dial(hostService)
-	if err != nil {
-		hclog.Default().Error("Failed to dial host service", "err", err)
-		return nil, err
-	}
-
-	// Track this connection for cleanup
-	f.connMutex.Lock()
-	f.connections = append(f.connections, conn)
-	f.connMutex.Unlock()
-
-	// Note: Not using defer conn.Close() here because we're tracking connections
-	// They'll be closed in DisconnectHostServices()
-
-	// Create host service client
-	hsClient := hostserve.NewHostServiceGRPCClient(hostservev1.NewHostServiceClient(conn))
-
-	// Call ReadDir via host service - returns []fs.DirEntry with name AND isDir
-	dirEntries, err := hsClient.ReadDir(dir)
+func (f *FileLister) ListFiles(dir string) ([]string, error) {
+	dirEntries, err := f.hostServiceClient.ReadDir(dir)
 	if err != nil {
 		hclog.Default().Error("Failed to read directory via host service", "dir", dir, "err", err)
 		return nil, err
 	}
 
-	// Convert DirEntry to string names (plugin could filter/process based on isDir here)
 	var entries []string
 	for _, entry := range dirEntries {
 		if entry.IsDir() {
@@ -58,23 +38,32 @@ func (f *FileLister) ListFiles(dir string, hostService uint32) ([]string, error)
 }
 
 func (f *FileLister) EstablishHostServices(hostServiceID uint32) {
-	// Store the host service ID provided by the host
-	f.hostServices = hostServiceID
+	f.connMutex.Lock()
+	defer f.connMutex.Unlock()
+
+	conn, err := f.broker.Dial(hostServiceID)
+	if err != nil {
+		hclog.Default().Error("Failed to dial host service", "err", err)
+		return
+	}
+
+	f.conn = conn
+	f.hostServiceClient = hostserve.NewHostServiceGRPCClient(hostservev1.NewHostServiceClient(conn))
 	hclog.Default().Info("Established host services", "id", hostServiceID)
 }
 
 func (f *FileLister) DisconnectHostServices() {
-	// Close all connections to host services
 	f.connMutex.Lock()
 	defer f.connMutex.Unlock()
 
-	hclog.Default().Info("Disconnecting from host services", "connection_count", len(f.connections))
-	for _, conn := range f.connections {
-		if err := conn.Close(); err != nil {
+	if f.conn != nil {
+		if err := f.conn.Close(); err != nil {
 			hclog.Default().Error("Failed to close connection", "err", err)
 		}
+		f.conn = nil
+		f.hostServiceClient = nil
+		hclog.Default().Info("Disconnected from host services")
 	}
-	f.connections = nil
 }
 
 func (f *FileLister) SetBroker(broker *plugin.GRPCBroker) {

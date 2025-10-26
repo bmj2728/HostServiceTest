@@ -77,7 +77,7 @@ func main() {
 	fileLister.EstablishHostServices(hostServiceID)
 
 	// Test the plugin by listing files in the current directory
-	entries, err := fileLister.ListFiles(".", hostServiceID)
+	entries, err := fileLister.ListFiles(".")
 	if err != nil {
 		logger.Error("Failed to list files", "err", err)
 		os.Exit(1)

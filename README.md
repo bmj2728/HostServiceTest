@@ -1,6 +1,6 @@
 # Bidirectional gRPC Plugin Example
 
-This project demonstrates **bidirectional gRPC communication** using [HashiCorp's go-plugin](https://github.com/hashicorp/go-plugin) framework. Unlike simple plugin architectures where the host only calls into plugins, this example shows how plugins can call back to the host for services while maintaining process isolation.
+This project demonstrates **bidirectional gRPC communication** using [HashiCorp's go-plugin](https://github.com/hashicorp/go-plugin) framework. This example shows how plugins can call back to the host for decoupled services while maintaining process isolation.
 
 ## Table of Contents
 
@@ -694,12 +694,13 @@ hostconn.DisconnectHostServices(raw2, logger)
 
 1. **Single Implementation:** One instance of `hostserve.HostServices{}` is created
 2. **Helper Function:** `hostconn.EstablishHostServices()` is called once per plugin:
-   - Internally calls `RegisterHostService()` which allocates unique service IDs via broker
-   - For plugin 1: Gets service ID = 1
-   - For plugin 2: Gets service ID = 2
+   - Internally calls `RegisterHostService()` which allocates service IDs from each plugin's broker
+   - Plugin 1: Gets service ID = 1 (from plugin 1's broker)
+   - Plugin 2: Gets service ID = 1 (from plugin 2's broker - different broker instance)
+   - Each plugin has its own broker, so IDs are scoped per plugin connection
    - Notifies each plugin of its service ID
-3. **Broker Routing:** The broker creates separate gRPC servers for each registration
-4. **Independent Access:** Each plugin dials its own service ID and gets routed to the shared implementation
+3. **Broker Routing:** Each broker creates a gRPC server for its registration
+4. **Independent Access:** Each plugin dials service ID 1 on its own broker and gets routed to the shared implementation
 
 #### Architecture Diagram
 
@@ -713,8 +714,9 @@ hostconn.DisconnectHostServices(raw2, logger)
 │  └──────────────────┬──────────────┬───────────────────┘    │
 │                     │              │                         │
 │       ┌─────────────┴──────┐  ┌───┴──────────────┐          │
-│       │  Broker Server     │  │  Broker Server   │          │
-│       │  Service ID: 1     │  │  Service ID: 2   │          │
+│       │  Broker 1          │  │  Broker 2        │          │
+│       │  Service ID: 1     │  │  Service ID: 1   │          │
+│       │  (Plugin 1 broker) │  │  (Plugin 2 broker)          │
 │       └─────────┬──────────┘  └──────┬───────────┘          │
 │                 │                    │                       │
 └─────────────────┼────────────────────┼───────────────────────┘
@@ -724,13 +726,14 @@ hostconn.DisconnectHostServices(raw2, logger)
 ┌───────┼─────────┐  ┌───────┼──────────┐       │
 │       │ Plugin1 │  │       │ Plugin2  │       │
 │       │         │  │       │          │       │
-│   Dial(1)      │  │   Dial(2)        │       │
-│       │         │  │       │          │       │
+│   Dial(1)      │  │   Dial(1)        │       │
+│  on Broker 1   │  │  on Broker 2     │       │
 └───────┼─────────┘  └───────┼──────────┘       │
         │                    │                  │
         └────────────────────┴──────────────────┘
                 Both call same
               HostServices instance
+          (via their respective brokers)
 ```
 
 #### Benefits

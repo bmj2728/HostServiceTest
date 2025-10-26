@@ -8,17 +8,28 @@ import (
 	"google.golang.org/grpc"
 )
 
-// FileLister is the business interface for file listing plugins
+// FileLister is the business interface for file listing plugins.
+// This interface contains only the core business logic methods.
 type FileLister interface {
-	EstablishHostServices(hostServiceID uint32)
-	DisconnectHostServices()
 	ListFiles(dir string) ([]string, error)
 }
 
-// BrokerAware is an optional interface that plugin implementations can satisfy
-// if they need access to the gRPC broker for bidirectional communication
-type BrokerAware interface {
+// HostConnection handles bidirectional communication with host services.
+// Plugin implementations should implement this interface if they need
+// to call back to the host for privileged operations or shared services.
+//
+// This interface separates infrastructure concerns (connection management)
+// from business logic (FileLister interface), making it optional for
+// plugins that don't require host services.
+type HostConnection interface {
+	// SetBroker provides the gRPC broker for bidirectional communication
 	SetBroker(broker *plugin.GRPCBroker)
+
+	// EstablishHostServices receives the broker service ID for host services
+	EstablishHostServices(hostServiceID uint32)
+
+	// DisconnectHostServices cleans up connections to host services
+	DisconnectHostServices()
 }
 
 type FileListerGRPCPlugin struct {
@@ -27,9 +38,9 @@ type FileListerGRPCPlugin struct {
 }
 
 func (fl *FileListerGRPCPlugin) GRPCServer(broker *plugin.GRPCBroker, s *grpc.Server) error {
-	// If the implementation needs the broker for bidirectional communication, provide it
-	if brokerAware, ok := fl.Impl.(BrokerAware); ok {
-		brokerAware.SetBroker(broker)
+	// If the implementation needs host services, provide the broker
+	if hostConn, ok := fl.Impl.(HostConnection); ok {
+		hostConn.SetBroker(broker)
 	}
 	filelisterv1.RegisterFileListerServer(s, &GRPCServer{Impl: fl.Impl})
 	return nil

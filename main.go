@@ -77,7 +77,12 @@ func main() {
 	logger.Info("Host service registered with broker for normal plugin", "id", hostServiceID)
 
 	// Tell the plugin about the host service ID so it can dial back
-	fileLister.EstablishHostServices(hostServiceID)
+	// EstablishHostServices is part of the optional HostConnection interface
+	if hostConn, ok := raw.(filelister.HostConnection); ok {
+		hostConn.EstablishHostServices(hostServiceID)
+	} else {
+		logger.Warn("Plugin does not implement HostConnection, host services not available")
+	}
 
 	// End plugin 1
 
@@ -124,7 +129,12 @@ func main() {
 	logger.Info("Host service registered with broker for color plugin", "id", hostServiceIDColor)
 
 	// Tell the plugin about the host service ID so it can dial back
-	colorlister.EstablishHostServices(hostServiceIDColor)
+	// EstablishHostServices is part of the optional HostConnection interface
+	if hostConnColor, ok := rawColor.(filelister.HostConnection); ok {
+		hostConnColor.EstablishHostServices(hostServiceIDColor)
+	} else {
+		logger.Warn("Plugin does not implement HostConnection, host services not available")
+	}
 	// End plugin 2
 
 	// Test the plugin by listing files in the current directory
@@ -152,7 +162,14 @@ func main() {
 
 	// Clean shutdown - disconnect from host services
 	logger.Info("Shutting down plugins")
-	fileLister.DisconnectHostServices()
-	colorlister.DisconnectHostServices()
+
+	// DisconnectHostServices is part of the optional HostConnection interface
+	if hostConn, ok := raw.(filelister.HostConnection); ok {
+		hostConn.DisconnectHostServices()
+	}
+	if hostConnColor, ok := rawColor.(filelister.HostConnection); ok {
+		hostConnColor.DisconnectHostServices()
+	}
+
 	os.Exit(0)
 }

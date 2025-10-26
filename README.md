@@ -87,7 +87,38 @@ func setupService(broker *plugin.GRPCBroker) uint32 {
 
 The broker's `NextId()` method provides thread-safe, unique ID allocation ensuring multiple services can coexist without ID conflicts.
 
-### 3. Two Directions of Communication
+### 3. Interface Segregation: Business Logic vs Infrastructure
+
+The framework separates plugin interfaces into two categories:
+
+**FileLister Interface (Business Logic)**
+```go
+type FileLister interface {
+    ListFiles(dir string) ([]string, error)
+}
+```
+- Required for all file listing plugins
+- Contains only core business functionality
+- Clean, focused interface
+
+**HostConnection Interface (Optional Infrastructure)**
+```go
+type HostConnection interface {
+    SetBroker(broker *plugin.GRPCBroker)
+    EstablishHostServices(hostServiceID uint32)
+    DisconnectHostServices()
+}
+```
+- Optional interface for plugins needing host services
+- Separates connection management from business logic
+- Plugins without host services only implement FileLister
+
+**Benefits:**
+- **Clear separation**: Business logic separate from infrastructure
+- **Optional complexity**: Simple plugins don't need connection management
+- **Self-documenting**: Implementing HostConnection signals bidirectional communication
+
+### 4. Two Directions of Communication
 
 **Host → Plugin (Plugin Services)**
 - Defined in `shared/proto/filelister/v1/filelister.proto`
@@ -99,7 +130,7 @@ The broker's `NextId()` method provides thread-safe, unique ID allocation ensuri
 - Example: `HostService.ReadDir()`
 - Host implements the service, plugin calls it
 
-### 4. Connection Ownership Model
+### 5. Connection Ownership Model
 
 Understanding who owns what is critical:
 
@@ -481,7 +512,6 @@ service MyPlugin {
 // shared/pkg/myplugin/myplugin.go
 type MyPlugin interface {
     DoWork(input string) (string, error)
-    SetBroker(broker *plugin.GRPCBroker)
 }
 ```
 
@@ -489,16 +519,45 @@ type MyPlugin interface {
 
 4. **Implement the plugin:**
 
+**With host services (implements both FileLister and HostConnection):**
 ```go
 // plugins/myplugin/myplugin.go
 type MyPluginImpl struct {
     broker *plugin.GRPCBroker
+    hostServiceClient hostserve.IHostServices
 }
 
+// Business logic (required)
 func (p *MyPluginImpl) DoWork(input string) (string, error) {
-    // Can dial back to host services here
+    // Can call host services via hostServiceClient
+    entries, _ := p.hostServiceClient.ReadDir(input)
     return result, nil
 }
+
+// Infrastructure (optional - for host services)
+func (p *MyPluginImpl) SetBroker(broker *plugin.GRPCBroker) {
+    p.broker = broker
+}
+func (p *MyPluginImpl) EstablishHostServices(id uint32) {
+    conn, _ := p.broker.Dial(id)
+    p.hostServiceClient = hostserve.NewHostServiceGRPCClient(...)
+}
+func (p *MyPluginImpl) DisconnectHostServices() {
+    // cleanup
+}
+```
+
+**Without host services (implements only FileLister):**
+```go
+// plugins/simpleplugin/simpleplugin.go
+type SimplePluginImpl struct {}
+
+// Business logic (required) - no host services needed
+func (p *SimplePluginImpl) DoWork(input string) (string, error) {
+    // Direct implementation, no host interaction
+    return result, nil
+}
+// No HostConnection methods needed!
 ```
 
 5. **Register in plugin main:**

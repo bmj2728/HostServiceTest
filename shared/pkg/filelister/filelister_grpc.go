@@ -31,7 +31,12 @@ func (s *GRPCServer) List(ctx context.Context, request *filelisterv1.FileListReq
 }
 
 func (s *GRPCServer) EstablishHostServices(ctx context.Context, request *filelisterv1.HostServiceRequest) (*filelisterv1.Empty, error) {
-	s.Impl.EstablishHostServices(request.HostService)
+	// Only call EstablishHostServices if the plugin implements HostConnection
+	if hostConn, ok := s.Impl.(HostConnection); ok {
+		hostConn.EstablishHostServices(request.HostService)
+	}
+	// If plugin doesn't implement HostConnection, silently succeed
+	// (plugin doesn't need host services)
 	return &filelisterv1.Empty{}, nil
 }
 
@@ -42,6 +47,12 @@ type GRPCClient struct {
 	client        filelisterv1.FileListerClient
 	broker        *plugin.GRPCBroker
 	hostServiceID uint32
+}
+
+func (c *GRPCClient) SetBroker(broker *plugin.GRPCBroker) {
+	// No-op on the host side - the broker is already set during construction
+	// This method exists to satisfy the HostConnection interface
+	c.broker = broker
 }
 
 func (c *GRPCClient) EstablishHostServices(hostServiceID uint32) {

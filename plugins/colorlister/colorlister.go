@@ -1,5 +1,6 @@
 package main
 
+//note that we do not need to import os or fs here, as we are using the host service to read the files
 import (
 	"sync"
 
@@ -25,6 +26,7 @@ type ColorLister struct {
 }
 
 func (f *ColorLister) ListFiles(dir string) ([]string, error) {
+	//uses host to read dir vs. using os.ReadDir(dir) or fs.ReadDir(fs, dir)
 	dirEntries, err := f.hostServiceClient.ReadDir(dir)
 	if err != nil {
 		hclog.Default().Error("Failed to read directory via host service", "dir", dir, "err", err)

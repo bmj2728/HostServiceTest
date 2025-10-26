@@ -16,7 +16,7 @@ This project demonstrates **bidirectional gRPC communication** using [HashiCorp'
 
 ## Why This Example?
 
-Most go-plugin examples show simple unidirectional communication: host → plugin. However, many real-world use cases require plugins to call back to the host for:
+Most go-plugin examples show simple unidirectional communication or tightly coupled bi-directional communications. However, many real-world use cases require plugins to call back to the host for:
 
 - **Controlled resource access** (files, network, databases)
 - **Shared services** (logging, configuration, authentication)
@@ -595,6 +595,121 @@ func (p *HostServicePool) Put(conn *grpc.ClientConn) {
         conn.Close()  // Pool full, close connection
     }
 }
+```
+
+## Working with Multiple Plugins
+
+### Sharing Host Services Across Multiple Plugins
+
+A powerful feature of this architecture is the ability to register the same host service implementation with multiple plugins. Each plugin gets its own unique service ID through the broker, but they all call the same underlying host service implementation.
+
+**Key Concept:** The broker acts as a multiplexer, allowing one host service implementation to serve multiple plugins through different connection IDs.
+
+#### Example from main.go
+
+```go
+// Create a single host service implementation
+hostServices := &hostserve.HostServices{}
+
+// Plugin 1: Register the host service and get a unique service ID
+client1 := plugin.NewClient(&plugin.ClientConfig{/* ... */})
+rpcClient1, _ := client1.Client()
+raw1, _ := rpcClient1.Dispense("fl-plugin")
+fileLister1 := raw1.(filelister.FileLister)
+grpcClientImpl1, _ := raw1.(*filelister.GRPCClient)
+
+// Register host service for plugin 1
+hostServiceID1, _ := grpcClientImpl1.SetupHostService(hostServices)
+fileLister1.EstablishHostServices(hostServiceID1)
+
+// Plugin 2: Register the SAME host service implementation with a different ID
+client2 := plugin.NewClient(&plugin.ClientConfig{/* ... */})
+rpcClient2, _ := client2.Client()
+raw2, _ := rpcClient2.Dispense("cl-plugin")
+colorLister := raw2.(filelister.FileLister)
+grpcClientImpl2, _ := raw2.(*filelister.GRPCClient)
+
+// Register the same host service for plugin 2 (gets different service ID)
+hostServiceID2, _ := grpcClientImpl2.SetupHostService(hostServices)
+colorLister.EstablishHostServices(hostServiceID2)
+
+// Both plugins can now call the same host service independently
+entries1, _ := fileLister1.ListFiles(".")
+entries2, _ := colorLister.ListFiles(".")
+```
+
+#### How It Works
+
+1. **Single Implementation:** One instance of `hostserve.HostServices{}` is created
+2. **Multiple Registrations:** `SetupHostService()` is called once per plugin:
+   - For plugin 1: Gets service ID = 1
+   - For plugin 2: Gets service ID = 2
+3. **Broker Routing:** The broker creates separate gRPC servers for each registration
+4. **Independent Access:** Each plugin dials its own service ID and gets routed to the shared implementation
+
+#### Architecture Diagram
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                        Host Process                          │
+│                                                               │
+│  ┌─────────────────────────────────────────────────────┐    │
+│  │         Shared Host Service Implementation          │    │
+│  │         hostServices := &HostServices{}             │    │
+│  └──────────────────┬──────────────┬───────────────────┘    │
+│                     │              │                         │
+│       ┌─────────────┴──────┐  ┌───┴──────────────┐          │
+│       │  Broker Server     │  │  Broker Server   │          │
+│       │  Service ID: 1     │  │  Service ID: 2   │          │
+│       └─────────┬──────────┘  └──────┬───────────┘          │
+│                 │                    │                       │
+└─────────────────┼────────────────────┼───────────────────────┘
+                  │                    │
+        ┌─────────┴──────────┐  ┌──────┴─────────┐
+        │                    │  │                │
+┌───────┼─────────┐  ┌───────┼──────────┐       │
+│       │ Plugin1 │  │       │ Plugin2  │       │
+│       │         │  │       │          │       │
+│   Dial(1)      │  │   Dial(2)        │       │
+│       │         │  │       │          │       │
+└───────┼─────────┘  └───────┼──────────┘       │
+        │                    │                  │
+        └────────────────────┴──────────────────┘
+                Both call same
+              HostServices instance
+```
+
+#### Benefits
+
+- **Code Reuse:** Write host service logic once, use with many plugins
+- **Centralized Logic:** All plugins access the same implementation, ensuring consistency
+- **Resource Efficiency:** No need to duplicate service implementations
+- **Independent Isolation:** Each plugin has its own connection, preventing interference
+
+#### Important Notes
+
+1. **Thread Safety:** Since multiple plugins can call the same host service concurrently, ensure your host service implementation is thread-safe
+2. **Service ID Allocation:** The broker's `NextId()` method ensures each registration gets a unique ID
+3. **Cleanup:** Each plugin manages its own connection cleanup via `DisconnectHostServices()`
+4. **Scalability:** You can register the same service with as many plugins as needed
+
+### Pattern: Registering Multiple Different Services
+
+You can also register different host services with different plugins:
+
+```go
+// Different services for different plugins
+fileService := &hostserve.FileService{}
+dbService := &hostserve.DatabaseService{}
+
+// Plugin 1 gets file service
+fileServiceID, _ := grpcClient1.SetupFileService(fileService)
+
+// Plugin 2 gets database service
+dbServiceID, _ := grpcClient2.SetupDatabaseService(dbService)
+
+// Or give both services to one plugin
+plugin.EstablishServices(fileServiceID, dbServiceID)
 ```
 
 ## Security Considerations

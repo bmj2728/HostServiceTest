@@ -4,7 +4,7 @@
 // - protoc             (unknown)
 // source: hostserve/v1/hostserve.proto
 
-package filesystemv1
+package hostservev1
 
 import (
 	context "context"
@@ -19,17 +19,21 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	HostService_ReadDir_FullMethodName = "/filesystem.v1.HostService/ReadDir"
+	HostService_ReadDir_FullMethodName = "/hostserve.v1.HostService/ReadDir"
+	HostService_GetEnv_FullMethodName  = "/hostserve.v1.HostService/GetEnv"
 )
 
 // HostServiceClient is the client API for HostService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 //
-// HostService is a service provided by the host process and is generally preferred over granting direct file system
+// HostService is a service provided by the host process and is generally preferred over granting direct
 // access to the plugin process
 type HostServiceClient interface {
+	// FS Endpoints
 	ReadDir(ctx context.Context, in *ReadDirRequest, opts ...grpc.CallOption) (*ReadDirResponse, error)
+	// Env Endpoints
+	GetEnv(ctx context.Context, in *GetEnvRequest, opts ...grpc.CallOption) (*GetEnvResponse, error)
 }
 
 type hostServiceClient struct {
@@ -50,14 +54,27 @@ func (c *hostServiceClient) ReadDir(ctx context.Context, in *ReadDirRequest, opt
 	return out, nil
 }
 
+func (c *hostServiceClient) GetEnv(ctx context.Context, in *GetEnvRequest, opts ...grpc.CallOption) (*GetEnvResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetEnvResponse)
+	err := c.cc.Invoke(ctx, HostService_GetEnv_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // HostServiceServer is the server API for HostService service.
 // All implementations must embed UnimplementedHostServiceServer
 // for forward compatibility.
 //
-// HostService is a service provided by the host process and is generally preferred over granting direct file system
+// HostService is a service provided by the host process and is generally preferred over granting direct
 // access to the plugin process
 type HostServiceServer interface {
+	// FS Endpoints
 	ReadDir(context.Context, *ReadDirRequest) (*ReadDirResponse, error)
+	// Env Endpoints
+	GetEnv(context.Context, *GetEnvRequest) (*GetEnvResponse, error)
 	mustEmbedUnimplementedHostServiceServer()
 }
 
@@ -70,6 +87,9 @@ type UnimplementedHostServiceServer struct{}
 
 func (UnimplementedHostServiceServer) ReadDir(context.Context, *ReadDirRequest) (*ReadDirResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ReadDir not implemented")
+}
+func (UnimplementedHostServiceServer) GetEnv(context.Context, *GetEnvRequest) (*GetEnvResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetEnv not implemented")
 }
 func (UnimplementedHostServiceServer) mustEmbedUnimplementedHostServiceServer() {}
 func (UnimplementedHostServiceServer) testEmbeddedByValue()                     {}
@@ -110,16 +130,38 @@ func _HostService_ReadDir_Handler(srv interface{}, ctx context.Context, dec func
 	return interceptor(ctx, in, info, handler)
 }
 
+func _HostService_GetEnv_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetEnvRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(HostServiceServer).GetEnv(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: HostService_GetEnv_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(HostServiceServer).GetEnv(ctx, req.(*GetEnvRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // HostService_ServiceDesc is the grpc.ServiceDesc for HostService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var HostService_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "filesystem.v1.HostService",
+	ServiceName: "hostserve.v1.HostService",
 	HandlerType: (*HostServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
 			MethodName: "ReadDir",
 			Handler:    _HostService_ReadDir_Handler,
+		},
+		{
+			MethodName: "GetEnv",
+			Handler:    _HostService_GetEnv_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

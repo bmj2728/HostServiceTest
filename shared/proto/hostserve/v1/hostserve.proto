@@ -1,11 +1,14 @@
 syntax = "proto3";
-package filesystem.v1;
+package hostserve.v1;
 option go_package = "github.com/bmj2728/HostServiceTest/shared/protogen/hostserve/v1;hostservev1";
 
-// HostService is a service provided by the host process and is generally preferred over granting direct file system
+// HostService is a service provided by the host process and is generally preferred over granting direct
 // access to the plugin process
 service HostService {
+  //FS Endpoints
   rpc ReadDir(ReadDirRequest) returns (ReadDirResponse); //underlying returns []DirEntry, error
+  //Env Endpoints
+  rpc GetEnv(GetEnvRequest) returns (GetEnvResponse);
 }
 
 // DirEntry represents
@@ -21,4 +24,12 @@ message ReadDirRequest {
 message ReadDirResponse {
   repeated DirEntry entries = 1;
   optional string error =2;
+}
+
+message GetEnvRequest {
+  string key = 1;
+}
+
+message GetEnvResponse {
+  string val =1;
 }

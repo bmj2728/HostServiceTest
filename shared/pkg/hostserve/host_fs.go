@@ -9,12 +9,12 @@ import (
 	"github.com/hashicorp/go-hclog"
 )
 
-type IHostFS interface {
-	ReadDir(path string) ([]fs.DirEntry, error)
-}
-
 type HostFS struct {
 	//TBD fields
+}
+
+func NewHostFS() *HostFS {
+	return &HostFS{}
 }
 
 func (hf *HostFS) ReadDir(path string) ([]fs.DirEntry, error) {

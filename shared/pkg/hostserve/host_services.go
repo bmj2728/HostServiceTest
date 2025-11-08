@@ -1,10 +1,5 @@
 package hostserve
 
-type IHostServices interface {
-	IHostFS
-	IHostEnv
-}
-
 type HostServices struct {
 	IHostFS
 	IHostEnv

@@ -32,7 +32,7 @@ func main() {
 
 	// Set up host services - create the implementation
 	// HostServices is a struct that embeds the HostFS and HostEnv interfaces
-	hostServices := hostserve.NewHostServices(&hostserve.HostFS{}, &hostserve.HostEnv{})
+	hostServices := hostserve.NewHostServices(hostserve.NewHostFS(), hostserve.NewHostEnv())
 	//Start plugin 1
 
 	// Create the plugin client - plumbing

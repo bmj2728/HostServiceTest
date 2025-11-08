@@ -1,7 +1,6 @@
 package hostserve
 
 import (
-	"fmt"
 	"io/fs"
 	"os"
 	"path/filepath"
@@ -51,8 +50,9 @@ func (hf *HostFS) ReadDir(path string) ([]fs.DirEntry, error) {
 		hclog.Default().Error("Failed to read directory", "path", path, "err", err)
 		return nil, err
 	}
-	for _, entry := range entries {
-		fmt.Println(entry.Name(), " ", entry.IsDir())
-	}
+
+	//for _, entry := range entries {
+	//	fmt.Println(entry.Name(), " ", entry.IsDir())
+	//}
 	return entries, nil
 }

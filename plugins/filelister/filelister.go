@@ -19,6 +19,7 @@ type FileLister struct {
 }
 
 func (f *FileLister) ListFiles(dir string) ([]string, error) {
+	home := f.hostServiceClient.GetEnv("HOME")
 	dirEntries, err := f.hostServiceClient.ReadDir(dir)
 	if err != nil {
 		hclog.Default().Error("Failed to read directory via host service", "dir", dir, "err", err)
@@ -26,11 +27,12 @@ func (f *FileLister) ListFiles(dir string) ([]string, error) {
 	}
 
 	var entries []string
+	entries = append(entries, home)
 	for _, entry := range dirEntries {
 		if entry.IsDir() {
-			entries = append(entries, entry.Name()+"-d")
+			entries = append(entries, entry.Name())
 		} else {
-			entries = append(entries, entry.Name()+"-f")
+			entries = append(entries, entry.Name())
 		}
 	}
 

@@ -6,7 +6,6 @@ import (
 
 	"github.com/bmj2728/hst/shared/protogen/hostserve/v1"
 	"github.com/hashicorp/go-hclog"
-	"google.golang.org/grpc/metadata"
 )
 
 // ReadDir processes a gRPC request to read contents of a directory specified by the request path and returns
@@ -15,8 +14,7 @@ func (s *HostServiceGRPCServer) ReadDir(ctx context.Context,
 	request *hostservev1.ReadDirRequest,
 ) (*hostservev1.ReadDirResponse, error) {
 
-	md, _ := metadata.FromIncomingContext(ctx)
-	clientID := md.Get("client")
+	clientID := getClientIDFromContext(ctx)
 	hclog.Default().Info("ReadDir request from client", "clientID", clientID)
 
 	entries, err := s.Impl.ReadDir(ctx, request.Path)
@@ -49,6 +47,9 @@ func (s *HostServiceGRPCServer) ReadFile(ctx context.Context,
 	request *hostservev1.ReadFileRequest,
 ) (*hostservev1.ReadFileResponse, error) {
 
+	clientID := getClientIDFromContext(ctx)
+	hclog.Default().Info("ReadFile request from client", "clientID", clientID)
+
 	bytes, err := s.Impl.ReadFile(ctx, request.Dir, request.File)
 	if err != nil {
 		errMsg := err.Error()
@@ -66,7 +67,10 @@ func (s *HostServiceGRPCServer) ReadFile(ctx context.Context,
 func (s *HostServiceGRPCServer) WriteFile(ctx context.Context,
 	request *hostservev1.WriteFileRequest,
 ) (*hostservev1.WriteFileResponse, error) {
-	//FileMode(request.Perm) will be 0 if not specified or invalid
+
+	clientID := getClientIDFromContext(ctx)
+	hclog.Default().Info("WriteFile request from client", "clientID", clientID)
+
 	err := s.Impl.WriteFile(ctx, request.Dir, request.File, request.Data, os.FileMode(request.Perm))
 	if err != nil {
 		errMsg := err.Error()

@@ -1,10 +1,13 @@
 package hostserve
 
 import (
+	"context"
 	"io/fs"
 	"time"
 
 	"github.com/bmj2728/hst/shared/protogen/hostserve/v1"
+	"github.com/google/uuid"
+	"google.golang.org/grpc/metadata"
 )
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -21,7 +24,42 @@ type HostServiceGRPCClient struct {
 	clientID string
 }
 
+// NewHostServiceGRPCClient creates a new instance of HostServiceGRPCClient wrapping the provided gRPC client.
+func NewHostServiceGRPCClient(client hostservev1.HostServiceClient) *HostServiceGRPCClient {
+	// Generate a unique client ID for this connection - we'll improve this later
+	clientUUID, err := uuid.NewV7()
+	if err != nil {
+		return nil
+	}
+	return &HostServiceGRPCClient{
+		client:   client,
+		clientID: clientUUID.String(),
+	}
+}
+
 /////////////////////////////////////////////////////////////////////////////////////////////////////
+
+// ctxClientIDKey is the context key used to store the client identifier in a context for outgoing requests.
+const ctxClientIDKey = "client"
+
+// addClientIDToContext attaches the specified clientID to the outgoing context metadata for gRPC requests.
+func addClientIDToContext(ctx context.Context, clientID string) context.Context {
+	return metadata.AppendToOutgoingContext(ctx, ctxClientIDKey, clientID)
+}
+
+// getClientIDFromContext extracts the client ID from the provided gRPC context and returns it as a string.
+// Returns an empty string if no client ID is found or the metadata is unavailable.
+func getClientIDFromContext(ctx context.Context) string {
+	md, ok := metadata.FromIncomingContext(ctx)
+	if !ok {
+		return ""
+	}
+	clientID := md.Get(ctxClientIDKey)
+	if len(clientID) == 0 {
+		return ""
+	}
+	return clientID[0]
+}
 
 // RemoteDirEntry implements fs.DirEntry, this wrapper allows conversion from protobuf to fs.DirEntry
 type RemoteDirEntry struct {

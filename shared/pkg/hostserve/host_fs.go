@@ -9,6 +9,10 @@ import (
 	"github.com/hashicorp/go-hclog"
 )
 
+const (
+	StandardPermissions = 0644
+)
+
 // ErrInvalidPath represents an error indicating the provided path is invalid or not a directory.
 var (
 	ErrInvalidPath = errors.New("invalid path")
@@ -84,4 +88,23 @@ func (hf *HostFS) ReadFile(dir, file string) ([]byte, error) {
 		return nil, err
 	}
 	return data, nil
+}
+
+// WriteFile writes the specified data to a file within the given directory using the provided permissions.
+// If the provided permissions are zero, it defaults to StandardPermissions. Returns an error if the operation fails.
+func (hf *HostFS) WriteFile(dir, file string, data []byte, perm os.FileMode) error {
+	if perm == 0 {
+		perm = StandardPermissions
+	}
+	r, err := getRoot(dir)
+	if err != nil {
+		hclog.Default().Error("Failed to open root", "path", dir, "err", err)
+		return err
+	}
+	defer closeRoot(r)
+	err = r.WriteFile(file, data, perm)
+	if err != nil {
+		hclog.Default().Error("Failed to write file", "path", file, "err", err)
+	}
+	return err
 }

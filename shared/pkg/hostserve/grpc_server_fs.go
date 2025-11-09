@@ -2,6 +2,7 @@ package hostserve
 
 import (
 	"context"
+	"os"
 
 	"github.com/bmj2728/hst/shared/protogen/hostserve/v1"
 )
@@ -51,4 +52,15 @@ func (s *HostServiceGRPCServer) ReadFile(ctx context.Context,
 		Contents: bytes,
 		Error:    nil,
 	}, nil
+}
+
+func (s *HostServiceGRPCServer) WriteFile(ctx context.Context,
+	request *hostservev1.WriteFileRequest,
+) (*hostservev1.WriteFileResponse, error) {
+	err := s.Impl.WriteFile(request.Dir, request.File, request.Data, os.FileMode(request.Perm))
+	if err != nil {
+		errMsg := err.Error()
+		return &hostservev1.WriteFileResponse{Error: &errMsg}, &HostServiceError{Message: err.Error()}
+	}
+	return &hostservev1.WriteFileResponse{Error: nil}, nil
 }

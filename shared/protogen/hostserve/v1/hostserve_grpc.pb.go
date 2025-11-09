@@ -19,9 +19,10 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	HostService_ReadDir_FullMethodName  = "/hostserve.v1.HostService/ReadDir"
-	HostService_ReadFile_FullMethodName = "/hostserve.v1.HostService/ReadFile"
-	HostService_GetEnv_FullMethodName   = "/hostserve.v1.HostService/GetEnv"
+	HostService_ReadDir_FullMethodName   = "/hostserve.v1.HostService/ReadDir"
+	HostService_ReadFile_FullMethodName  = "/hostserve.v1.HostService/ReadFile"
+	HostService_WriteFile_FullMethodName = "/hostserve.v1.HostService/WriteFile"
+	HostService_GetEnv_FullMethodName    = "/hostserve.v1.HostService/GetEnv"
 )
 
 // HostServiceClient is the client API for HostService service.
@@ -31,10 +32,9 @@ const (
 // HostService is a service provided by the host process and is generally preferred over granting direct
 // access to the plugin process
 type HostServiceClient interface {
-	// FS Endpoints
 	ReadDir(ctx context.Context, in *ReadDirRequest, opts ...grpc.CallOption) (*ReadDirResponse, error)
 	ReadFile(ctx context.Context, in *ReadFileRequest, opts ...grpc.CallOption) (*ReadFileResponse, error)
-	// Env Endpoints
+	WriteFile(ctx context.Context, in *WriteFileRequest, opts ...grpc.CallOption) (*WriteFileResponse, error)
 	GetEnv(ctx context.Context, in *GetEnvRequest, opts ...grpc.CallOption) (*GetEnvResponse, error)
 }
 
@@ -66,6 +66,16 @@ func (c *hostServiceClient) ReadFile(ctx context.Context, in *ReadFileRequest, o
 	return out, nil
 }
 
+func (c *hostServiceClient) WriteFile(ctx context.Context, in *WriteFileRequest, opts ...grpc.CallOption) (*WriteFileResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(WriteFileResponse)
+	err := c.cc.Invoke(ctx, HostService_WriteFile_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *hostServiceClient) GetEnv(ctx context.Context, in *GetEnvRequest, opts ...grpc.CallOption) (*GetEnvResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(GetEnvResponse)
@@ -83,10 +93,9 @@ func (c *hostServiceClient) GetEnv(ctx context.Context, in *GetEnvRequest, opts 
 // HostService is a service provided by the host process and is generally preferred over granting direct
 // access to the plugin process
 type HostServiceServer interface {
-	// FS Endpoints
 	ReadDir(context.Context, *ReadDirRequest) (*ReadDirResponse, error)
 	ReadFile(context.Context, *ReadFileRequest) (*ReadFileResponse, error)
-	// Env Endpoints
+	WriteFile(context.Context, *WriteFileRequest) (*WriteFileResponse, error)
 	GetEnv(context.Context, *GetEnvRequest) (*GetEnvResponse, error)
 	mustEmbedUnimplementedHostServiceServer()
 }
@@ -103,6 +112,9 @@ func (UnimplementedHostServiceServer) ReadDir(context.Context, *ReadDirRequest) 
 }
 func (UnimplementedHostServiceServer) ReadFile(context.Context, *ReadFileRequest) (*ReadFileResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ReadFile not implemented")
+}
+func (UnimplementedHostServiceServer) WriteFile(context.Context, *WriteFileRequest) (*WriteFileResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method WriteFile not implemented")
 }
 func (UnimplementedHostServiceServer) GetEnv(context.Context, *GetEnvRequest) (*GetEnvResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetEnv not implemented")
@@ -164,6 +176,24 @@ func _HostService_ReadFile_Handler(srv interface{}, ctx context.Context, dec fun
 	return interceptor(ctx, in, info, handler)
 }
 
+func _HostService_WriteFile_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(WriteFileRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(HostServiceServer).WriteFile(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: HostService_WriteFile_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(HostServiceServer).WriteFile(ctx, req.(*WriteFileRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _HostService_GetEnv_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(GetEnvRequest)
 	if err := dec(in); err != nil {
@@ -196,6 +226,10 @@ var HostService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ReadFile",
 			Handler:    _HostService_ReadFile_Handler,
+		},
+		{
+			MethodName: "WriteFile",
+			Handler:    _HostService_WriteFile_Handler,
 		},
 		{
 			MethodName: "GetEnv",

@@ -6,17 +6,25 @@ option go_package = "github.com/bmj2728/HostServiceTest/shared/protogen/hostserv
 // access to the plugin process
 service HostService {
   //FS Endpoints
-  rpc ReadDir(ReadDirRequest) returns (ReadDirResponse); //underlying returns []DirEntry, error
-  rpc ReadFile(ReadFileRequest) returns (ReadFileResponse); //underlying returns []byte, error
+
+  rpc ReadDir(ReadDirRequest) returns (ReadDirResponse);
+  rpc ReadFile(ReadFileRequest) returns (ReadFileResponse);
+  rpc WriteFile(WriteFileRequest) returns (WriteFileResponse);
+
   //Env Endpoints
+
   rpc GetEnv(GetEnvRequest) returns (GetEnvResponse);
 }
 
-// DirEntry represents
+// Type Definitions
+
+// DirEntry represents the basic dir entry data
 message DirEntry {
   string name = 1;
   bool is_dir = 2;
 }
+
+// FS Messages
 
 message ReadDirRequest {
   string path = 1;
@@ -27,14 +35,6 @@ message ReadDirResponse {
   optional string error = 2;
 }
 
-message GetEnvRequest {
-  string key = 1;
-}
-
-message GetEnvResponse {
-  string val = 1;
-}
-
 message ReadFileRequest {
   string dir = 1;
   string file = 2;
@@ -43,4 +43,25 @@ message ReadFileRequest {
 message ReadFileResponse {
   bytes contents = 1;
   optional string error = 2;
+}
+
+message WriteFileRequest {
+  string dir = 1;
+  string file = 2;
+  bytes data = 3;
+  uint32 perm = 4;
+}
+
+message WriteFileResponse {
+  optional string error = 1;
+}
+
+// Env Service Messages
+
+message GetEnvRequest {
+  string key = 1;
+}
+
+message GetEnvResponse {
+  string val = 1;
 }

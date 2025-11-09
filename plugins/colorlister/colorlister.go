@@ -2,6 +2,7 @@ package main
 
 //note that we do not need to import os or fs here, as we are using the host service to read the files
 import (
+	"context"
 	"sync"
 
 	"github.com/bmj2728/hst/shared/pkg/filelister"
@@ -26,8 +27,10 @@ type ColorLister struct {
 }
 
 func (f *ColorLister) ListFiles(dir string) ([]string, error) {
+	ctx := context.Background()
+	ctx = context.WithValue(ctx, "client", "cl-plugin")
 	//uses host to read dir vs. using os.ReadDir(dir) or fs.ReadDir(fs, dir)
-	dirEntries, err := f.hostServiceClient.ReadDir(dir)
+	dirEntries, err := f.hostServiceClient.ReadDir(ctx, dir)
 	if err != nil {
 		hclog.Default().Error("Failed to read directory via host service", "dir", dir, "err", err)
 		return nil, err
@@ -38,7 +41,7 @@ func (f *ColorLister) ListFiles(dir string) ([]string, error) {
 		if entry.IsDir() {
 			entries = append(entries, dirFormat.Wrap(entry.Name()+"-d", true))
 		} else {
-			data, err := f.hostServiceClient.ReadFile(dir, entry.Name())
+			data, err := f.hostServiceClient.ReadFile(ctx, dir, entry.Name())
 			if err != nil {
 				hclog.Default().Error("Failed to read file via host service", "dir", dir,
 					"file", entry.Name(), "err", err)

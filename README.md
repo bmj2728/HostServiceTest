@@ -560,7 +560,6 @@ The buf configuration ensures consistent code generation with proper Go module p
 - [go-plugin Documentation](https://github.com/hashicorp/go-plugin) - Core framework
 - [gRPC Go Basics](https://grpc.io/docs/languages/go/basics/) - Understanding gRPC
 - [Protocol Buffers Guide](https://protobuf.dev/getting-started/gotutorial/) - Proto syntax
-- This project's CLAUDE.md - Detailed architecture notes for development
 
 ## FAQ
 

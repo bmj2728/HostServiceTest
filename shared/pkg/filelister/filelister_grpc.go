@@ -94,7 +94,7 @@ func (c *GRPCClient) RegisterHostService(hostServices hostserve.IHostServices) (
 	// Start a gRPC server for the host service via the broker at the allocated ID
 	go c.broker.AcceptAndServe(serviceID, func(opts []grpc.ServerOption) *grpc.Server {
 		server := grpc.NewServer(opts...)
-		filesystemv1.RegisterHostServiceServer(server, &hostserve.HostServiceGRPCServer{
+		hostservev1.RegisterHostServiceServer(server, &hostserve.HostServiceGRPCServer{
 			Impl: hostServices,
 		})
 		return server

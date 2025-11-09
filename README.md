@@ -1,708 +1,150 @@
-# Decoupled gRPC Communication With HashiCorp's go-plugin
+# Decoupled Bidirectional gRPC Plugin Communication: The Missing Example
 
-This project demonstrates **bidirectional gRPC communication** using [HashiCorp's go-plugin](https://github.com/hashicorp/go-plugin) framework. This example shows how plugins can call back to the host for decoupled services while maintaining process isolation.
+> **This is a demonstration project** that shows patterns for building production-ready plugin systems with HashiCorp's go-plugin. It fills gaps in existing documentation by showing how to build **decoupled, secure, and extensible** bidirectional communication between host and plugins.
 
-## Table of Contents
+## Why This Exists
 
-- [Why This Example?](#why-this-example)
-- [Architecture Overview](#architecture-overview)
-- [Key Concepts](#key-concepts)
-- [Project Structure](#project-structure)
-- [Building and Running](#building-and-running)
-- [How It Works](#how-it-works)
-- [Communication Flow](#communication-flow)
-- [Extending This Example](#extending-this-example)
-- [Common Patterns](#common-patterns)
+Most go-plugin examples show simple unidirectional communication: host calls plugin. Done. But real-world plugin systems need more:
 
-## Why This Example?
+- **Plugins need to call back to the host** for controlled resource access
+- **Security matters**: plugins shouldn't have direct filesystem/network access
+- **Multiple plugins should share services** without code duplication
+- **Adding new capabilities should be trivial**, not require refactoring
 
-Most go-plugin examples show simple unidirectional communication or tightly coupled bi-directional communications. However, many real-world use cases require plugins to call back to the host for:
+The examples in the go-plugin repo don't show these patterns clearly. This project does.
 
-- **Controlled resource access** (files, network, databases)
-- **Shared services** (logging, configuration, authentication)
-- **Security boundaries** (sandboxed plugins with limited privileges)
+## What Makes This Different (and Cool)
 
-This example demonstrates the complete pattern using a file listing plugin that must call back to the host to read directories.
+### 1. **Clean Separation of Concerns**
 
-## Architecture Overview
-
-```
-┌─────────────────────────────────────────────────────────────┐
-│                        Host Process                          │
-│                                                               │
-│  ┌──────────────────┐         ┌─────────────────────────┐  │
-│  │                  │         │   Host Services         │  │
-│  │  Plugin Client   │         │  (HostService gRPC)     │  │
-│  │                  │         │                         │  │
-│  │  - Spawns plugin │         │  - ReadDir()            │  │
-│  │  - Calls plugin  │         │  - Uses os.OpenRoot()   │  │
-│  │    methods       │         │                         │  │
-│  └──────────────────┘         └─────────────────────────┘  │
-│           │                              ▲                   │
-│           │                              │                   │
-│           ├──────── Broker ──────────────┤                   │
-│           │      (gRPC Broker)           │                   │
-│           │   - Manages connections      │                   │
-│           │   - Allocates service IDs    │                   │
-│           ▼                              │                   │
-└───────────┼──────────────────────────────┼───────────────────┘
-            │                              │
-            │ Unix Socket / Named Pipe     │
-            │                              │
-┌───────────┼──────────────────────────────┼───────────────────┐
-│           ▼                              │                   │
-│  ┌──────────────────┐         ┌─────────────────────────┐  │
-│  │                  │         │                         │  │
-│  │  Plugin Server   │         │  Plugin Implementation  │  │
-│  │  (FileLister)    │         │                         │  │
-│  │                  │         │  - ListFiles()          │  │
-│  │  - Receives      │────────▶│  - Dials broker         │  │
-│  │    host service  │         │  - Calls ReadDir()      │  │
-│  │    connection ID │         │    on host service      │  │
-│  └──────────────────┘         └─────────────────────────┘  │
-│                                                               │
-│                       Plugin Process                          │
-└─────────────────────────────────────────────────────────────┘
-```
-
-## Key Concepts
-
-### 1. The Broker
-
-The **broker** is go-plugin's mechanism for bidirectional RPC. It allows both sides to:
-- Register gRPC servers (via `AcceptAndServe`)
-- Connect to servers on the other side (via `Dial`)
-
-Each service is identified by a `uint32` ID that both sides must agree on.
-
-### 2. Service IDs
-
-Service IDs are allocated dynamically using the broker's built-in ID allocator:
+We've separated infrastructure from business logic using a reusable `hostconn` package:
 
 ```go
-func setupService(broker *plugin.GRPCBroker) uint32 {
-    return broker.NextId()
-}
+// In your host - ONE LINE to setup host services for any plugin
+hostconn.EstablishHostServices(plugin, hostServices, logger)
+
+// That's it. No type casting, no broker management, no complexity.
 ```
 
-The broker's `NextId()` method provides thread-safe, unique ID allocation ensuring multiple services can coexist without ID conflicts.
+**Compare this to typical implementations** where you manually:
+- Type cast to broker-aware interfaces
+- Register services with the broker
+- Pass service IDs around
+- Handle connection lifecycle
 
-### 3. Interface Segregation & Reusable Infrastructure
+Our `hostconn` package handles all of that, making host service setup trivial.
 
-The framework separates concerns using a dedicated `shared/pkg/hostconn` package:
+### 2. **One Service Implementation, Multiple Plugins**
 
-**FileLister Interface (Business Logic)**
 ```go
-// In shared/pkg/filelister/
-type FileLister interface {
-    ListFiles(dir string) ([]string, error)
-}
-```
-- Required for all file listing plugins
-- Contains only core business functionality
+// Create ONE host service implementation
+hostServices := hostserve.NewHostServices(...)
 
-**Host Connection Package (Reusable Infrastructure)**
+// Share it with multiple plugins - one line each
+hostconn.EstablishHostServices(plugin1, hostServices, logger)
+hostconn.EstablishHostServices(plugin2, hostServices, logger)
+```
+
+The broker acts as a multiplexer, routing each plugin's calls to the same implementation through separate connections. This is powerful but not obvious from go-plugin docs.
+
+### 3. **Optional Host Services**
+
+Plugins that don't need host services? Just skip implementing the `HostConnection` interface:
+
 ```go
-// In shared/pkg/hostconn/ - works with ANY plugin type
-package hostconn
+// Simple plugin - no host service boilerplate needed
+type SimplePlugin struct {}
 
-type HostConnection interface {
-    SetBroker(broker *plugin.GRPCBroker)
-    EstablishHostServices(hostServiceID uint32)
-    DisconnectHostServices()
+func (p *SimplePlugin) DoWork() string {
+    return "done"
 }
+```
 
-type HostServiceRegistrar interface {
-    RegisterHostService(hostServices hostserve.IHostServices) (uint32, error)
+The helper functions gracefully handle both cases. No special conditionals needed.
+
+### 4. **Easy Extensibility**
+
+Adding a new host service function is trivial:
+
+1. Add one RPC method to `hostserve.proto`:
+   ```protobuf
+   rpc GetEnv(GetEnvRequest) returns (GetEnvResponse);
+   ```
+
+2. Run `buf generate`
+
+3. Implement the method:
+   ```go
+   func (h *HostServices) GetEnv(ctx context.Context, key string) string {
+       return os.Getenv(key)
+   }
+   ```
+
+That's it. All existing plugins can now call `GetEnv()`. No plugin code changes needed.
+
+**Want to add a completely new service?** Same pattern - define proto, generate, implement. The `hostconn` infrastructure handles the connection plumbing.
+
+### 5. **Client Identification for Capability-Based Security**
+
+Here's where it gets really interesting for end users:
+
+```go
+// Plugin identifies itself in context
+ctx = context.WithValue(ctx, "clientID", uuid.New())
+entries, _ := hostServiceClient.ReadDir(ctx, "/sensitive-data")
+```
+
+```go
+// Host service checks client capabilities
+func (h *HostServices) ReadDir(ctx context.Context, path string) ([]fs.DirEntry, error) {
+    clientID := ctx.Value("clientID").(uuid.UUID)
+
+    // Check what this client is allowed to access
+    if !h.capabilities.CanAccess(clientID, path) {
+        return nil, errors.New("access denied")
+    }
+
+    return os.ReadDir(path)
 }
-
-// Helper functions hide complexity
-func EstablishHostServices(plugin interface{}, hostServices hostserve.IHostServices, logger hclog.Logger) error
-func DisconnectHostServices(plugin interface{}, logger hclog.Logger)
 ```
 
-**Benefits:**
-- **Clear separation**: Business logic separate from infrastructure
-- **Reusable**: hostconn package works with any plugin type (filelister, database, cache, etc.)
-- **Optional complexity**: Simple plugins don't need host services
-- **Clean host code**: Single-line helper calls instead of type casting
+**Why This Matters for End Users:**
 
-### 4. Two Directions of Communication
+- **Sandboxing**: Each plugin gets only the permissions it declares
+- **Audit trail**: Know exactly which plugin accessed what resource
+- **Dynamic permissions**: Grant/revoke capabilities at runtime
+- **Zero-trust plugins**: Plugins never touch the filesystem directly
 
-**Host → Plugin (Plugin Services)**
-- Defined in `shared/proto/filelister/v1/filelister.proto`
-- Example: `FileLister.List()`
-- Plugin implements the service, host calls it
+**Real-world scenario**: A plugin marketplace where users install third-party plugins. Each plugin declares "I need to read config files" and the host enforces that it can ONLY read config files, not secrets or system files.
 
-**Plugin → Host (Host Services)**
-- Defined in `shared/proto/hostserve/v1/hostserve.proto`
-- Example: `HostService.ReadDir()`
-- Host implements the service, plugin calls it
+This is the foundation for building plugin systems users can trust.
 
-### 5. Connection Ownership Model
-
-Understanding who owns what is critical:
-
-**Host Side:**
-- Creates gRPC **server** via `broker.AcceptAndServe(serviceID, serverFunc)`
-- The server is owned and managed by the host
-- Host is responsible for stopping its own servers on shutdown
-
-**Plugin Side:**
-- Creates gRPC **connections** via `broker.Dial(serviceID)`
-- Each connection should be tracked for cleanup
-- Plugin must close its connections in `DisconnectHostServices()`
-
-**Important:** The plugin never has access to the host's server and shouldn't try to stop it!
-
-## Project Structure
-
-```
-.
-├── main.go                          # Host process entry point
-├── plugins/
-│   └── filelister/
-│       ├── filelister.go           # Plugin implementation
-│       └── manifest.yaml           # Plugin metadata
-├── shared/
-│   ├── proto/                      # Protocol Buffer definitions
-│   │   ├── filelister/v1/
-│   │   │   └── filelister.proto   # Plugin service definition
-│   │   └── hostserve/v1/
-│   │       └── hostserve.proto    # Host service definition
-│   ├── protogen/                   # Generated Go code (DO NOT EDIT)
-│   └── pkg/
-│       ├── filelister/             # Plugin interface & gRPC wrappers
-│       │   ├── filelister.go      # Interface and GRPCClient
-│       │   └── filelister_grpc.go # GRPCServer implementation
-│       └── hostserve/              # Host service implementation
-│           ├── host_services.go   # Core implementation
-│           └── host_services_grpc.go # gRPC wrapper
-├── buf.yaml                        # Buf configuration for proto
-├── buf.gen.yaml                    # Buf code generation config
-├── CLAUDE.md                       # Development guide
-└── README.md                       # This file
-```
-
-## Building and Running
+## Quick Start
 
 ### Prerequisites
-
 - Go 1.25+
-- buf CLI (for regenerating protobuf code)
+- buf CLI (for protobuf generation)
 
-### Build
+### Build and Run
 
 ```bash
-# Build the host process
+# Build everything
 go build -o host .
-
-# Build the plugin
 go build -o plugins/filelister/filelister ./plugins/filelister
-```
+go build -o plugins/colorlister/colorlister ./plugins/colorlister
 
-### Run
-
-```bash
-# Run the host (it will automatically spawn the plugin)
+# Run the demo
 ./host
 ```
 
-**Expected Output:**
-```
-2025-10-25T17:22:23.408-0400 [DEBUG] host: starting plugin: path=./plugins/filelister/filelister args=["./plugins/filelister/filelister"]
-2025-10-25T17:22:23.408-0400 [DEBUG] host: plugin started: path=./plugins/filelister/filelister pid=32126
-2025-10-25T17:22:23.409-0400 [DEBUG] host: waiting for RPC address: plugin=./plugins/filelister/filelister
-2025-10-25T17:22:23.412-0400 [DEBUG] host.filelister: plugin address: address=/tmp/plugin570982019 network=unix timestamp=2025-10-25T17:22:23.412-0400
-2025-10-25T17:22:23.412-0400 [DEBUG] host: using plugin: version=1
-2025-10-25T17:22:23.413-0400 [INFO]  host: Host service registered with broker: id=1
-2025-10-25T17:22:23.413-0400 [DEBUG] host.filelister: 2025-10-25T17:22:23.413-0400 [INFO]  Established host services: id=1
-.claude   true
-.git   true
-.idea   true
-CLAUDE.md   false
-README.md   false
-buf.gen.yaml   false
-buf.yaml   false
-go.mod   false
-go.sum   false
-host   false
-internal   true
-main.go   false
-plugins   true
-shared   true
-2025-10-25T17:22:23.415-0400 [INFO]  host: Successfully listed files
-.claude-d
-.git-d
-.idea-d
-CLAUDE.md-f
-README.md-f
-buf.gen.yaml-f
-buf.yaml-f
-go.mod-f
-go.sum-f
-host-f
-internal-d
-main.go-f
-plugins-d
-shared-d
-2025-10-25T17:22:23.415-0400 [INFO]  host: Shutting down plugin
-```
-
-The output shows:
-- DEBUG logs tracking plugin lifecycle (starting, connecting, etc.)
-- Host service registration with broker ID
-- Intermediate output showing directory entries with boolean flags (true=directory, false=file)
-- Final formatted file listing with `-d` suffix for directories and `-f` suffix for regular files
-- Clean shutdown sequence
-
-### Regenerate Protobuf Code
-
-When modifying `.proto` files:
-
-```bash
-buf generate
-```
-
-This regenerates all files in `shared/protogen/`. Never edit these files manually.
-
-## How It Works
-
-### Step-by-Step Flow
-
-#### 1. Host Starts Plugin
-
-```go
-// main.go
-client := plugin.NewClient(&plugin.ClientConfig{
-    HandshakeConfig: handshakeConfig,
-    Plugins: map[string]plugin.Plugin{
-        "fl-plugin": &filelister.FileListerGRPCPlugin{},
-    },
-    Cmd: exec.Command("./plugins/filelister/filelister"),
-    AllowedProtocols: []plugin.Protocol{plugin.ProtocolGRPC},
-})
-```
-
-#### 2. Host Registers Host Service with Broker
-
-```go
-import "github.com/bmj2728/hst/shared/pkg/hostconn"
-
-// After dispensing plugin
-fileLister := raw.(filelister.FileLister)
-
-// Single helper call handles everything:
-// - Checks if plugin supports host services
-// - Registers service with broker
-// - Notifies plugin of service ID
-if err := hostconn.EstablishHostServices(raw, hostServices, logger); err != nil {
-    logger.Error("Failed to establish host services", "err", err)
-    os.Exit(1)
-}
-```
-
-The helper function internally:
-1. Checks if plugin implements `hostconn.HostServiceRegistrar`
-2. Calls `RegisterHostService()` to register with broker and get service ID
-3. Calls `EstablishHostServices()` on plugin to notify it of the service ID
-
-#### 3. Plugin Receives and Stores Service ID
-
-```go
-// plugins/filelister/filelister.go
-func (f *FileLister) EstablishHostServices(hostServiceID uint32) {
-    conn, _ := f.broker.Dial(hostServiceID)
-    f.hostServiceClient = hostserve.NewHostServiceGRPCClient(...)
-    // Plugin can now call host services
-}
-```
-
-#### 5. Host Calls Plugin Method
-
-```go
-entries, err := fileLister.ListFiles(".", hostServiceID)
-```
-
-#### 6. Plugin Dials Back to Host Service
-
-```go
-// plugins/filelister/filelister.go
-func (f *FileLister) ListFiles(dir string, hostService uint32) ([]string, error) {
-    // Connect to host service using the broker
-    conn, err := f.broker.Dial(hostService)
-    if err != nil {
-        return nil, err
-    }
-
-    // Track this connection for cleanup (important!)
-    f.connMutex.Lock()
-    f.connections = append(f.connections, conn)
-    f.connMutex.Unlock()
-
-    // Create client for host service
-    hsClient := hostserve.NewHostServiceGRPCClient(
-        hostservev1.NewHostServiceClient(conn))
-
-    // Call back to host to read directory
-    dirEntries, err := hsClient.ReadDir(dir)
-    if err != nil {
-        return nil, err
-    }
-
-    // Process entries: add suffix to indicate file type
-    var entries []string
-    for _, entry := range dirEntries {
-        if entry.IsDir() {
-            entries = append(entries, entry.Name()+"-d")
-        } else {
-            entries = append(entries, entry.Name()+"-f")
-        }
-    }
-
-    return entries, nil
-}
-```
-
-**Note:**
-- Connections are tracked rather than immediately closed so they can be properly cleaned up in `DisconnectHostServices()`
-- The plugin adds `-d` suffix for directories and `-f` suffix for regular files to demonstrate that plugins can process and transform data received from host services
-
-#### 7. Host Service Executes Request
-
-```go
-// shared/pkg/hostserve/host_services.go
-func (hs *HostServices) ReadDir(path string) ([]fs.DirEntry, error) {
-    // Secure filesystem access using os.OpenRoot
-    r, err := os.OpenRoot(path)
-    if err != nil {
-        return nil, err
-    }
-    defer r.Close()
-
-    return fs.ReadDir(r.FS(), ".")
-}
-```
-
-#### 8. Results Flow Back Through the Stack
-
-```
-Host Service → Broker → Plugin → Broker → Host Client
-```
-
-#### 9. Cleanup on Shutdown
-
-```go
-// Host initiates shutdown
-fileLister.DisconnectHostServices()
-client.Kill()  // Terminates plugin process
-```
-
-```go
-// Plugin cleans up its connections
-func (f *FileLister) DisconnectHostServices() {
-    f.connMutex.Lock()
-    defer f.connMutex.Unlock()
-
-    for _, conn := range f.connections {
-        conn.Close()
-    }
-    f.connections = nil
-}
-```
-
-The host manages its own server lifecycle separately from the plugin shutdown.
-
-## Communication Flow
-
-### Sequence Diagram
-
-```
-Host                Broker              Plugin
-  |                   |                   |
-  |--Start Plugin---->|                   |
-  |                   |<---Register-------|
-  |                   |                   |
-  |--AcceptAndServe-->|                   |
-  |   (ID=1)          |                   |
-  |                   |                   |
-  |--EstablishHostServices(1)------------>|
-  |                   |                   |
-  |                   |   Plugin stores ID=1
-  |                   |                   |
-  |--ListFiles(".")---------------------->|
-  |                   |                   |
-  |                   |<----Dial(1)-------|
-  |                   |                   |
-  |<---ReadDir("/")---|-------------------|
-  |                   |                   |
-  |---[entries]-------|------------------>|
-  |                   |                   |
-  |<------[entries]----------------------|
-  |                   |                   |
-```
-
-## Extending This Example
-
-### Adding a New Host Service
-
-1. **Define the service in protobuf:**
-
-```protobuf
-// shared/proto/newservice/v1/newservice.proto
-service NewService {
-  rpc DoSomething(Request) returns (Response);
-}
-```
-
-2. **Generate code:**
-```bash
-buf generate
-```
-
-3. **Implement the service:**
-
-```go
-// shared/pkg/newservice/newservice.go
-type NewService struct {}
-
-func (s *NewService) DoSomething(req Request) (Response, error) {
-    // Implementation
-}
-```
-
-4. **Register with broker in host:**
-
-```go
-newServiceID, err := grpcClientImpl.SetupNewService(newServiceImpl)
-fileLister.EstablishNewService(newServiceID)
-```
-
-5. **Use in plugin:**
-
-```go
-conn, err := f.broker.Dial(f.newServiceID)
-client := newservev1.NewNewServiceClient(conn)
-resp, err := client.DoSomething(ctx, req)
-```
-
-### Adding a New Plugin
-
-1. **Define plugin service in protobuf:**
-
-```protobuf
-// shared/proto/myplugin/v1/myplugin.proto
-service MyPlugin {
-  rpc DoWork(WorkRequest) returns (WorkResponse);
-}
-```
-
-2. **Create plugin interface:**
-
-```go
-// shared/pkg/myplugin/myplugin.go
-type MyPlugin interface {
-    DoWork(input string) (string, error)
-}
-```
-
-3. **Implement gRPC wrappers** (similar to `FileListerGRPCPlugin`)
-
-4. **Implement the plugin:**
-
-**With host services (implements both FileLister and HostConnection):**
-```go
-// plugins/myplugin/myplugin.go
-type MyPluginImpl struct {
-    broker *plugin.GRPCBroker
-    hostServiceClient hostserve.IHostServices
-}
-
-// Business logic (required)
-func (p *MyPluginImpl) DoWork(input string) (string, error) {
-    // Can call host services via hostServiceClient
-    entries, _ := p.hostServiceClient.ReadDir(input)
-    return result, nil
-}
-
-// Infrastructure (optional - for host services)
-func (p *MyPluginImpl) SetBroker(broker *plugin.GRPCBroker) {
-    p.broker = broker
-}
-func (p *MyPluginImpl) EstablishHostServices(id uint32) {
-    conn, _ := p.broker.Dial(id)
-    p.hostServiceClient = hostserve.NewHostServiceGRPCClient(...)
-}
-func (p *MyPluginImpl) DisconnectHostServices() {
-    // cleanup
-}
-```
-
-**Without host services (implements only FileLister):**
-```go
-// plugins/simpleplugin/simpleplugin.go
-type SimplePluginImpl struct {}
-
-// Business logic (required) - no host services needed
-func (p *SimplePluginImpl) DoWork(input string) (string, error) {
-    // Direct implementation, no host interaction
-    return result, nil
-}
-// No HostConnection methods needed!
-```
-
-5. **Register in plugin main:**
-
-```go
-pluginMap := map[string]plugin.Plugin{
-    "my-plugin": &myplugin.MyPluginGRPCPlugin{Impl: impl},
-}
-plugin.Serve(&plugin.ServeConfig{
-    HandshakeConfig: handshakeConfig,
-    Plugins:         pluginMap,
-    GRPCServer:      plugin.DefaultGRPCServer,
-})
-```
-
-## Common Patterns
-
-### Pattern 1: Multiple Host Services
-
-```go
-// Host setup
-fileServiceID, _ := client.SetupFileService(fileService)
-dbServiceID, _ := client.SetupDatabaseService(dbService)
-cacheServiceID, _ := client.SetupCacheService(cacheService)
-
-// Pass all IDs to plugin
-plugin.EstablishServices(fileServiceID, dbServiceID, cacheServiceID)
-```
-
-### Pattern 2: Service Discovery
-
-Instead of passing individual IDs, pass a service registry:
-
-```protobuf
-message ServiceRegistry {
-  map<string, uint32> services = 1;  // name -> broker ID
-}
-```
-
-```go
-registry := map[string]uint32{
-    "file":  fileServiceID,
-    "db":    dbServiceID,
-    "cache": cacheServiceID,
-}
-plugin.EstablishServices(registry)
-```
-
-### Pattern 3: Lazy Service Connection
-
-Don't dial the broker until the service is actually needed:
-
-```go
-type LazyHostServiceClient struct {
-    broker    *plugin.GRPCBroker
-    serviceID uint32
-    client    hostservev1.HostServiceClient
-    once      sync.Once
-}
-
-func (l *LazyHostServiceClient) getClient() hostservev1.HostServiceClient {
-    l.once.Do(func() {
-        conn, _ := l.broker.Dial(l.serviceID)
-        l.client = hostservev1.NewHostServiceClient(conn)
-    })
-    return l.client
-}
-```
-
-### Pattern 4: Connection Pooling
-
-For high-throughput scenarios, maintain a connection pool:
-
-```go
-type HostServicePool struct {
-    broker    *plugin.GRPCBroker
-    serviceID uint32
-    pool      chan *grpc.ClientConn
-}
-
-func (p *HostServicePool) Get() (*grpc.ClientConn, error) {
-    select {
-    case conn := <-p.pool:
-        return conn, nil
-    default:
-        return p.broker.Dial(p.serviceID)
-    }
-}
-
-func (p *HostServicePool) Put(conn *grpc.ClientConn) {
-    select {
-    case p.pool <- conn:
-    default:
-        conn.Close()  // Pool full, close connection
-    }
-}
-```
-
-## Working with Multiple Plugins
-
-### Sharing Host Services Across Multiple Plugins
-
-A powerful feature of this architecture is the ability to register the same host service implementation with multiple plugins. Each plugin gets its own unique service ID through the broker, but they all call the same underlying host service implementation.
-
-**Key Concept:** The broker acts as a multiplexer, allowing one host service implementation to serve multiple plugins through different connection IDs.
-
-#### Example from main.go
-
-```go
-import "github.com/bmj2728/hst/shared/pkg/hostconn"
-
-// Create a single host service implementation
-hostServices := &hostserve.HostServices{}
-
-// Plugin 1: Dispense and setup
-client1 := plugin.NewClient(&plugin.ClientConfig{/* ... */})
-rpcClient1, _ := client1.Client()
-raw1, _ := rpcClient1.Dispense("fl-plugin")
-fileLister1 := raw1.(filelister.FileLister)
-
-// Setup host services (one line!)
-hostconn.EstablishHostServices(raw1, hostServices, logger)
-
-// Plugin 2: Dispense and setup
-client2 := plugin.NewClient(&plugin.ClientConfig{/* ... */})
-rpcClient2, _ := client2.Client()
-raw2, _ := rpcClient2.Dispense("cl-plugin")
-colorLister := raw2.(filelister.FileLister)
-
-// Setup the SAME host services for plugin 2 (one line!)
-hostconn.EstablishHostServices(raw2, hostServices, logger)
-
-// Both plugins can now call the same host service independently
-entries1, _ := fileLister1.ListFiles(".")
-entries2, _ := colorLister.ListFiles(".")
-
-// Cleanup
-hostconn.DisconnectHostServices(raw1, logger)
-hostconn.DisconnectHostServices(raw2, logger)
-```
-
-#### How It Works
-
-1. **Single Implementation:** One instance of `hostserve.HostServices{}` is created
-2. **Helper Function:** `hostconn.EstablishHostServices()` is called once per plugin:
-   - Internally calls `RegisterHostService()` which allocates service IDs from each plugin's broker
-   - Plugin 1: Gets service ID = 1 (from plugin 1's broker)
-   - Plugin 2: Gets service ID = 1 (from plugin 2's broker - different broker instance)
-   - Each plugin has its own broker, so IDs are scoped per plugin connection
-   - Notifies each plugin of its service ID
-3. **Broker Routing:** Each broker creates a gRPC server for its registration
-4. **Independent Access:** Each plugin dials service ID 1 on its own broker and gets routed to the shared implementation
-
-#### Architecture Diagram
+You'll see:
+- The host spawning two plugins
+- Plugins calling back to host services to read directories
+- `filelister` writing a file via host service
+- `colorlister` reading file contents with colored output
+- Clean shutdown with proper connection cleanup
+
+## Architecture: The Big Picture
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
@@ -710,173 +152,444 @@ hostconn.DisconnectHostServices(raw2, logger)
 │                                                               │
 │  ┌─────────────────────────────────────────────────────┐    │
 │  │         Shared Host Service Implementation          │    │
-│  │         hostServices := &HostServices{}             │    │
+│  │         (ReadDir, ReadFile, WriteFile, GetEnv)      │    │
 │  └──────────────────┬──────────────┬───────────────────┘    │
 │                     │              │                         │
 │       ┌─────────────┴──────┐  ┌───┴──────────────┐          │
 │       │  Broker 1          │  │  Broker 2        │          │
-│       │  Service ID: 1     │  │  Service ID: 1   │          │
-│       │  (Plugin 1 broker) │  │  (Plugin 2 broker)          │
+│       │  (multiplexer)     │  │  (multiplexer)   │          │
 │       └─────────┬──────────┘  └──────┬───────────┘          │
 │                 │                    │                       │
 └─────────────────┼────────────────────┼───────────────────────┘
                   │                    │
         ┌─────────┴──────────┐  ┌──────┴─────────┐
         │                    │  │                │
-┌───────┼─────────┐  ┌───────┼──────────┐       │
-│       │ Plugin1 │  │       │ Plugin2  │       │
-│       │         │  │       │          │       │
-│   Dial(1)      │  │   Dial(1)        │       │
-│  on Broker 1   │  │  on Broker 2     │       │
-└───────┼─────────┘  └───────┼──────────┘       │
-        │                    │                  │
-        └────────────────────┴──────────────────┘
-                Both call same
-              HostServices instance
-          (via their respective brokers)
+┌───────┼──────────┐  ┌──────┼──────────┐       │
+│   Plugin 1       │  │   Plugin 2      │       │
+│   (isolated)     │  │   (isolated)    │       │
+│                  │  │                 │       │
+│  Calls ReadDir() │  │ Calls ReadFile()│       │
+└──────────────────┘  └─────────────────┘       │
+        Both plugins securely call host services
+        with their own capabilities/permissions
 ```
 
-#### Benefits
+**Key insight**: Plugins are isolated processes. They can't access resources directly. They MUST go through host services, giving you complete control.
 
-- **Code Reuse:** Write host service logic once, use with many plugins
-- **Centralized Logic:** All plugins access the same implementation, ensuring consistency
-- **Resource Efficiency:** No need to duplicate service implementations
-- **Independent Isolation:** Each plugin has its own connection, preventing interference
+## What's Implemented
 
-#### Important Notes
+This demo includes:
 
-1. **Thread Safety:** Since multiple plugins can call the same host service concurrently, ensure your host service implementation is thread-safe
-2. **Service ID Allocation:** The broker's `NextId()` method ensures each registration gets a unique ID
-3. **Cleanup:** Each plugin manages its own connection cleanup via `DisconnectHostServices()`
-4. **Scalability:** You can register the same service with as many plugins as needed
+**Two Example Plugins:**
+- `filelister`: Lists files and writes output to a file via host service
+- `colorlister`: Reads files with colored output, demonstrates context propagation
 
-### Pattern: Registering Multiple Different Services
+**Host Services:**
+- `ReadDir(path)`: Read directory contents
+- `ReadFile(dir, file)`: Read file contents
+- `WriteFile(dir, file, data, perm)`: Write file
+- `GetEnv(key)`: Get environment variable
 
-You can also register different host services with different plugins:
+**Infrastructure:**
+- `hostconn` package: Reusable connection management for any plugin type
+- Clean separation between business logic and infrastructure
+- Proper connection lifecycle (setup → use → teardown)
+- Thread-safe broker multiplexing
 
-```go
-// Different services for different plugins
-fileService := &hostserve.FileService{}
-dbService := &hostserve.DatabaseService{}
+## Project Structure
 
-// Plugin 1 gets file service
-fileServiceID, _ := grpcClient1.SetupFileService(fileService)
-
-// Plugin 2 gets database service
-dbServiceID, _ := grpcClient2.SetupDatabaseService(dbService)
-
-// Or give both services to one plugin
-plugin.EstablishServices(fileServiceID, dbServiceID)
+```
+.
+├── main.go                           # Host: spawns plugins, shares services
+├── plugins/
+│   ├── filelister/                   # Demo plugin 1
+│   └── colorlister/                  # Demo plugin 2
+├── shared/
+│   ├── proto/                        # Service definitions
+│   │   ├── filelister/v1/           # Plugin interface
+│   │   └── hostserve/v1/            # Host services (add new services here)
+│   ├── protogen/                     # Generated code (don't edit)
+│   └── pkg/
+│       ├── hostconn/                 # Reusable infrastructure (the magic)
+│       ├── hostserve/                # Host service implementations
+│       └── filelister/               # Plugin interface
+├── buf.yaml                          # Proto module config
+└── buf.gen.yaml                      # Code generation config
 ```
 
-## Security Considerations
+## How to Extend: Add a New Host Service Function
 
-### Process Isolation
+Let's add a `DeleteFile` function:
 
-Plugins run in separate processes, providing:
-- Memory isolation
-- Crash isolation
-- Resource limit enforcement via OS
-
-### Controlled Access
-
-The host service pattern allows fine-grained control:
-
-```go
-type RestrictedHostService struct {
-    allowedPaths []string
+**Step 1**: Edit `shared/proto/hostserve/v1/hostserve.proto`:
+```protobuf
+service HostService {
+  rpc ReadDir(ReadDirRequest) returns (ReadDirResponse);
+  rpc ReadFile(ReadFileRequest) returns (ReadFileResponse);
+  rpc WriteFile(WriteFileRequest) returns (WriteFileResponse);
+  rpc DeleteFile(DeleteFileRequest) returns (DeleteFileResponse);  // NEW
+  rpc GetEnv(GetEnvRequest) returns (GetEnvResponse);
 }
 
-func (s *RestrictedHostService) ReadDir(path string) ([]fs.DirEntry, error) {
-    if !s.isPathAllowed(path) {
-        return nil, errors.New("access denied")
+message DeleteFileRequest {
+  string dir = 1;
+  string file = 2;
+}
+
+message DeleteFileResponse {
+  optional string error = 1;
+}
+```
+
+**Step 2**: Regenerate code:
+```bash
+buf generate
+```
+
+**Step 3**: Implement in `shared/pkg/hostserve/host_fs.go`:
+```go
+func (h *HostFS) DeleteFile(ctx context.Context, dir, file string) error {
+    root, err := os.OpenRoot(dir)
+    if err != nil {
+        return err
     }
-    // ... perform operation
+    defer root.Close()
+
+    return root.Remove(file)
 }
 ```
 
-### Sandboxing with os.OpenRoot
+**Done!** All plugins can now call `hostServiceClient.DeleteFile()`. No changes needed to:
+- The broker setup
+- The connection management
+- Any plugin code (unless they want to use the new function)
+- The `hostconn` infrastructure
 
-The example uses `os.OpenRoot()` which provides path confinement:
+## How to Add a New Plugin
+
+**Minimal plugin (no host services needed):**
 
 ```go
-// Plugin can only access within the opened root
-r, err := os.OpenRoot("/allowed/directory")
-// Plugin cannot escape this directory boundary
+type MyPlugin struct{}
+
+func (p *MyPlugin) DoWork() string {
+    return "I don't need host services"
+}
+
+func main() {
+    plugin.Serve(&plugin.ServeConfig{
+        HandshakeConfig: handshakeConfig,
+        Plugins: map[string]plugin.Plugin{
+            "my-plugin": &MyPluginGRPCWrapper{Impl: &MyPlugin{}},
+        },
+        GRPCServer: plugin.DefaultGRPCServer,
+    })
+}
 ```
 
-## Troubleshooting
-
-### Common Issues
-
-**1. "Failed to dial host service"**
-- Ensure the host service ID is passed correctly to the plugin
-- Check that `AcceptAndServe` is called before the plugin tries to dial
-- Verify the broker is the same instance on both sides
-
-**2. "Host services not working"**
-- Ensure plugin implements `hostconn.HostConnection` interface
-- Check that `hostconn.EstablishHostServices()` is called after dispensing plugin
-- Verify the hostServices implementation is not nil
-
-**3. "Plugin process not starting"**
-- Verify the plugin binary exists and is executable
-- Check the path in `exec.Command()` is correct
-- Review plugin logs for startup errors
-
-**4. "Service not implemented"**
-- Ensure your gRPC server embeds `UnimplementedXXXServer`
-- Verify all required methods are implemented
-- Check that `RegisterXXXServer` is called
-
-**5. "DisconnectHostServices signature confusion"**
-- **Wrong:** `DisconnectHostServices(server *grpc.Server)` - Plugin doesn't have access to host's server
-- **Right:** `DisconnectHostServices()` - Plugin closes its own connections
-- The plugin manages **connections** (via `Dial`), not the host's **server** (via `AcceptAndServe`)
-
-### Debug Logging
-
-Enable detailed logging:
+**Plugin with host services:**
 
 ```go
-logger := hclog.New(&hclog.LoggerOptions{
-    Name:   "host",
-    Output: os.Stdout,
-    Level:  hclog.Debug,  // Change to Debug
+type MyPlugin struct {
+    broker            *plugin.GRPCBroker
+    hostServiceClient hostserve.IHostServices
+    conn              *grpc.ClientConn
+    connMutex         sync.Mutex
+}
+
+// Implement HostConnection interface
+func (p *MyPlugin) SetBroker(broker *plugin.GRPCBroker) {
+    p.broker = broker
+}
+
+func (p *MyPlugin) EstablishHostServices(hostServiceID uint32) {
+    p.connMutex.Lock()
+    defer p.connMutex.Unlock()
+
+    conn, _ := p.broker.Dial(hostServiceID)
+    p.conn = conn
+    p.hostServiceClient = hostserve.NewHostServiceGRPCClient(
+        hostservev1.NewHostServiceClient(conn))
+}
+
+func (p *MyPlugin) DisconnectHostServices() {
+    p.connMutex.Lock()
+    defer p.connMutex.Unlock()
+
+    if p.conn != nil {
+        p.conn.Close()
+    }
+}
+
+// Now use host services in your business logic
+func (p *MyPlugin) DoWork() (string, error) {
+    entries, err := p.hostServiceClient.ReadDir(context.Background(), ".")
+    return fmt.Sprintf("Found %d files", len(entries)), err
+}
+```
+
+In your host:
+```go
+plugin := dispensePlugin("my-plugin")
+hostconn.EstablishHostServices(plugin, hostServices, logger)  // One line!
+```
+
+## Security: Building Capability-Based Sandboxing
+
+The client identification pattern demonstrated in `colorlister` is the foundation for real security:
+
+### Current Implementation (Demo)
+```go
+// colorlister.go:31
+ctx = context.WithValue(ctx, "client", "cl-plugin")
+```
+
+### Production Implementation (Conceptual)
+
+**1. Plugin declares capabilities in manifest:**
+```yaml
+# plugins/myplugin/manifest.yaml
+name: my-plugin
+version: 1.0.0
+capabilities:
+  - read:config/**
+  - write:output/**
+  - env:API_KEY
+```
+
+**2. Host assigns UUID and loads capabilities:**
+```go
+clientID := uuid.New()
+caps := loadCapabilities("plugins/myplugin/manifest.yaml")
+capabilityManager.Register(clientID, caps)
+
+ctx := context.WithValue(context.Background(), "clientID", clientID)
+```
+
+**3. Host services enforce capabilities:**
+```go
+func (h *HostServices) ReadDir(ctx context.Context, path string) ([]fs.DirEntry, error) {
+    clientID := ctx.Value("clientID").(uuid.UUID)
+
+    if !capabilityManager.CanRead(clientID, path) {
+        h.logger.Warn("Access denied", "client", clientID, "path", path)
+        return nil, ErrAccessDenied
+    }
+
+    // Only allow access within configured root
+    root, err := os.OpenRoot(h.pluginRoots[clientID])
+    if err != nil {
+        return nil, err
+    }
+    defer root.Close()
+
+    return fs.ReadDir(root.FS(), path)
+}
+```
+
+**4. Audit trail:**
+```go
+h.auditLog.Log(AuditEntry{
+    ClientID:  clientID,
+    Action:    "ReadDir",
+    Resource:  path,
+    Allowed:   true,
+    Timestamp: time.Now(),
 })
 ```
 
-## Performance Considerations
+### What This Enables
 
-### Broker Overhead
+**For End Users:**
+- Install third-party plugins with confidence
+- Know exactly what each plugin can access
+- Revoke access without restarting
+- Full audit trail of plugin behavior
+- Plugins can't escalate privileges
 
-Each broker dial creates a new gRPC connection. For high-frequency calls:
-- Use connection pooling (see patterns above)
-- Consider batching requests
-- Cache connections when possible
+**For Developers:**
+- Clear security boundaries
+- Easy to reason about access control
+- Test plugins in isolation
+- No risk of plugin compromising host
 
-### Serialization Cost
+**Real-world example**: A text editor with plugin marketplace. A "file counter" plugin declares it needs `read:workspace/**`. It can't access your SSH keys, can't write files, can't access environment variables. If it tries, the host service denies the request and logs the attempt.
 
-Protobuf is efficient, but large messages still have cost:
-- Stream large datasets instead of single messages
-- Use compression for large payloads
-- Consider pagination for list operations
+## Technical Deep Dives
 
-## References
+### The Broker: How Multiplexing Works
 
-- [go-plugin Documentation](https://github.com/hashicorp/go-plugin)
-- [gRPC Go Documentation](https://grpc.io/docs/languages/go/)
-- [Protocol Buffers Guide](https://protobuf.dev/)
-- [Buf CLI](https://buf.build/)
+Each plugin gets its own broker instance. When you call:
+```go
+broker.AcceptAndServe(serviceID, serverFunc)
+```
+
+The broker creates a gRPC server listening on a socket. When a plugin calls:
+```go
+conn, _ := broker.Dial(serviceID)
+```
+
+The broker connects to that socket. Multiple plugins can have service ID 1 because they're using different broker instances - each routes to the appropriate socket.
+
+### Connection Ownership Model
+
+**Critical distinction:**
+
+- **Host owns servers**: Created via `broker.AcceptAndServe()`, managed by host
+- **Plugin owns connections**: Created via `broker.Dial()`, cleaned up in `DisconnectHostServices()`
+
+Plugins never have access to stop the host's servers. They only close their own connections.
+
+### Why `hostconn` Package Matters
+
+Without `hostconn`, your host code looks like:
+```go
+// Manual approach (verbose, error-prone)
+grpcClient, ok := raw.(interface{ GetBroker() *plugin.GRPCBroker })
+if !ok {
+    // handle error
+}
+broker := grpcClient.GetBroker()
+serviceID := broker.NextId()
+
+serverFunc := func(opts []grpc.ServerOption) *grpc.Server {
+    s := grpc.NewServer(opts...)
+    hostservev1.RegisterHostServiceServer(s, hostServices)
+    return s
+}
+go broker.AcceptAndServe(serviceID, serverFunc)
+
+if hc, ok := raw.(HostConnection); ok {
+    hc.EstablishHostServices(serviceID)
+}
+```
+
+With `hostconn`:
+```go
+hostconn.EstablishHostServices(raw, hostServices, logger)
+```
+
+This is what "reusable infrastructure" means. The complexity exists once, in a tested package, not repeated in every host implementation.
+
+### Thread Safety Considerations
+
+Host services can be called by multiple plugins concurrently. All implementations in this project use:
+- `sync.Mutex` for connection management
+- `os.OpenRoot()` which provides safe path confinement
+- Context propagation for cancellation/timeouts
+
+When extending, ensure your implementations are thread-safe.
+
+## Common Patterns from This Codebase
+
+**Pattern**: One service, multiple plugins (main.go:35-104)
+```go
+hostServices := hostserve.NewHostServices(...)
+hostconn.EstablishHostServices(plugin1, hostServices, logger)
+hostconn.EstablishHostServices(plugin2, hostServices, logger)
+```
+
+**Pattern**: Context-based client identification (colorlister.go:31)
+```go
+ctx = context.WithValue(ctx, "client", "cl-plugin")
+result := hostServiceClient.ReadDir(ctx, dir)
+```
+
+**Pattern**: Safe file operations (host_fs.go uses `os.OpenRoot()` throughout)
+```go
+root, _ := os.OpenRoot(dir)
+defer root.Close()
+return fs.ReadDir(root.FS(), ".")
+```
+
+**Pattern**: Connection lifecycle management (filelister.go:52-79)
+```go
+// Setup
+conn, _ := broker.Dial(serviceID)
+f.conn = conn
+
+// Use
+result := client.ReadDir(...)
+
+// Teardown
+if f.conn != nil {
+    f.conn.Close()
+}
+```
+
+## Comparison to go-plugin Examples
+
+| Feature | go-plugin Examples | This Project |
+|---------|-------------------|--------------|
+| Bidirectional RPC | Shown but tightly coupled | Clean separation via `hostconn` |
+| Multiple plugins | Not clearly demonstrated | Two plugins sharing services |
+| Service registration | Manual broker management | One-line helper function |
+| Connection lifecycle | Implicit or unclear | Explicit setup/teardown pattern |
+| Security patterns | Not addressed | Client ID → capabilities foundation |
+| Extensibility | Add service = lots of changes | Add service = edit proto, implement |
+| Infrastructure reuse | Each example duplicates code | `hostconn` package works for all plugins |
+
+## Why You Might Want This Pattern
+
+**You're building a plugin system where:**
+- Plugins come from different sources (marketplace, third-party, user scripts)
+- Security matters (can't trust plugins with direct system access)
+- You want to add capabilities over time without breaking plugins
+- Multiple plugins should share services efficiently
+- You need audit trails of plugin behavior
+
+**You'll save time because:**
+- The infrastructure is reusable across all plugin types
+- Adding new host services is trivial (edit proto → implement)
+- Connection management is handled consistently
+- Security can be added incrementally via context values
+
+## Protobuf Workflow
+
+When modifying service definitions:
+
+1. Edit `.proto` files in `shared/proto/`
+2. Run `buf generate`
+3. Implement new methods in corresponding Go files
+4. **Never manually edit files in `shared/protogen/`**
+
+The buf configuration ensures consistent code generation with proper Go module paths.
+
+## Learning Resources
+
+- [go-plugin Documentation](https://github.com/hashicorp/go-plugin) - Core framework
+- [gRPC Go Basics](https://grpc.io/docs/languages/go/basics/) - Understanding gRPC
+- [Protocol Buffers Guide](https://protobuf.dev/getting-started/gotutorial/) - Proto syntax
+- This project's CLAUDE.md - Detailed architecture notes for development
+
+## FAQ
+
+**Q: Is this production-ready?**
+A: This is a demonstration/teaching project. The patterns are production-ready, but you'd want to add error handling, logging, metrics, testing, etc.
+
+**Q: Can I use this code in my project?**
+A: Yes, especially the `hostconn` package which is designed to be reusable. Treat this as a reference implementation.
+
+**Q: Why not just give plugins direct filesystem access?**
+A: Security and control. Plugins become sandboxed, auditable, and can't accidentally or maliciously access resources they shouldn't.
+
+**Q: How does this handle plugin crashes?**
+A: go-plugin provides process isolation. If a plugin crashes, the host continues running. You'd need to add recovery/restart logic.
+
+**Q: Can plugins talk to each other?**
+A: Not directly in this model. They'd need to go through host services. You could add a "message bus" host service for inter-plugin communication.
+
+**Q: What about performance?**
+A: gRPC is efficient. For high-frequency calls, you'd want connection pooling (examples in comments). The broker overhead is minimal.
+
+## Contributing
+
+This is an educational project. Improvements that clarify the patterns or demonstrate additional capabilities are welcome. Please maintain focus on teaching the architecture, not adding production features.
 
 ## License
 
 This example is provided as-is for educational purposes.
 
-## Contributing
-
-Improvements and clarifications to this example are welcome! Please ensure any changes maintain the clarity of the bidirectional communication pattern.
-
 ---
 
-**Questions or Issues?** This example was created to help the community understand bidirectional go-plugin patterns. If something is unclear, please open an issue with your questions.
+**Questions?** This project exists to help the community understand production-ready patterns for go-plugin. If something is unclear, open an issue - your question helps improve the documentation.

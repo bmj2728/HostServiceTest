@@ -7,10 +7,13 @@ import (
 	"github.com/bmj2728/hst/shared/protogen/hostserve/v1"
 )
 
+// NewHostServiceGRPCClient creates a new instance of HostServiceGRPCClient using the provided HostServiceClient.
 func NewHostServiceGRPCClient(client hostservev1.HostServiceClient) *HostServiceGRPCClient {
 	return &HostServiceGRPCClient{client: client}
 }
 
+// ReadDir retrieves a list of directory entries from the given path through a gRPC call to the host service.
+// Returns a slice of fs.DirEntry or an error if the operation fails.
 func (c *HostServiceGRPCClient) ReadDir(path string) ([]fs.DirEntry, error) {
 	resp, err := c.client.ReadDir(context.Background(), &hostservev1.ReadDirRequest{
 		Path: path,
@@ -23,7 +26,6 @@ func (c *HostServiceGRPCClient) ReadDir(path string) ([]fs.DirEntry, error) {
 	}
 
 	// Convert protobuf DirEntry to fs.DirEntry
-	// This is
 	var entries []fs.DirEntry
 	for _, entry := range resp.Entries {
 		entries = append(entries, &RemoteDirEntry{
@@ -35,6 +37,8 @@ func (c *HostServiceGRPCClient) ReadDir(path string) ([]fs.DirEntry, error) {
 	return entries, nil
 }
 
+// ReadFile reads the specified file from the given directory and returns its contents as a byte slice.
+// Returns an error if the file cannot be read or the service encounters an issue.
 func (c *HostServiceGRPCClient) ReadFile(dir, file string) ([]byte, error) {
 	resp, err := c.client.ReadFile(context.Background(), &hostservev1.ReadFileRequest{
 		Dir:  dir,

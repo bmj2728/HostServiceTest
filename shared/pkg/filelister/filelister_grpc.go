@@ -16,7 +16,9 @@ type GRPCServer struct {
 	filelisterv1.UnimplementedFileListerServer
 }
 
-func (s *GRPCServer) List(ctx context.Context, request *filelisterv1.FileListRequest) (*filelisterv1.FileListResponse, error) {
+func (s *GRPCServer) List(ctx context.Context,
+	request *filelisterv1.FileListRequest) (*filelisterv1.FileListResponse, error) {
+
 	entries, err := s.Impl.ListFiles(request.Dir)
 	if err != nil {
 		errMsg := err.Error()
@@ -31,7 +33,9 @@ func (s *GRPCServer) List(ctx context.Context, request *filelisterv1.FileListReq
 	}, nil
 }
 
-func (s *GRPCServer) EstablishHostServices(ctx context.Context, request *filelisterv1.HostServiceRequest) (*filelisterv1.Empty, error) {
+func (s *GRPCServer) EstablishHostServices(ctx context.Context,
+	request *filelisterv1.HostServiceRequest) (*filelisterv1.Empty, error) {
+
 	// Only call EstablishHostServices if the plugin implements HostConnection
 	if hostConn, ok := s.Impl.(hostconn.HostConnection); ok {
 		hostConn.EstablishHostServices(request.HostService)
@@ -43,19 +47,22 @@ func (s *GRPCServer) EstablishHostServices(ctx context.Context, request *filelis
 
 // GRPCClient is the client side of the plugin.
 // It implements plugin.GRPCPlugin so the plugin framework can communicate with it.
-
 type GRPCClient struct {
 	client        filelisterv1.FileListerClient
 	broker        *plugin.GRPCBroker
 	hostServiceID uint32
 }
 
+// SetBroker sets the gRPC broker for the client.
+// This method is a no-op on the host side since the broker is already initialized in the constructor.
+// It is implemented to fulfill the HostConnection interface requirements.
 func (c *GRPCClient) SetBroker(broker *plugin.GRPCBroker) {
 	// No-op on the host side - the broker is already set during construction
 	// This method exists to satisfy the HostConnection interface
 	c.broker = broker
 }
 
+// EstablishHostServices sets the host service ID and notifies the plugin via gRPC to establish the host service.
 func (c *GRPCClient) EstablishHostServices(hostServiceID uint32) {
 	c.hostServiceID = hostServiceID
 	// Also call the gRPC method to notify the plugin
@@ -64,12 +71,15 @@ func (c *GRPCClient) EstablishHostServices(hostServiceID uint32) {
 	})
 }
 
+// DisconnectHostServices performs cleanup actions during plugin shutdown, though no client-side cleanup is
+// needed currently.
 func (c *GRPCClient) DisconnectHostServices() {
 	// The host manages its own server lifecycle
 	// This is called during plugin shutdown to do any cleanup
 	// Currently no cleanup needed on the client side
 }
 
+// ListFiles retrieves the list of files in the specified directory on the remote host using the gRPC client.
 func (c *GRPCClient) ListFiles(dir string) ([]string, error) {
 	resp, err := c.client.List(context.Background(), &filelisterv1.FileListRequest{
 		Dir:         dir,
@@ -103,10 +113,13 @@ func (c *GRPCClient) RegisterHostService(hostServices hostserve.IHostServices) (
 	return serviceID, nil
 }
 
+// FileListerError represents an error returned by the file listing service.
+// It contains a message describing the error.
 type FileListerError struct {
 	Message string
 }
 
+// Error returns the error message stored in the FileListerError instance.
 func (e *FileListerError) Error() string {
 	return e.Message
 }

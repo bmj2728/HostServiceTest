@@ -7,6 +7,7 @@ option go_package = "github.com/bmj2728/HostServiceTest/shared/protogen/hostserv
 service HostService {
   //FS Endpoints
   rpc ReadDir(ReadDirRequest) returns (ReadDirResponse); //underlying returns []DirEntry, error
+  rpc ReadFile(ReadFileRequest) returns (ReadFileResponse); //underlying returns []byte, error
   //Env Endpoints
   rpc GetEnv(GetEnvRequest) returns (GetEnvResponse);
 }
@@ -23,7 +24,7 @@ message ReadDirRequest {
 
 message ReadDirResponse {
   repeated DirEntry entries = 1;
-  optional string error =2;
+  optional string error = 2;
 }
 
 message GetEnvRequest {
@@ -31,5 +32,15 @@ message GetEnvRequest {
 }
 
 message GetEnvResponse {
-  string val =1;
+  string val = 1;
+}
+
+message ReadFileRequest {
+  string dir = 1;
+  string file = 2;
+}
+
+message ReadFileResponse {
+  bytes contents = 1;
+  optional string error = 2;
 }

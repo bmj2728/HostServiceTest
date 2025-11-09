@@ -9,6 +9,7 @@ type IHostServices interface {
 
 type IHostFS interface {
 	ReadDir(path string) ([]fs.DirEntry, error)
+	ReadFile(dir, file string) ([]byte, error)
 }
 
 type IHostEnv interface {

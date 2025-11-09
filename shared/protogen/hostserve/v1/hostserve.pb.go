@@ -258,6 +258,110 @@ func (x *GetEnvResponse) GetVal() string {
 	return ""
 }
 
+type ReadFileRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Dir           string                 `protobuf:"bytes,1,opt,name=dir,proto3" json:"dir,omitempty"`
+	File          string                 `protobuf:"bytes,2,opt,name=file,proto3" json:"file,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ReadFileRequest) Reset() {
+	*x = ReadFileRequest{}
+	mi := &file_hostserve_v1_hostserve_proto_msgTypes[5]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ReadFileRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ReadFileRequest) ProtoMessage() {}
+
+func (x *ReadFileRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_hostserve_v1_hostserve_proto_msgTypes[5]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ReadFileRequest.ProtoReflect.Descriptor instead.
+func (*ReadFileRequest) Descriptor() ([]byte, []int) {
+	return file_hostserve_v1_hostserve_proto_rawDescGZIP(), []int{5}
+}
+
+func (x *ReadFileRequest) GetDir() string {
+	if x != nil {
+		return x.Dir
+	}
+	return ""
+}
+
+func (x *ReadFileRequest) GetFile() string {
+	if x != nil {
+		return x.File
+	}
+	return ""
+}
+
+type ReadFileResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Contents      []byte                 `protobuf:"bytes,1,opt,name=contents,proto3" json:"contents,omitempty"`
+	Error         *string                `protobuf:"bytes,2,opt,name=error,proto3,oneof" json:"error,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ReadFileResponse) Reset() {
+	*x = ReadFileResponse{}
+	mi := &file_hostserve_v1_hostserve_proto_msgTypes[6]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ReadFileResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ReadFileResponse) ProtoMessage() {}
+
+func (x *ReadFileResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_hostserve_v1_hostserve_proto_msgTypes[6]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ReadFileResponse.ProtoReflect.Descriptor instead.
+func (*ReadFileResponse) Descriptor() ([]byte, []int) {
+	return file_hostserve_v1_hostserve_proto_rawDescGZIP(), []int{6}
+}
+
+func (x *ReadFileResponse) GetContents() []byte {
+	if x != nil {
+		return x.Contents
+	}
+	return nil
+}
+
+func (x *ReadFileResponse) GetError() string {
+	if x != nil && x.Error != nil {
+		return *x.Error
+	}
+	return ""
+}
+
 var File_hostserve_v1_hostserve_proto protoreflect.FileDescriptor
 
 const file_hostserve_v1_hostserve_proto_rawDesc = "" +
@@ -275,9 +379,17 @@ const file_hostserve_v1_hostserve_proto_rawDesc = "" +
 	"\rGetEnvRequest\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\"\"\n" +
 	"\x0eGetEnvResponse\x12\x10\n" +
-	"\x03val\x18\x01 \x01(\tR\x03val2\x9a\x01\n" +
+	"\x03val\x18\x01 \x01(\tR\x03val\"7\n" +
+	"\x0fReadFileRequest\x12\x10\n" +
+	"\x03dir\x18\x01 \x01(\tR\x03dir\x12\x12\n" +
+	"\x04file\x18\x02 \x01(\tR\x04file\"S\n" +
+	"\x10ReadFileResponse\x12\x1a\n" +
+	"\bcontents\x18\x01 \x01(\fR\bcontents\x12\x19\n" +
+	"\x05error\x18\x02 \x01(\tH\x00R\x05error\x88\x01\x01B\b\n" +
+	"\x06_error2\xe5\x01\n" +
 	"\vHostService\x12F\n" +
-	"\aReadDir\x12\x1c.hostserve.v1.ReadDirRequest\x1a\x1d.hostserve.v1.ReadDirResponse\x12C\n" +
+	"\aReadDir\x12\x1c.hostserve.v1.ReadDirRequest\x1a\x1d.hostserve.v1.ReadDirResponse\x12I\n" +
+	"\bReadFile\x12\x1d.hostserve.v1.ReadFileRequest\x1a\x1e.hostserve.v1.ReadFileResponse\x12C\n" +
 	"\x06GetEnv\x12\x1b.hostserve.v1.GetEnvRequest\x1a\x1c.hostserve.v1.GetEnvResponseB\xc0\x01\n" +
 	"\x10com.hostserve.v1B\x0eHostserveProtoP\x01ZKgithub.com/bmj2728/HostServiceTest/shared/protogen/hostserve/v1;hostservev1\xa2\x02\x03HXX\xaa\x02\fHostserve.V1\xca\x02\fHostserve\\V1\xe2\x02\x18Hostserve\\V1\\GPBMetadata\xea\x02\rHostserve::V1b\x06proto3"
 
@@ -293,22 +405,26 @@ func file_hostserve_v1_hostserve_proto_rawDescGZIP() []byte {
 	return file_hostserve_v1_hostserve_proto_rawDescData
 }
 
-var file_hostserve_v1_hostserve_proto_msgTypes = make([]protoimpl.MessageInfo, 5)
+var file_hostserve_v1_hostserve_proto_msgTypes = make([]protoimpl.MessageInfo, 7)
 var file_hostserve_v1_hostserve_proto_goTypes = []any{
-	(*DirEntry)(nil),        // 0: hostserve.v1.DirEntry
-	(*ReadDirRequest)(nil),  // 1: hostserve.v1.ReadDirRequest
-	(*ReadDirResponse)(nil), // 2: hostserve.v1.ReadDirResponse
-	(*GetEnvRequest)(nil),   // 3: hostserve.v1.GetEnvRequest
-	(*GetEnvResponse)(nil),  // 4: hostserve.v1.GetEnvResponse
+	(*DirEntry)(nil),         // 0: hostserve.v1.DirEntry
+	(*ReadDirRequest)(nil),   // 1: hostserve.v1.ReadDirRequest
+	(*ReadDirResponse)(nil),  // 2: hostserve.v1.ReadDirResponse
+	(*GetEnvRequest)(nil),    // 3: hostserve.v1.GetEnvRequest
+	(*GetEnvResponse)(nil),   // 4: hostserve.v1.GetEnvResponse
+	(*ReadFileRequest)(nil),  // 5: hostserve.v1.ReadFileRequest
+	(*ReadFileResponse)(nil), // 6: hostserve.v1.ReadFileResponse
 }
 var file_hostserve_v1_hostserve_proto_depIdxs = []int32{
 	0, // 0: hostserve.v1.ReadDirResponse.entries:type_name -> hostserve.v1.DirEntry
 	1, // 1: hostserve.v1.HostService.ReadDir:input_type -> hostserve.v1.ReadDirRequest
-	3, // 2: hostserve.v1.HostService.GetEnv:input_type -> hostserve.v1.GetEnvRequest
-	2, // 3: hostserve.v1.HostService.ReadDir:output_type -> hostserve.v1.ReadDirResponse
-	4, // 4: hostserve.v1.HostService.GetEnv:output_type -> hostserve.v1.GetEnvResponse
-	3, // [3:5] is the sub-list for method output_type
-	1, // [1:3] is the sub-list for method input_type
+	5, // 2: hostserve.v1.HostService.ReadFile:input_type -> hostserve.v1.ReadFileRequest
+	3, // 3: hostserve.v1.HostService.GetEnv:input_type -> hostserve.v1.GetEnvRequest
+	2, // 4: hostserve.v1.HostService.ReadDir:output_type -> hostserve.v1.ReadDirResponse
+	6, // 5: hostserve.v1.HostService.ReadFile:output_type -> hostserve.v1.ReadFileResponse
+	4, // 6: hostserve.v1.HostService.GetEnv:output_type -> hostserve.v1.GetEnvResponse
+	4, // [4:7] is the sub-list for method output_type
+	1, // [1:4] is the sub-list for method input_type
 	1, // [1:1] is the sub-list for extension type_name
 	1, // [1:1] is the sub-list for extension extendee
 	0, // [0:1] is the sub-list for field type_name
@@ -320,13 +436,14 @@ func file_hostserve_v1_hostserve_proto_init() {
 		return
 	}
 	file_hostserve_v1_hostserve_proto_msgTypes[2].OneofWrappers = []any{}
+	file_hostserve_v1_hostserve_proto_msgTypes[6].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_hostserve_v1_hostserve_proto_rawDesc), len(file_hostserve_v1_hostserve_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   5,
+			NumMessages:   7,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

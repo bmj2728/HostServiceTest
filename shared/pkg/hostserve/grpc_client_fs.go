@@ -46,7 +46,7 @@ func (c *HostServiceGRPCClient) ReadFile(dir, file string) ([]byte, error) {
 		File: file,
 	})
 	if err != nil {
-		return nil, err
+		return nil, &HostServiceError{Message: err.Error()}
 	}
 	if resp.Error != nil {
 		return nil, &HostServiceError{Message: *resp.Error}
@@ -67,5 +67,12 @@ func (c *HostServiceGRPCClient) WriteFile(dir, file string, data []byte, perm os
 	if err != nil {
 		return &HostServiceError{Message: err.Error()}
 	}
-	return &HostServiceError{Message: *resp.Error}
+	// Defensive: handle unexpected nil resp
+	if resp == nil {
+		return &HostServiceError{Message: "nil response from WriteFile"}
+	}
+	if resp.Error != nil {
+		return &HostServiceError{Message: *resp.Error}
+	}
+	return nil
 }

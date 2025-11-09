@@ -46,7 +46,10 @@ func (s *HostServiceGRPCServer) ReadFile(ctx context.Context,
 	bytes, err := s.Impl.ReadFile(request.Dir, request.File)
 	if err != nil {
 		errMsg := err.Error()
-		return &hostservev1.ReadFileResponse{Contents: nil, Error: &errMsg}, err
+		return &hostservev1.ReadFileResponse{
+			Contents: nil,
+			Error:    &errMsg,
+		}, nil
 	}
 	return &hostservev1.ReadFileResponse{
 		Contents: bytes,
@@ -60,7 +63,7 @@ func (s *HostServiceGRPCServer) WriteFile(ctx context.Context,
 	err := s.Impl.WriteFile(request.Dir, request.File, request.Data, os.FileMode(request.Perm))
 	if err != nil {
 		errMsg := err.Error()
-		return &hostservev1.WriteFileResponse{Error: &errMsg}, &HostServiceError{Message: err.Error()}
+		return &hostservev1.WriteFileResponse{Error: &errMsg}, nil
 	}
 	return &hostservev1.WriteFileResponse{Error: nil}, nil
 }

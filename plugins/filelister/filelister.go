@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"sync"
 
 	"github.com/bmj2728/hst/shared/pkg/filelister"
@@ -27,15 +28,22 @@ func (f *FileLister) ListFiles(dir string) ([]string, error) {
 	}
 
 	var entries []string
+	var buf bytes.Buffer
 	entries = append(entries, home)
 	for _, entry := range dirEntries {
 		if entry.IsDir() {
 			entries = append(entries, entry.Name())
+			buf.WriteString(entry.Name())
 		} else {
 			entries = append(entries, entry.Name())
+			buf.WriteString(entry.Name())
 		}
 	}
 
+	err = f.hostServiceClient.WriteFile(dir, "listed_files.txt", buf.Bytes(), 0644)
+	if err != nil {
+		hclog.Default().Error("Failed to write file via host service", "dir", dir, "err", err)
+	}
 	return entries, nil
 }
 

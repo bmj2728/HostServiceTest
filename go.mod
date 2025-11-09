@@ -3,6 +3,7 @@ module github.com/bmj2728/hst
 go 1.25
 
 require (
+	github.com/google/uuid v1.6.0
 	github.com/hashicorp/go-hclog v1.6.3
 	github.com/hashicorp/go-plugin v1.7.0
 	github.com/novelgitllc/ansicolor/v3 v3.0.1

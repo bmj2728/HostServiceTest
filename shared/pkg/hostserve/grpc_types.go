@@ -17,7 +17,8 @@ type HostServiceGRPCServer struct {
 
 // HostServiceGRPCClient wraps the filesystemv1.HostServiceClient to provide higher-level client methods.
 type HostServiceGRPCClient struct {
-	client hostservev1.HostServiceClient
+	client   hostservev1.HostServiceClient
+	clientID string
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////

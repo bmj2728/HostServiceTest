@@ -22,7 +22,6 @@ type FileLister struct {
 
 func (f *FileLister) ListFiles(dir string) ([]string, error) {
 	ctx := context.Background()
-	ctx = context.WithValue(ctx, "client", "fl-plugin")
 	home := f.hostServiceClient.GetEnv(ctx, "HOME")
 	dirEntries, err := f.hostServiceClient.ReadDir(ctx, dir)
 	if err != nil {

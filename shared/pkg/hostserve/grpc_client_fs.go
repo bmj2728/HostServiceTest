@@ -2,20 +2,32 @@ package hostserve
 
 import (
 	"context"
+	"fmt"
 	"io/fs"
 	"os"
 
 	"github.com/bmj2728/hst/shared/protogen/hostserve/v1"
+	"github.com/google/uuid"
+	"google.golang.org/grpc/metadata"
 )
 
 // NewHostServiceGRPCClient creates a new instance of HostServiceGRPCClient using the provided HostServiceClient.
 func NewHostServiceGRPCClient(client hostservev1.HostServiceClient) *HostServiceGRPCClient {
-	return &HostServiceGRPCClient{client: client}
+	// Generate a unique client ID for this connection - we'll improve this later
+	clientUUID, err := uuid.NewV7()
+	if err != nil {
+		return nil
+	}
+	return &HostServiceGRPCClient{
+		client:   client,
+		clientID: clientUUID.String(),
+	}
 }
 
 // ReadDir retrieves a list of directory entries from the given path through a gRPC call to the host service.
 // Returns a slice of fs.DirEntry or an error if the operation fails.
 func (c *HostServiceGRPCClient) ReadDir(ctx context.Context, path string) ([]fs.DirEntry, error) {
+	ctx = metadata.AppendToOutgoingContext(ctx, "client", c.clientID)
 	resp, err := c.client.ReadDir(ctx, &hostservev1.ReadDirRequest{
 		Path: path,
 	})
@@ -45,6 +57,7 @@ func (c *HostServiceGRPCClient) ReadFile(ctx context.Context, dir, file string) 
 		Dir:  dir,
 		File: file,
 	})
+	fmt.Println(ctx.Value("client"))
 	if err != nil {
 		return nil, &HostServiceError{Message: err.Error()}
 	}

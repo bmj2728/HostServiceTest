@@ -11,11 +11,13 @@ import (
 	"google.golang.org/grpc"
 )
 
+// GRPCServer implements the FileLister gRPC server and bridges the interface with gRPC request handlers.
 type GRPCServer struct {
 	Impl FileLister
 	filelisterv1.UnimplementedFileListerServer
 }
 
+// List retrieves a list of file entries from a specified directory and returns them in a FileListResponse.
 func (s *GRPCServer) List(ctx context.Context,
 	request *filelisterv1.FileListRequest) (*filelisterv1.FileListResponse, error) {
 
@@ -33,6 +35,10 @@ func (s *GRPCServer) List(ctx context.Context,
 	}, nil
 }
 
+// EstablishHostServices sets up communication with host services if the plugin implements the HostConnection interface.
+// If the plugin does not require host services, this method silently succeeds without taking further action.
+// The method accepts a context and a HostServiceRequest containing the host service ID.
+// Returns an Empty response and error if any issues occur during execution.
 func (s *GRPCServer) EstablishHostServices(ctx context.Context,
 	request *filelisterv1.HostServiceRequest) (*filelisterv1.Empty, error) {
 

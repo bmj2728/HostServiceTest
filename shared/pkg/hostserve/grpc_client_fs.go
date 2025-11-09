@@ -34,3 +34,17 @@ func (c *HostServiceGRPCClient) ReadDir(path string) ([]fs.DirEntry, error) {
 
 	return entries, nil
 }
+
+func (c *HostServiceGRPCClient) ReadFile(dir, file string) ([]byte, error) {
+	resp, err := c.client.ReadFile(context.Background(), &hostservev1.ReadFileRequest{
+		Dir:  dir,
+		File: file,
+	})
+	if err != nil {
+		return nil, err
+	}
+	if resp.Error != nil {
+		return nil, &HostServiceError{Message: *resp.Error}
+	}
+	return resp.Contents, nil
+}

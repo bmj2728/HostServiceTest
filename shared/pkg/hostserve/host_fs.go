@@ -9,14 +9,17 @@ import (
 	"github.com/hashicorp/go-hclog"
 )
 
+// ErrInvalidPath represents an error indicating the provided path is invalid or not a directory.
 var (
 	ErrInvalidPath = errors.New("invalid path")
 )
 
+// HostFS is a file system abstraction that provides methods to interact with a host's file system.
 type HostFS struct {
 	//TBD fields
 }
 
+// NewHostFS creates and returns a new instance of HostFS.
 func NewHostFS() *HostFS {
 	return &HostFS{}
 }
@@ -41,6 +44,8 @@ func getRoot(dir string) (*os.Root, error) {
 	return os.OpenRoot(dir)
 }
 
+// closeRoot ensures the provided root is closed and logs an error if the operation fails.
+// It handles logging the root's name and the corresponding error details.
 func closeRoot(r *os.Root) {
 	err := r.Close()
 	if err != nil {
@@ -48,6 +53,7 @@ func closeRoot(r *os.Root) {
 	}
 }
 
+// ReadDir reads the contents of the specified directory path and returns a slice of directory entries or an error.
 func (hf *HostFS) ReadDir(path string) ([]fs.DirEntry, error) {
 	r, err := getRoot(path)
 	if err != nil {
@@ -64,6 +70,7 @@ func (hf *HostFS) ReadDir(path string) ([]fs.DirEntry, error) {
 	return entries, nil
 }
 
+// ReadFile reads the specified file from the given directory and returns its contents as a byte slice or an error.
 func (hf *HostFS) ReadFile(dir, file string) ([]byte, error) {
 	r, err := getRoot(dir)
 	if err != nil {

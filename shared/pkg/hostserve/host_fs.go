@@ -10,7 +10,8 @@ import (
 )
 
 const (
-	StandardPermissions = 0644
+	PermissionsMask     = fs.FileMode(0777)
+	StandardPermissions = fs.FileMode(0644)
 )
 
 // ErrInvalidPath represents an error indicating the provided path is invalid or not a directory.
@@ -93,7 +94,7 @@ func (hf *HostFS) ReadFile(dir, file string) ([]byte, error) {
 // WriteFile writes the specified data to a file within the given directory using the provided permissions.
 // If the provided permissions are zero, it defaults to StandardPermissions. Returns an error if the operation fails.
 func (hf *HostFS) WriteFile(dir, file string, data []byte, perm os.FileMode) error {
-	if perm == 0 {
+	if perm&PermissionsMask == 0 {
 		perm = StandardPermissions
 	}
 	r, err := getRoot(dir)

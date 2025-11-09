@@ -60,6 +60,7 @@ func (s *HostServiceGRPCServer) ReadFile(ctx context.Context,
 func (s *HostServiceGRPCServer) WriteFile(ctx context.Context,
 	request *hostservev1.WriteFileRequest,
 ) (*hostservev1.WriteFileResponse, error) {
+	//FileMode(request.Perm) will be 0 if not specified or invalid
 	err := s.Impl.WriteFile(request.Dir, request.File, request.Data, os.FileMode(request.Perm))
 	if err != nil {
 		errMsg := err.Error()

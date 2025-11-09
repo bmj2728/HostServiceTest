@@ -45,7 +45,7 @@ func (f *ColorLister) ListFiles(dir string) ([]string, error) {
 			}
 			contents := string(data)
 			entries = append(entries, fileFormat.Wrap(entry.Name()+"-f", true))
-			entries = append(entries, contents)
+			entries = append(entries, "Contents:\n", contents)
 		}
 	}
 

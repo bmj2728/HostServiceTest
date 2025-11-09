@@ -1,6 +1,7 @@
 package hostserve
 
 import (
+	"context"
 	"errors"
 	"io/fs"
 	"os"
@@ -59,7 +60,7 @@ func closeRoot(r *os.Root) {
 }
 
 // ReadDir reads the contents of the specified directory path and returns a slice of directory entries or an error.
-func (hf *HostFS) ReadDir(path string) ([]fs.DirEntry, error) {
+func (hf *HostFS) ReadDir(ctx context.Context, path string) ([]fs.DirEntry, error) {
 	r, err := getRoot(path)
 	if err != nil {
 		hclog.Default().Error("Failed to open root", "path", path, "err", err)
@@ -76,7 +77,7 @@ func (hf *HostFS) ReadDir(path string) ([]fs.DirEntry, error) {
 }
 
 // ReadFile reads the specified file from the given directory and returns its contents as a byte slice or an error.
-func (hf *HostFS) ReadFile(dir, file string) ([]byte, error) {
+func (hf *HostFS) ReadFile(ctx context.Context, dir, file string) ([]byte, error) {
 	r, err := getRoot(dir)
 	if err != nil {
 		hclog.Default().Error("Failed to open root", "path", dir, "err", err)
@@ -93,7 +94,7 @@ func (hf *HostFS) ReadFile(dir, file string) ([]byte, error) {
 
 // WriteFile writes the specified data to a file within the given directory using the provided permissions.
 // If the provided permissions are zero, it defaults to StandardPermissions. Returns an error if the operation fails.
-func (hf *HostFS) WriteFile(dir, file string, data []byte, perm os.FileMode) error {
+func (hf *HostFS) WriteFile(ctx context.Context, dir, file string, data []byte, perm os.FileMode) error {
 	if perm&PermissionsMask == 0 {
 		perm = StandardPermissions
 	}

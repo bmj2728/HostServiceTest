@@ -1,6 +1,7 @@
 package hostserve
 
 import (
+	"context"
 	"io/fs"
 	"os"
 )
@@ -16,18 +17,18 @@ type IHostFS interface {
 
 	// ReadDir reads the contents of the directory specified by `path` and returns a slice of directory
 	// entries or an error.
-	ReadDir(path string) ([]fs.DirEntry, error)
+	ReadDir(ctx context.Context, path string) ([]fs.DirEntry, error)
 
 	// ReadFile reads the specified file from the given directory and returns its contents as a byte slice or an error.
-	ReadFile(dir, file string) ([]byte, error)
+	ReadFile(ctx context.Context, dir, file string) ([]byte, error)
 
 	// WriteFile writes data to the specified file within the given directory, applying the provided file permissions.
-	WriteFile(dir, file string, data []byte, perm os.FileMode) error
+	WriteFile(ctx context.Context, dir, file string, data []byte, perm os.FileMode) error
 }
 
 // IHostEnv defines a contract for interacting with environment variables in the host system.
 type IHostEnv interface {
 
 	// GetEnv fetches the value of an environment variable by its key and returns it as a string.
-	GetEnv(key string) string
+	GetEnv(ctx context.Context, key string) string
 }

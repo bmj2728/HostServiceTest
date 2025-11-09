@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"sync"
 
 	"github.com/bmj2728/hst/shared/pkg/filelister"
@@ -20,8 +21,10 @@ type FileLister struct {
 }
 
 func (f *FileLister) ListFiles(dir string) ([]string, error) {
-	home := f.hostServiceClient.GetEnv("HOME")
-	dirEntries, err := f.hostServiceClient.ReadDir(dir)
+	ctx := context.Background()
+	ctx = context.WithValue(ctx, "client", "fl-plugin")
+	home := f.hostServiceClient.GetEnv(ctx, "HOME")
+	dirEntries, err := f.hostServiceClient.ReadDir(ctx, dir)
 	if err != nil {
 		hclog.Default().Error("Failed to read directory via host service", "dir", dir, "err", err)
 		return nil, err
@@ -40,7 +43,7 @@ func (f *FileLister) ListFiles(dir string) ([]string, error) {
 		}
 	}
 
-	err = f.hostServiceClient.WriteFile(dir, "listed_files.txt", buf.Bytes(), 0644)
+	err = f.hostServiceClient.WriteFile(ctx, dir, "listed_files.txt", buf.Bytes(), 0644)
 	if err != nil {
 		hclog.Default().Error("Failed to write file via host service", "dir", dir, "err", err)
 	}

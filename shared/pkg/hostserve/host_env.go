@@ -1,6 +1,9 @@
 package hostserve
 
-import "os"
+import (
+	"context"
+	"os"
+)
 
 // HostEnv represents the environment configuration or context for a host system.
 // It provides methods to interact with and retrieve system environment variables.
@@ -14,6 +17,6 @@ func NewHostEnv() *HostEnv {
 }
 
 // GetEnv retrieves the environment variable value associated with the provided key.
-func (he *HostEnv) GetEnv(key string) string {
+func (he *HostEnv) GetEnv(ctx context.Context, key string) string {
 	return os.Getenv(key)
 }

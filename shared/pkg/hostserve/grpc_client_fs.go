@@ -15,8 +15,8 @@ func NewHostServiceGRPCClient(client hostservev1.HostServiceClient) *HostService
 
 // ReadDir retrieves a list of directory entries from the given path through a gRPC call to the host service.
 // Returns a slice of fs.DirEntry or an error if the operation fails.
-func (c *HostServiceGRPCClient) ReadDir(path string) ([]fs.DirEntry, error) {
-	resp, err := c.client.ReadDir(context.Background(), &hostservev1.ReadDirRequest{
+func (c *HostServiceGRPCClient) ReadDir(ctx context.Context, path string) ([]fs.DirEntry, error) {
+	resp, err := c.client.ReadDir(ctx, &hostservev1.ReadDirRequest{
 		Path: path,
 	})
 	if err != nil {
@@ -40,8 +40,8 @@ func (c *HostServiceGRPCClient) ReadDir(path string) ([]fs.DirEntry, error) {
 
 // ReadFile reads the specified file from the given directory and returns its contents as a byte slice.
 // Returns an error if the file cannot be read or the service encounters an issue.
-func (c *HostServiceGRPCClient) ReadFile(dir, file string) ([]byte, error) {
-	resp, err := c.client.ReadFile(context.Background(), &hostservev1.ReadFileRequest{
+func (c *HostServiceGRPCClient) ReadFile(ctx context.Context, dir, file string) ([]byte, error) {
+	resp, err := c.client.ReadFile(ctx, &hostservev1.ReadFileRequest{
 		Dir:  dir,
 		File: file,
 	})
@@ -54,11 +54,11 @@ func (c *HostServiceGRPCClient) ReadFile(dir, file string) ([]byte, error) {
 	return resp.Contents, nil
 }
 
-func (c *HostServiceGRPCClient) WriteFile(dir, file string, data []byte, perm os.FileMode) error {
+func (c *HostServiceGRPCClient) WriteFile(ctx context.Context, dir, file string, data []byte, perm os.FileMode) error {
 	if perm == 0 {
 		perm = StandardPermissions
 	}
-	resp, err := c.client.WriteFile(context.Background(), &hostservev1.WriteFileRequest{
+	resp, err := c.client.WriteFile(ctx, &hostservev1.WriteFileRequest{
 		Dir:  dir,
 		File: file,
 		Data: data,

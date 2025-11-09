@@ -1,4 +1,4 @@
-# Bidirectional gRPC Plugin Example
+# Decoupled gRPC Communication With HashiCorp's go-plugin
 
 This project demonstrates **bidirectional gRPC communication** using [HashiCorp's go-plugin](https://github.com/hashicorp/go-plugin) framework. This example shows how plugins can call back to the host for decoupled services while maintaining process isolation.
 

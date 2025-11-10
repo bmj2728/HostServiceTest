@@ -50,7 +50,7 @@ func (s *HostServiceGRPCServer) ReadFile(ctx context.Context,
 	clientID := getClientIDFromContext(ctx)
 	hclog.Default().Info("ReadFile request from client", "clientID", clientID)
 
-	bytes, err := s.Impl.ReadFile(ctx, request.Dir, request.File)
+	bytes, err := s.Impl.ReadFile(ctx, request.Path)
 	if err != nil {
 		errMsg := err.Error()
 		return &hostservev1.ReadFileResponse{
@@ -71,7 +71,7 @@ func (s *HostServiceGRPCServer) WriteFile(ctx context.Context,
 	clientID := getClientIDFromContext(ctx)
 	hclog.Default().Info("WriteFile request from client", "clientID", clientID)
 
-	err := s.Impl.WriteFile(ctx, request.Dir, request.File, request.Data, os.FileMode(request.Perm))
+	err := s.Impl.WriteFile(ctx, request.Path, request.Data, os.FileMode(request.Perm))
 	if err != nil {
 		errMsg := err.Error()
 		return &hostservev1.WriteFileResponse{Error: &errMsg}, nil

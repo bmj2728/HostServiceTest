@@ -36,11 +36,10 @@ func (c *HostServiceGRPCClient) ReadDir(ctx context.Context, path string) ([]fs.
 
 // ReadFile reads the specified file from the given directory and returns its contents as a byte slice.
 // Returns an error if the file cannot be read or the service encounters an issue.
-func (c *HostServiceGRPCClient) ReadFile(ctx context.Context, dir, file string) ([]byte, error) {
+func (c *HostServiceGRPCClient) ReadFile(ctx context.Context, path string) ([]byte, error) {
 	ctx = addClientIDToContext(ctx, c.clientID)
 	resp, err := c.client.ReadFile(ctx, &hostservev1.ReadFileRequest{
-		Dir:  dir,
-		File: file,
+		Path: path,
 	})
 	if err != nil {
 		return nil, &HostServiceError{Message: err.Error()}
@@ -51,14 +50,13 @@ func (c *HostServiceGRPCClient) ReadFile(ctx context.Context, dir, file string) 
 	return resp.Contents, nil
 }
 
-func (c *HostServiceGRPCClient) WriteFile(ctx context.Context, dir, file string, data []byte, perm os.FileMode) error {
+func (c *HostServiceGRPCClient) WriteFile(ctx context.Context, path string, data []byte, perm os.FileMode) error {
 	ctx = addClientIDToContext(ctx, c.clientID)
 	if perm == 0 {
 		perm = StandardPermissions
 	}
 	resp, err := c.client.WriteFile(ctx, &hostservev1.WriteFileRequest{
-		Dir:  dir,
-		File: file,
+		Path: path,
 		Data: data,
 		Perm: uint32(perm),
 	})

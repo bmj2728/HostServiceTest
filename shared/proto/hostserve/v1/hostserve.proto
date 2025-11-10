@@ -36,8 +36,7 @@ message ReadDirResponse {
 }
 
 message ReadFileRequest {
-  string dir = 1;
-  string file = 2;
+  string path = 1;
 }
 
 message ReadFileResponse {
@@ -46,10 +45,9 @@ message ReadFileResponse {
 }
 
 message WriteFileRequest {
-  string dir = 1;
-  string file = 2;
-  bytes data = 3;
-  uint32 perm = 4;
+  string path = 1;
+  bytes data = 2;
+  uint32 perm = 3;
 }
 
 message WriteFileResponse {

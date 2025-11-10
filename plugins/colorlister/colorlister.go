@@ -3,6 +3,7 @@ package main
 //note that we do not need to import os or fs here, as we are using the host service to read the files
 import (
 	"context"
+	"path/filepath"
 	"sync"
 
 	"github.com/bmj2728/hst/shared/pkg/filelister"
@@ -41,7 +42,7 @@ func (f *ColorLister) ListFiles(dir string) ([]string, error) {
 		if entry.IsDir() {
 			entries = append(entries, dirFormat.Wrap(entry.Name()+"-d", true))
 		} else {
-			data, err := f.hostServiceClient.ReadFile(ctx, dir, entry.Name())
+			data, err := f.hostServiceClient.ReadFile(ctx, filepath.Join(dir, entry.Name()))
 			if err != nil {
 				hclog.Default().Error("Failed to read file via host service", "dir", dir,
 					"file", entry.Name(), "err", err)

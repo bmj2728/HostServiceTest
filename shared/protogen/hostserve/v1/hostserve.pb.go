@@ -172,8 +172,7 @@ func (x *ReadDirResponse) GetError() string {
 
 type ReadFileRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Dir           string                 `protobuf:"bytes,1,opt,name=dir,proto3" json:"dir,omitempty"`
-	File          string                 `protobuf:"bytes,2,opt,name=file,proto3" json:"file,omitempty"`
+	Path          string                 `protobuf:"bytes,1,opt,name=path,proto3" json:"path,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -208,16 +207,9 @@ func (*ReadFileRequest) Descriptor() ([]byte, []int) {
 	return file_hostserve_v1_hostserve_proto_rawDescGZIP(), []int{3}
 }
 
-func (x *ReadFileRequest) GetDir() string {
+func (x *ReadFileRequest) GetPath() string {
 	if x != nil {
-		return x.Dir
-	}
-	return ""
-}
-
-func (x *ReadFileRequest) GetFile() string {
-	if x != nil {
-		return x.File
+		return x.Path
 	}
 	return ""
 }
@@ -276,10 +268,9 @@ func (x *ReadFileResponse) GetError() string {
 
 type WriteFileRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Dir           string                 `protobuf:"bytes,1,opt,name=dir,proto3" json:"dir,omitempty"`
-	File          string                 `protobuf:"bytes,2,opt,name=file,proto3" json:"file,omitempty"`
-	Data          []byte                 `protobuf:"bytes,3,opt,name=data,proto3" json:"data,omitempty"`
-	Perm          uint32                 `protobuf:"varint,4,opt,name=perm,proto3" json:"perm,omitempty"`
+	Path          string                 `protobuf:"bytes,1,opt,name=path,proto3" json:"path,omitempty"`
+	Data          []byte                 `protobuf:"bytes,2,opt,name=data,proto3" json:"data,omitempty"`
+	Perm          uint32                 `protobuf:"varint,3,opt,name=perm,proto3" json:"perm,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -314,16 +305,9 @@ func (*WriteFileRequest) Descriptor() ([]byte, []int) {
 	return file_hostserve_v1_hostserve_proto_rawDescGZIP(), []int{5}
 }
 
-func (x *WriteFileRequest) GetDir() string {
+func (x *WriteFileRequest) GetPath() string {
 	if x != nil {
-		return x.Dir
-	}
-	return ""
-}
-
-func (x *WriteFileRequest) GetFile() string {
-	if x != nil {
-		return x.File
+		return x.Path
 	}
 	return ""
 }
@@ -487,19 +471,17 @@ const file_hostserve_v1_hostserve_proto_rawDesc = "" +
 	"\x0fReadDirResponse\x120\n" +
 	"\aentries\x18\x01 \x03(\v2\x16.hostserve.v1.DirEntryR\aentries\x12\x19\n" +
 	"\x05error\x18\x02 \x01(\tH\x00R\x05error\x88\x01\x01B\b\n" +
-	"\x06_error\"7\n" +
-	"\x0fReadFileRequest\x12\x10\n" +
-	"\x03dir\x18\x01 \x01(\tR\x03dir\x12\x12\n" +
-	"\x04file\x18\x02 \x01(\tR\x04file\"S\n" +
+	"\x06_error\"%\n" +
+	"\x0fReadFileRequest\x12\x12\n" +
+	"\x04path\x18\x01 \x01(\tR\x04path\"S\n" +
 	"\x10ReadFileResponse\x12\x1a\n" +
 	"\bcontents\x18\x01 \x01(\fR\bcontents\x12\x19\n" +
 	"\x05error\x18\x02 \x01(\tH\x00R\x05error\x88\x01\x01B\b\n" +
-	"\x06_error\"`\n" +
-	"\x10WriteFileRequest\x12\x10\n" +
-	"\x03dir\x18\x01 \x01(\tR\x03dir\x12\x12\n" +
-	"\x04file\x18\x02 \x01(\tR\x04file\x12\x12\n" +
-	"\x04data\x18\x03 \x01(\fR\x04data\x12\x12\n" +
-	"\x04perm\x18\x04 \x01(\rR\x04perm\"8\n" +
+	"\x06_error\"N\n" +
+	"\x10WriteFileRequest\x12\x12\n" +
+	"\x04path\x18\x01 \x01(\tR\x04path\x12\x12\n" +
+	"\x04data\x18\x02 \x01(\fR\x04data\x12\x12\n" +
+	"\x04perm\x18\x03 \x01(\rR\x04perm\"8\n" +
 	"\x11WriteFileResponse\x12\x19\n" +
 	"\x05error\x18\x01 \x01(\tH\x00R\x05error\x88\x01\x01B\b\n" +
 	"\x06_error\"!\n" +

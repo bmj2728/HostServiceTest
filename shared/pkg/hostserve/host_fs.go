@@ -77,7 +77,8 @@ func (hf *HostFS) ReadDir(ctx context.Context, path string) ([]fs.DirEntry, erro
 }
 
 // ReadFile reads the specified file from the given directory and returns its contents as a byte slice or an error.
-func (hf *HostFS) ReadFile(ctx context.Context, dir, file string) ([]byte, error) {
+func (hf *HostFS) ReadFile(ctx context.Context, path string) ([]byte, error) {
+	dir, file := filepath.Split(path)
 	r, err := getRoot(dir)
 	if err != nil {
 		hclog.Default().Error("Failed to open root", "path", dir, "err", err)
@@ -86,7 +87,7 @@ func (hf *HostFS) ReadFile(ctx context.Context, dir, file string) ([]byte, error
 	defer closeRoot(r)
 	data, err := fs.ReadFile(r.FS(), file)
 	if err != nil {
-		hclog.Default().Error("Failed to read file", "path", file, "err", err)
+		hclog.Default().Error("Failed to read file", "path", path, "err", err)
 		return nil, err
 	}
 	return data, nil
@@ -94,10 +95,11 @@ func (hf *HostFS) ReadFile(ctx context.Context, dir, file string) ([]byte, error
 
 // WriteFile writes the specified data to a file within the given directory using the provided permissions.
 // If the provided permissions are zero, it defaults to StandardPermissions. Returns an error if the operation fails.
-func (hf *HostFS) WriteFile(ctx context.Context, dir, file string, data []byte, perm os.FileMode) error {
+func (hf *HostFS) WriteFile(ctx context.Context, path string, data []byte, perm os.FileMode) error {
 	if perm&PermissionsMask == 0 {
 		perm = StandardPermissions
 	}
+	dir, file := filepath.Split(path)
 	r, err := getRoot(dir)
 	if err != nil {
 		hclog.Default().Error("Failed to open root", "path", dir, "err", err)
@@ -106,7 +108,7 @@ func (hf *HostFS) WriteFile(ctx context.Context, dir, file string, data []byte, 
 	defer closeRoot(r)
 	err = r.WriteFile(file, data, perm)
 	if err != nil {
-		hclog.Default().Error("Failed to write file", "path", file, "err", err)
+		hclog.Default().Error("Failed to write file", "path", path, "err", err)
 	}
 	return err
 }

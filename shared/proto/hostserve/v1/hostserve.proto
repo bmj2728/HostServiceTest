@@ -11,6 +11,10 @@ service HostService {
   rpc ReadFile(ReadFileRequest) returns (ReadFileResponse);
   rpc WriteFile(WriteFileRequest) returns (WriteFileResponse);
 
+  //FS Streaming Endpoints
+  rpc ReadFileStream(ReadFileRequest) returns (stream ReadFileChunk);
+  rpc WriteFileStream(stream WriteFileChunk) returns (WriteFileResponse);
+
   //Env Endpoints
 
   rpc GetEnv(GetEnvRequest) returns (GetEnvResponse);
@@ -22,6 +26,23 @@ service HostService {
 message DirEntry {
   string name = 1;
   bool is_dir = 2;
+}
+
+message FileChunk {
+  bytes data = 1;
+  uint64 offset = 2;
+  bool is_final = 3;
+}
+
+message ReadFileChunk {
+  FileChunk chunk = 1;
+  optional string error = 2;
+}
+
+message WriteFileChunk {
+  string path = 1;
+  uint32 perm = 2;
+  FileChunk chunk = 3;
 }
 
 // FS Messages

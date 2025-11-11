@@ -15,6 +15,7 @@ import (
 func (s *HostServiceGRPCServer) ReadDir(ctx context.Context,
 	request *hostservev1.ReadDirRequest,
 ) (*hostservev1.ReadDirResponse, error) {
+
 	clientID := getClientIDFromContext(ctx)
 	ap, err := filepath.Abs(request.Path)
 	if err != nil {
@@ -49,6 +50,7 @@ func (s *HostServiceGRPCServer) ReadDir(ctx context.Context,
 func (s *HostServiceGRPCServer) ReadFile(ctx context.Context,
 	request *hostservev1.ReadFileRequest,
 ) (*hostservev1.ReadFileResponse, error) {
+
 	clientID := getClientIDFromContext(ctx)
 	ap, err := filepath.Abs(request.Path)
 	if err != nil {

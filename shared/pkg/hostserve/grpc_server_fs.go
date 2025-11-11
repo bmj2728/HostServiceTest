@@ -7,6 +7,7 @@ import (
 
 	"github.com/bmj2728/hst/shared/protogen/hostserve/v1"
 	"github.com/hashicorp/go-hclog"
+	"google.golang.org/protobuf/proto"
 )
 
 // ReadDir processes a gRPC request to read contents of a directory specified by the request path and returns
@@ -23,10 +24,9 @@ func (s *HostServiceGRPCServer) ReadDir(ctx context.Context,
 
 	entries, err := s.Impl.ReadDir(ctx, request.Path)
 	if err != nil {
-		errMsg := err.Error()
 		return &hostservev1.ReadDirResponse{
 			Entries: nil,
-			Error:   &errMsg,
+			Error:   proto.String(err.Error()),
 		}, nil
 	}
 
@@ -41,7 +41,6 @@ func (s *HostServiceGRPCServer) ReadDir(ctx context.Context,
 
 	return &hostservev1.ReadDirResponse{
 		Entries: pbEntries,
-		Error:   nil,
 	}, nil
 }
 
@@ -59,15 +58,13 @@ func (s *HostServiceGRPCServer) ReadFile(ctx context.Context,
 
 	bytes, err := s.Impl.ReadFile(ctx, request.Path)
 	if err != nil {
-		errMsg := err.Error()
 		return &hostservev1.ReadFileResponse{
 			Contents: nil,
-			Error:    &errMsg,
+			Error:    proto.String(err.Error()),
 		}, nil
 	}
 	return &hostservev1.ReadFileResponse{
 		Contents: bytes,
-		Error:    nil,
 	}, nil
 }
 
@@ -84,8 +81,7 @@ func (s *HostServiceGRPCServer) WriteFile(ctx context.Context,
 
 	err = s.Impl.WriteFile(ctx, request.Path, request.Data, os.FileMode(request.Perm))
 	if err != nil {
-		errMsg := err.Error()
-		return &hostservev1.WriteFileResponse{Error: &errMsg}, nil
+		return &hostservev1.WriteFileResponse{Error: proto.String(err.Error())}, nil
 	}
-	return &hostservev1.WriteFileResponse{Error: nil}, nil
+	return &hostservev1.WriteFileResponse{}, nil
 }

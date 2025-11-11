@@ -16,7 +16,7 @@ func (c *HostServiceGRPCClient) ReadDir(ctx context.Context, path string) ([]fs.
 		Path: path,
 	})
 	if err != nil {
-		return nil, err
+		return nil, &HostServiceError{Message: err.Error()}
 	}
 	if resp.Error != nil {
 		return nil, &HostServiceError{Message: *resp.Error}

@@ -42,6 +42,14 @@ func (cid ClientID) String() string {
 	return string(cid)
 }
 
+// RequestID represents a unique identifier for a specific request, typically used for tracing and tracking purposes.
+type RequestID string
+
+// String converts the RequestID value to its string representation.
+func (rid RequestID) String() string {
+	return string(rid)
+}
+
 // HostServiceError represents an error returned by the host service.
 // Message is a description of the error.
 type HostServiceError struct {

@@ -29,18 +29,18 @@ func getClientIDFromContext(ctx context.Context) ClientID {
 	return ClientID(clientID[0])
 }
 
-//func addRequestIDToContext(ctx context.Context, requestID HostRequestID) context.Context {
-//	return metadata.AppendToOutgoingContext(ctx, ctxHostRequestIDKey, requestID.String())
-//}
-//
-//func getRequestIDFromContext(ctx context.Context) HostRequestID {
-//	md, ok := metadata.FromIncomingContext(ctx)
-//	if !ok {
-//		return ""
-//	}
-//	requestID := md.Get(ctxHostRequestIDKey)
-//	if len(requestID) == 0 {
-//		return ""
-//	}
-//	return HostRequestID(requestID[0])
-//}
+func addRequestIDToContext(ctx context.Context, requestID RequestID) context.Context {
+	return metadata.AppendToOutgoingContext(ctx, ctxHostRequestIDKey, requestID.String())
+}
+
+func getRequestIDFromContext(ctx context.Context) RequestID {
+	md, ok := metadata.FromIncomingContext(ctx)
+	if !ok {
+		return ""
+	}
+	requestID := md.Get(ctxHostRequestIDKey)
+	if len(requestID) == 0 {
+		return ""
+	}
+	return RequestID(requestID[0])
+}

@@ -17,11 +17,15 @@ func (s *HostServiceGRPCServer) ReadDir(ctx context.Context,
 ) (*hostservev1.ReadDirResponse, error) {
 
 	clientID := getClientIDFromContext(ctx)
+	reqID := getRequestIDFromContext(ctx)
 	ap, err := filepath.Abs(request.Path)
 	if err != nil {
 		ap = request.Path
 	}
-	hclog.Default().Info("ReadDir request from client", "clientID", clientID, "path", ap)
+	hclog.Default().Info("ReadDir request from client",
+		ctxClientIDKey, clientID,
+		ctxHostRequestIDKey, reqID,
+		"path", ap)
 
 	entries, err := s.Impl.ReadDir(ctx, request.Path)
 	if err != nil {
@@ -52,11 +56,15 @@ func (s *HostServiceGRPCServer) ReadFile(ctx context.Context,
 ) (*hostservev1.ReadFileResponse, error) {
 
 	clientID := getClientIDFromContext(ctx)
+	reqID := getRequestIDFromContext(ctx)
 	ap, err := filepath.Abs(request.Path)
 	if err != nil {
 		ap = request.Path
 	}
-	hclog.Default().Info("ReadFile request from client", "clientID", clientID, "path", ap)
+	hclog.Default().Info("ReadFile request from client",
+		ctxClientIDKey, clientID,
+		ctxHostRequestIDKey, reqID,
+		"path", ap)
 
 	bytes, err := s.Impl.ReadFile(ctx, request.Path)
 	if err != nil {
@@ -75,11 +83,15 @@ func (s *HostServiceGRPCServer) WriteFile(ctx context.Context,
 ) (*hostservev1.WriteFileResponse, error) {
 
 	clientID := getClientIDFromContext(ctx)
+	reqID := getRequestIDFromContext(ctx)
 	ap, err := filepath.Abs(request.Path)
 	if err != nil {
 		ap = request.Path
 	}
-	hclog.Default().Info("WriteFile request from client", "clientID", clientID, "path", ap)
+	hclog.Default().Info("WriteFile request from client",
+		ctxClientIDKey, clientID,
+		ctxHostRequestIDKey, reqID,
+		"path", ap)
 
 	err = s.Impl.WriteFile(ctx, request.Path, request.Data, os.FileMode(request.Perm))
 	if err != nil {

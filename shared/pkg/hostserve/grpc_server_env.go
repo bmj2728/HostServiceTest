@@ -12,7 +12,11 @@ func (s *HostServiceGRPCServer) GetEnv(ctx context.Context,
 	request *hostservev1.GetEnvRequest) (*hostservev1.GetEnvResponse, error) {
 
 	clientID := getClientIDFromContext(ctx)
-	hclog.Default().Info("GetEnv request from client", "clientID", clientID, "key", request.Key)
+	reqID := getRequestIDFromContext(ctx)
+	hclog.Default().Info("GetEnv request from client",
+		ctxClientIDKey, clientID,
+		ctxHostRequestIDKey, reqID,
+		"key", request.Key)
 
 	val := s.Impl.GetEnv(ctx, request.Key)
 	return &hostservev1.GetEnvResponse{Val: val}, nil

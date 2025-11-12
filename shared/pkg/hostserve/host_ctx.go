@@ -8,7 +8,7 @@ import (
 
 // ctxClientIDKey is the context key used to store the client identifier in a context for outgoing requests.
 const ctxClientIDKey = "client"
-const ctxHostRequestIDKey = "host-request-id"
+const ctxHostRequestIDKey = "request"
 
 // addClientIDToContext attaches the specified clientID to the outgoing context metadata for gRPC requests.
 func addClientIDToContext(ctx context.Context, clientID ClientID) context.Context {

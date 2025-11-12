@@ -21,14 +21,9 @@ type HostServiceGRPCClient struct {
 
 // NewHostServiceGRPCClient creates a new instance of HostServiceGRPCClient wrapping the provided gRPC client.
 func NewHostServiceGRPCClient(client hostservev1.HostServiceClient) *HostServiceGRPCClient {
-	// Generate a unique client ID for this connection - we'll improve this later
-	clientUUID, err := uuid.NewV7()
-	if err != nil {
-		return nil
-	}
 	return &HostServiceGRPCClient{
 		client:   client,
-		clientID: ClientID(clientUUID.String()),
+		clientID: newClientID(),
 	}
 }
 
@@ -37,6 +32,10 @@ func NewHostServiceGRPCClient(client hostservev1.HostServiceClient) *HostService
 // ClientID represents a unique identifier for a client in a system or application.
 type ClientID string
 
+func newClientID() ClientID {
+	return ClientID(uuid.New().String())
+}
+
 // String returns the ClientID as its underlying string representation.
 func (cid ClientID) String() string {
 	return string(cid)
@@ -44,6 +43,10 @@ func (cid ClientID) String() string {
 
 // RequestID represents a unique identifier for a specific request, typically used for tracing and tracking purposes.
 type RequestID string
+
+func NewRequestID() RequestID {
+	return RequestID(uuid.New().String())
+}
 
 // String converts the RequestID value to its string representation.
 func (rid RequestID) String() string {

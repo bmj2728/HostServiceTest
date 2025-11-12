@@ -8,7 +8,6 @@ import (
 	"path/filepath"
 	"sync"
 
-	hostservev1 "github.com/bmj2728/hst/shared/protogen/hostserve/v1"
 	"github.com/hashicorp/go-hclog"
 )
 
@@ -22,35 +21,13 @@ var (
 	ErrInvalidPath = errors.New("invalid path")
 )
 
-// openFileModeToFlags converts the OpenFileMode enum to appropriate file flags for use with os package operations.
-func openFileModeToFlags(mode hostservev1.OpenFileMode) int {
-	switch mode {
-	case hostservev1.OpenFileMode_READ_ONLY:
-		return os.O_RDONLY
-	case hostservev1.OpenFileMode_WRITE_TRUNCATE:
-		return os.O_WRONLY | os.O_CREATE | os.O_TRUNC
-	case hostservev1.OpenFileMode_WRITE_APPEND:
-		return os.O_WRONLY | os.O_CREATE | os.O_APPEND
-	case hostservev1.OpenFileMode_WRITE_EXCLUSIVE:
-		return os.O_WRONLY | os.O_CREATE | os.O_EXCL
-	case hostservev1.OpenFileMode_READ_WRITE:
-		return os.O_RDWR
-	case hostservev1.OpenFileMode_READ_WRITE_CREATE:
-		return os.O_RDWR | os.O_CREATE
-	case hostservev1.OpenFileMode_READ_WRITE_TRUNCATE:
-		return os.O_RDWR | os.O_CREATE | os.O_TRUNC
-	case hostservev1.OpenFileMode_READ_WRITE_APPEND:
-		return os.O_RDWR | os.O_CREATE | os.O_APPEND
-	default:
-		return os.O_RDONLY
-	}
-}
-
-// ClientID represents a unique identifier for a client in a system or application.
-type ClientID string
-
 // RootHandle represents a unique identifier for a root resource within the system.
 type RootHandle string
+
+// String returns the string representation of the RootHandle.
+func (rh RootHandle) String() string {
+	return string(rh)
+}
 
 // OpenRootMap is a nested map associating a ClientID with RootHandles and their corresponding os.Root instances.
 type OpenRootMap map[ClientID]map[RootHandle]*os.Root
@@ -70,6 +47,11 @@ func NewOpenRoots() *OpenRoots {
 
 // FileHandle represents a unique identifier for an open file within a specific client context.
 type FileHandle string
+
+// String converts the FileHandle to its underlying string representation.
+func (fh FileHandle) String() string {
+	return string(fh)
+}
 
 // OpenFileMap represents a mapping of ClientIDs to their associated FileHandles and open file pointers.
 type OpenFileMap map[ClientID]map[FileHandle]*os.File
@@ -98,35 +80,6 @@ func NewHostFS() *HostFS {
 	return &HostFS{
 		openFiles: NewOpenFiles(),
 		openRoots: NewOpenRoots(),
-	}
-}
-
-// getRoot resolves the absolute path of the given directory and validates if it is a directory
-// before returning an Root object for it.
-func getRoot(dir string) (*os.Root, error) {
-	if !filepath.IsAbs(dir) {
-		p, err := filepath.Abs(dir)
-		if err != nil {
-			return nil, err
-		}
-		dir = p
-	}
-	info, err := os.Stat(dir)
-	if err != nil {
-		return nil, err
-	}
-	if !info.IsDir() {
-		return nil, ErrInvalidPath
-	}
-	return os.OpenRoot(dir)
-}
-
-// closeRoot ensures the provided root is closed and logs an error if the operation fails.
-// It handles logging the root's name and the corresponding error details.
-func closeRoot(r *os.Root) {
-	err := r.Close()
-	if err != nil {
-		hclog.Default().Error("Failed to close root", "path", r.Name(), "err", err)
 	}
 }
 

@@ -21,7 +21,7 @@ type HostServiceGRPCServer struct {
 // HostServiceGRPCClient wraps the filesystemv1.HostServiceClient to provide higher-level client methods.
 type HostServiceGRPCClient struct {
 	client   hostservev1.HostServiceClient
-	clientID string
+	clientID ClientID
 }
 
 // NewHostServiceGRPCClient creates a new instance of HostServiceGRPCClient wrapping the provided gRPC client.
@@ -33,23 +33,31 @@ func NewHostServiceGRPCClient(client hostservev1.HostServiceClient) *HostService
 	}
 	return &HostServiceGRPCClient{
 		client:   client,
-		clientID: clientUUID.String(),
+		clientID: ClientID(clientUUID.String()),
 	}
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 
+// ClientID represents a unique identifier for a client in a system or application.
+type ClientID string
+
+// String returns the ClientID as its underlying string representation.
+func (cid ClientID) String() string {
+	return string(cid)
+}
+
 // ctxClientIDKey is the context key used to store the client identifier in a context for outgoing requests.
 const ctxClientIDKey = "client"
 
 // addClientIDToContext attaches the specified clientID to the outgoing context metadata for gRPC requests.
-func addClientIDToContext(ctx context.Context, clientID string) context.Context {
-	return metadata.AppendToOutgoingContext(ctx, ctxClientIDKey, clientID)
+func addClientIDToContext(ctx context.Context, clientID ClientID) context.Context {
+	return metadata.AppendToOutgoingContext(ctx, ctxClientIDKey, clientID.String())
 }
 
 // getClientIDFromContext extracts the client ID from the provided gRPC context and returns it as a string.
 // Returns an empty string if no client ID is found or the metadata is unavailable.
-func getClientIDFromContext(ctx context.Context) string {
+func getClientIDFromContext(ctx context.Context) ClientID {
 	md, ok := metadata.FromIncomingContext(ctx)
 	if !ok {
 		return ""
@@ -58,7 +66,7 @@ func getClientIDFromContext(ctx context.Context) string {
 	if len(clientID) == 0 {
 		return ""
 	}
-	return clientID[0]
+	return ClientID(clientID[0])
 }
 
 // RemoteDirEntry implements fs.DirEntry, this wrapper allows conversion from protobuf to fs.DirEntry

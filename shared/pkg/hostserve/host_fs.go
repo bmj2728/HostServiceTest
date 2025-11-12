@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"sync"
 
+	hostservev1 "github.com/bmj2728/hst/shared/protogen/hostserve/v1"
 	"github.com/hashicorp/go-hclog"
 )
 
@@ -20,6 +21,30 @@ const (
 var (
 	ErrInvalidPath = errors.New("invalid path")
 )
+
+// openFileModeToFlags converts the OpenFileMode enum to appropriate file flags for use with os package operations.
+func openFileModeToFlags(mode hostservev1.OpenFileMode) int {
+	switch mode {
+	case hostservev1.OpenFileMode_READ_ONLY:
+		return os.O_RDONLY
+	case hostservev1.OpenFileMode_WRITE_TRUNCATE:
+		return os.O_WRONLY | os.O_CREATE | os.O_TRUNC
+	case hostservev1.OpenFileMode_WRITE_APPEND:
+		return os.O_WRONLY | os.O_CREATE | os.O_APPEND
+	case hostservev1.OpenFileMode_WRITE_EXCLUSIVE:
+		return os.O_WRONLY | os.O_CREATE | os.O_EXCL
+	case hostservev1.OpenFileMode_READ_WRITE:
+		return os.O_RDWR
+	case hostservev1.OpenFileMode_READ_WRITE_CREATE:
+		return os.O_RDWR | os.O_CREATE
+	case hostservev1.OpenFileMode_READ_WRITE_TRUNCATE:
+		return os.O_RDWR | os.O_CREATE | os.O_TRUNC
+	case hostservev1.OpenFileMode_READ_WRITE_APPEND:
+		return os.O_RDWR | os.O_CREATE | os.O_APPEND
+	default:
+		return os.O_RDONLY
+	}
+}
 
 // ClientID represents a unique identifier for a client in a system or application.
 type ClientID string
@@ -40,7 +65,6 @@ type OpenRoots struct {
 func NewOpenRoots() *OpenRoots {
 	return &OpenRoots{
 		roots: make(OpenRootMap),
-		mu:    sync.RWMutex{},
 	}
 }
 
@@ -60,7 +84,6 @@ type OpenFiles struct {
 func NewOpenFiles() *OpenFiles {
 	return &OpenFiles{
 		files: make(OpenFileMap),
-		mu:    sync.RWMutex{},
 	}
 }
 
@@ -120,7 +143,6 @@ func (hf *HostFS) ReadDir(ctx context.Context, path string) ([]fs.DirEntry, erro
 		hclog.Default().Error("Failed to read directory", "path", path, "err", err)
 		return nil, err
 	}
-
 	return entries, nil
 }
 

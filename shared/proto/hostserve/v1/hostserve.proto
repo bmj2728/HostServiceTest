@@ -2,6 +2,26 @@ syntax = "proto3";
 package hostserve.v1;
 option go_package = "github.com/bmj2728/HostServiceTest/shared/protogen/hostserve/v1;hostservev1";
 
+//ENUMs
+
+enum OpenFileMode {
+  OPEN_FILE_MODE_UNSPECIFIED = 0;
+
+  // Read modes
+  READ_ONLY = 1;                    // O_RDONLY
+
+  // Write modes
+  WRITE_TRUNCATE = 2;               // O_WRONLY|O_CREATE|O_TRUNC (like os.Create)
+  WRITE_APPEND = 3;                 // O_WRONLY|O_CREATE|O_APPEND
+  WRITE_EXCLUSIVE = 4;              // O_WRONLY|O_CREATE|O_EXCL (fail if exists)
+
+  // Read/Write modes
+  READ_WRITE = 5;                   // O_RDWR
+  READ_WRITE_CREATE = 6;            // O_RDWR|O_CREATE
+  READ_WRITE_TRUNCATE = 7;          // O_RDWR|O_CREATE|O_TRUNC
+  READ_WRITE_APPEND = 8;            // O_RDWR|O_CREATE|O_APPEND
+}
+
 // HostService is a service provided by the host process and is generally preferred over granting direct
 // access to the plugin process
 service HostService {
@@ -12,8 +32,10 @@ service HostService {
   rpc WriteFile(WriteFileRequest) returns (WriteFileResponse);
 
   //FS Streaming Endpoints
-  rpc ReadFileStream(ReadFileRequest) returns (stream ReadFileChunk);
-  rpc WriteFileStream(stream WriteFileChunk) returns (WriteFileResponse);
+  rpc OpenFile(OpenFileRequest) returns (OpenFileResponse);
+  rpc CloseFile(CloseFileRequest) returns (CloseFileResponse);
+  rpc Read(ReadRequest) returns (ReadResponse);
+  rpc Write(WriteRequest) returns (WriteResponse);
 
   //Env Endpoints
 
@@ -32,17 +54,6 @@ message FileChunk {
   bytes data = 1;
   uint64 offset = 2;
   bool is_final = 3;
-}
-
-message ReadFileChunk {
-  FileChunk chunk = 1;
-  optional string error = 2;
-}
-
-message WriteFileChunk {
-  string path = 1;
-  uint32 perm = 2;
-  FileChunk chunk = 3;
 }
 
 // FS Messages
@@ -73,6 +84,46 @@ message WriteFileRequest {
 
 message WriteFileResponse {
   optional string error = 1;
+}
+
+message OpenFileRequest {
+  string path = 1;
+  OpenFileMode mode = 2;
+  uint32 perm = 3;
+}
+
+message OpenFileResponse {
+  string handle = 1;
+  uint64 size = 2;
+  optional string error = 3;
+}
+
+message CloseFileRequest {
+  string handle = 1;
+}
+
+message CloseFileResponse {
+  optional string error = 1;
+}
+
+message ReadRequest {
+  string handle = 1;
+  uint32 chunk_size = 2;
+}
+
+message ReadResponse {
+  FileChunk chunk = 1;
+  optional string error = 2;
+}
+
+message WriteRequest {
+  string handle = 1;
+  FileChunk chunk = 2;
+}
+
+message WriteResponse {
+  uint32 bytes_written = 1;
+  optional string error = 2;
 }
 
 // Env Service Messages

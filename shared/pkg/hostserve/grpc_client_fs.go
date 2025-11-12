@@ -2,7 +2,6 @@ package hostserve
 
 import (
 	"context"
-	"fmt"
 	"io/fs"
 	"os"
 
@@ -12,10 +11,8 @@ import (
 // ReadDir retrieves a list of directory entries from the given path through a gRPC call to the host service.
 // Returns a slice of fs.DirEntry or an error if the operation fails.
 func (c *HostServiceGRPCClient) ReadDir(ctx context.Context, path string) ([]fs.DirEntry, error) {
-	ctx = addClientIDToContext(ctx, c.clientID)
-	reqID := NewRequestID()
-	fmt.Printf("ReadDir request ID: %s\n", reqID)
-	ctx = addRequestIDToContext(ctx, reqID)
+
+	ctx = addTracingIDsToContext(ctx, c.clientID, NewRequestID())
 	resp, err := c.client.ReadDir(ctx, &hostservev1.ReadDirRequest{
 		Path: path,
 	})
@@ -41,10 +38,7 @@ func (c *HostServiceGRPCClient) ReadDir(ctx context.Context, path string) ([]fs.
 // ReadFile reads the specified file from the given directory and returns its contents as a byte slice.
 // Returns an error if the file cannot be read or the service encounters an issue.
 func (c *HostServiceGRPCClient) ReadFile(ctx context.Context, path string) ([]byte, error) {
-	ctx = addClientIDToContext(ctx, c.clientID)
-	reqID := NewRequestID()
-	fmt.Printf("ReadFile request ID: %s\n", reqID)
-	ctx = addRequestIDToContext(ctx, reqID)
+	ctx = addTracingIDsToContext(ctx, c.clientID, NewRequestID())
 	resp, err := c.client.ReadFile(ctx, &hostservev1.ReadFileRequest{
 		Path: path,
 	})
@@ -58,10 +52,7 @@ func (c *HostServiceGRPCClient) ReadFile(ctx context.Context, path string) ([]by
 }
 
 func (c *HostServiceGRPCClient) WriteFile(ctx context.Context, path string, data []byte, perm os.FileMode) error {
-	ctx = addClientIDToContext(ctx, c.clientID)
-	reqID := NewRequestID()
-	fmt.Printf("WriteFile request ID: %s\n", reqID)
-	ctx = addRequestIDToContext(ctx, reqID)
+	ctx = addTracingIDsToContext(ctx, c.clientID, NewRequestID())
 	if perm == 0 {
 		perm = StandardPermissions
 	}

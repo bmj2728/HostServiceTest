@@ -2,6 +2,7 @@ package hostserve
 
 import (
 	"context"
+	"fmt"
 
 	"google.golang.org/grpc/metadata"
 )
@@ -10,9 +11,10 @@ import (
 const ctxClientIDKey = "client"
 const ctxHostRequestIDKey = "request"
 
-// addClientIDToContext attaches the specified clientID to the outgoing context metadata for gRPC requests.
-func addClientIDToContext(ctx context.Context, clientID ClientID) context.Context {
-	return metadata.AppendToOutgoingContext(ctx, ctxClientIDKey, clientID.String())
+func addTracingIDsToContext(ctx context.Context, clientID ClientID, requestID RequestID) context.Context {
+	return metadata.AppendToOutgoingContext(ctx,
+		ctxClientIDKey, clientID.String(),
+		ctxHostRequestIDKey, requestID.String())
 }
 
 // getClientIDFromContext extracts the client ID from the provided gRPC context and returns it as a string.
@@ -29,15 +31,12 @@ func getClientIDFromContext(ctx context.Context) ClientID {
 	return ClientID(clientID[0])
 }
 
-func addRequestIDToContext(ctx context.Context, requestID RequestID) context.Context {
-	return metadata.AppendToOutgoingContext(ctx, ctxHostRequestIDKey, requestID.String())
-}
-
 func getRequestIDFromContext(ctx context.Context) RequestID {
 	md, ok := metadata.FromIncomingContext(ctx)
 	if !ok {
 		return ""
 	}
+	fmt.Printf("DEBUG - All incoming metadata: %+v\n", md)
 	requestID := md.Get(ctxHostRequestIDKey)
 	if len(requestID) == 0 {
 		return ""

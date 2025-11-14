@@ -25,9 +25,6 @@ var pluginMap = map[string]plugin.Plugin{
 }
 
 func main() {
-	//TODO:
-	// clarify names - hostserve(internal) & hostservev1(gRPC) is confusing.
-	//                 Rename internal for clarity - nghost (shorthand for NovelGit Host)
 	logger := hclog.New(&hclog.LoggerOptions{
 		Name:   "host",
 		Output: os.Stdout,

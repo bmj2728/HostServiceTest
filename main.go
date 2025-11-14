@@ -29,7 +29,6 @@ func main() {
 	// clarify names - hostconn - helper EstablishHostServices shadows hostconn.EstablishHostServices with diff sigs
 	// clarify names - hostserve(internal) & hostservev1(gRPC) is confusing.
 	//                 Rename internal for clarity - nghost (shorthand for NovelGit Host)
-	// Propagate CID from clients back to host for tracking against plugin
 	logger := hclog.New(&hclog.LoggerOptions{
 		Name:   "host",
 		Output: os.Stdout,
@@ -87,39 +86,50 @@ func main() {
 	// End plugin 1
 
 	////Start plugin 2
-	//color := plugin.NewClient(&plugin.ClientConfig{
-	//	HandshakeConfig:  handshakeConfig,
-	//	Plugins:          pluginMap,
-	//	Cmd:              exec.Command("./plugins/colorlister/colorlister"),
-	//	AllowedProtocols: []plugin.Protocol{plugin.ProtocolGRPC},
-	//	Logger:           logger,
-	//})
-	//defer color.Kill()
-	//
-	//// Connect via gRPC - porcelain
-	//rpcClientColor, err := color.Client()
-	//if err != nil {
-	//	logger.Error("Failed to get RPC client", "err", err)
-	//	os.Exit(1)
-	//}
-	//
-	//// Request the FileLister plugin - the raw interface
-	//rawColor, err := rpcClientColor.Dispense("cl-plugin")
-	//if err != nil {
-	//	logger.Error("Failed to dispense plugin", "err", err)
-	//	os.Exit(1)
-	//}
-	//
-	//// Coerce the raw interface to the FileLister type
-	//colorlister := rawColor.(filelister.FileLister)
-	//
-	//// Setup host services for the plugin (if supported)
-	//if err := hostconn.EstablishHostServices(rawColor, hostServices, logger); err != nil {
-	//	logger.Error("Failed to establish host services", "err", err)
-	//	os.Exit(1)
-	//}
-	//
-	//// End plugin 2
+	clAbspath, err := filepath.Abs("./plugins/colorlister/colorlister")
+	if err != nil {
+		logger.Error("Failed to get absolute path", "err", err)
+		clAbspath = "./plugins/colorlister/colorlister"
+	}
+	clDir, clBin := filepath.Split(clAbspath)
+	logger.Info("Starting plugin", "dir", clDir, "bin", clBin)
+	color := plugin.NewClient(&plugin.ClientConfig{
+		HandshakeConfig:  handshakeConfig,
+		Plugins:          pluginMap,
+		Cmd:              exec.Command(clAbspath),
+		AllowedProtocols: []plugin.Protocol{plugin.ProtocolGRPC},
+		Logger:           logger,
+	})
+	defer color.Kill()
+
+	// Connect via gRPC - porcelain
+	rpcClientColor, err := color.Client()
+	if err != nil {
+		logger.Error("Failed to get RPC client", "err", err)
+		os.Exit(1)
+	}
+
+	// Request the FileLister plugin - the raw interface
+	rawColor, err := rpcClientColor.Dispense("cl-plugin")
+	if err != nil {
+		logger.Error("Failed to dispense plugin", "err", err)
+		os.Exit(1)
+	}
+
+	// Coerce the raw interface to the FileLister type
+	colorlister := rawColor.(filelister.FileLister)
+
+	// Setup host services for the plugin (if supported)
+	cdi2, err := hostconn.EstablishHostServices(rawColor, hostServices, logger)
+	if err != nil {
+		logger.Error("Failed to establish host services", "err", err)
+		os.Exit(1)
+	}
+	if cdi2 != "" {
+		logger.Info("Host services established", "bin", clBin, "cid", cdi2)
+	}
+
+	// End plugin 2
 
 	// Test the plugin by listing files in the current directory
 	entries, err := fileLister.ListFiles(".")
@@ -128,25 +138,25 @@ func main() {
 		os.Exit(1)
 	}
 
-	//colorEntries, err := colorlister.ListFiles(".")
-	//if err != nil {
-	//	logger.Error("Failed to list files", "err", err)
-	//	os.Exit(1)
-	//}
+	colorEntries, err := colorlister.ListFiles(".")
+	if err != nil {
+		logger.Error("Failed to list files", "err", err)
+		os.Exit(1)
+	}
 
 	logger.Info("Successfully listed files - no color")
 	for _, entry := range entries {
 		fmt.Println(entry)
 	}
 
-	//logger.Info("Successfully listed files - with color")
-	//for _, entry := range colorEntries {
-	//	fmt.Println(entry)
-	//}
+	logger.Info("Successfully listed files - with color")
+	for _, entry := range colorEntries {
+		fmt.Println(entry)
+	}
 
 	// Clean shutdown - disconnect from host services
 	logger.Info("Shutting down plugins")
 	hostconn.DisconnectHostServices(raw, logger)
-	//hostconn.DisconnectHostServices(rawColor, logger)
+	hostconn.DisconnectHostServices(rawColor, logger)
 	os.Exit(0)
 }

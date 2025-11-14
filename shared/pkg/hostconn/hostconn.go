@@ -34,7 +34,7 @@ type HostServiceRegistrar interface {
 	RegisterHostService(hostServices hostserve.IHostServices) (uint32, error)
 }
 
-// EstablishHostServices handles the complete setup flow for connecting a plugin to host services.
+// EstablishHostServiceConnection handles the complete setup flow for connecting a plugin to host services.
 // It encapsulates the following steps:
 // 1. Checks if plugin supports host service registration (via HostServiceRegistrar)
 // 2. Registers the host service with the broker and gets a service ID
@@ -49,7 +49,7 @@ type HostServiceRegistrar interface {
 //
 // Returns an error if registration fails. Returns nil if plugin doesn't support
 // host services (this is not considered an error).
-func EstablishHostServices(
+func EstablishHostServiceConnection(
 	pluginClient interface{},
 	hostServices hostserve.IHostServices,
 	logger hclog.Logger,

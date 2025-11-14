@@ -48,7 +48,7 @@ func (s *GRPCServer) EstablishHostServices(ctx context.Context,
 		if err != nil {
 			return nil, fmt.Errorf("plugin failed to establish host services: %w", err)
 		}
-		return &filelisterv1.HostServiceResponse{ClientId: clientID}, nil
+		return &filelisterv1.HostServiceResponse{ClientId: clientID.String()}, nil
 	}
 
 	// Plugin doesn't implement HostConnection - not an error
@@ -73,7 +73,7 @@ func (c *GRPCClient) SetBroker(broker *plugin.GRPCBroker) {
 }
 
 // EstablishHostServices sets the host service ID and notifies the plugin via gRPC to establish the host service.
-func (c *GRPCClient) EstablishHostServices(hostServiceID uint32) (string, error) {
+func (c *GRPCClient) EstablishHostServices(hostServiceID uint32) (hostserve.ClientID, error) {
 	c.hostServiceID = hostServiceID
 
 	resp, err := c.client.EstablishHostServices(context.Background(),
@@ -84,7 +84,7 @@ func (c *GRPCClient) EstablishHostServices(hostServiceID uint32) (string, error)
 		return "", fmt.Errorf("gRPC call failed: %w", err) // CHANGED - return error with context
 	}
 
-	return resp.ClientId, nil
+	return hostserve.ClientID(resp.ClientId), nil
 }
 
 // DisconnectHostServices performs cleanup actions during plugin shutdown, though no client-side cleanup is

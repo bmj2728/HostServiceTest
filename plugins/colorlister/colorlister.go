@@ -57,7 +57,7 @@ func (f *ColorLister) ListFiles(dir string) ([]string, error) {
 	return entries, nil
 }
 
-func (f *ColorLister) EstablishHostServices(hostServiceID uint32) (string, error) {
+func (f *ColorLister) EstablishHostServices(hostServiceID uint32) (hostserve.ClientID, error) {
 	f.connMutex.Lock()
 	defer f.connMutex.Unlock()
 
@@ -70,7 +70,7 @@ func (f *ColorLister) EstablishHostServices(hostServiceID uint32) (string, error
 	f.conn = conn
 	client := hostserve.NewHostServiceGRPCClient(hostservev1.NewHostServiceClient(conn))
 	f.hostServiceClient = client
-	return client.ClientID().String(), nil
+	return client.ClientID(), nil
 }
 
 func (f *ColorLister) DisconnectHostServices() {

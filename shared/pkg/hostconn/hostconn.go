@@ -20,7 +20,7 @@ type HostConnection interface {
 	SetBroker(broker *plugin.GRPCBroker)
 
 	// EstablishHostServices receives the broker service ID for host services
-	EstablishHostServices(hostServiceID uint32) (clientID string, err error)
+	EstablishHostServices(hostServiceID uint32) (clientID hostserve.ClientID, err error)
 
 	// DisconnectHostServices cleans up connections to host services
 	DisconnectHostServices()
@@ -53,7 +53,7 @@ func EstablishHostServiceConnection(
 	pluginClient interface{},
 	hostServices hostserve.IHostServices,
 	logger hclog.Logger,
-) (string, error) {
+) (hostserve.ClientID, error) {
 	// Check if plugin supports host service registration
 	registrar, ok := pluginClient.(HostServiceRegistrar)
 	if !ok {

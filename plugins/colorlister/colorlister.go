@@ -70,7 +70,6 @@ func (f *ColorLister) EstablishHostServices(hostServiceID uint32) (string, error
 	f.conn = conn
 	client := hostserve.NewHostServiceGRPCClient(hostservev1.NewHostServiceClient(conn))
 	f.hostServiceClient = client
-	hclog.Default().Info("Established host services", "id", hostServiceID, "clientID", client.ClientID())
 	return client.ClientID().String(), nil
 }
 

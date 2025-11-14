@@ -74,7 +74,6 @@ func EstablishHostServices(
 		if err != nil {
 			return "", fmt.Errorf("failed to establish connection: %w", err)
 		}
-		logger.Info("Host services established", "serviceID", serviceID, "clientID", clientID)
 		return clientID, nil
 	}
 	logger.Warn("Plugin supports registration but not connection")

@@ -21,10 +21,18 @@ type HostServiceGRPCClient struct {
 
 // NewHostServiceGRPCClient creates a new instance of HostServiceGRPCClient wrapping the provided gRPC client.
 func NewHostServiceGRPCClient(client hostservev1.HostServiceClient) *HostServiceGRPCClient {
+	clientID := newClientID()
 	return &HostServiceGRPCClient{
 		client:   client,
-		clientID: newClientID(),
+		clientID: clientID,
 	}
+}
+
+func (c *HostServiceGRPCClient) GetClientId() ClientID {
+	if c == nil {
+		return ""
+	}
+	return c.clientID
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////

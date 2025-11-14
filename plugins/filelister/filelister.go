@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"context"
+	"fmt"
 	"path/filepath"
 	"sync"
 
@@ -50,19 +51,21 @@ func (f *FileLister) ListFiles(dir string) ([]string, error) {
 	return entries, nil
 }
 
-func (f *FileLister) EstablishHostServices(hostServiceID uint32) {
+func (f *FileLister) EstablishHostServices(hostServiceID uint32) (string, error) {
 	f.connMutex.Lock()
 	defer f.connMutex.Unlock()
 
 	conn, err := f.broker.Dial(hostServiceID)
 	if err != nil {
 		hclog.Default().Error("Failed to dial host service", "err", err)
-		return
+		return "", fmt.Errorf("failed to dial broker: %w", err)
 	}
 
 	f.conn = conn
-	f.hostServiceClient = hostserve.NewHostServiceGRPCClient(hostservev1.NewHostServiceClient(conn))
-	hclog.Default().Info("Established host services", "id", hostServiceID)
+	client := hostserve.NewHostServiceGRPCClient(hostservev1.NewHostServiceClient(conn))
+	f.hostServiceClient = client
+	hclog.Default().Info("Established host services", "id", hostServiceID, "clientID", client.ClientID())
+	return client.ClientID().String(), nil
 }
 
 func (f *FileLister) DisconnectHostServices() {

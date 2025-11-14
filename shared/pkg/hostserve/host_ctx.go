@@ -2,7 +2,6 @@ package hostserve
 
 import (
 	"context"
-	"fmt"
 
 	"google.golang.org/grpc/metadata"
 )
@@ -36,7 +35,6 @@ func getRequestIDFromContext(ctx context.Context) RequestID {
 	if !ok {
 		return ""
 	}
-	fmt.Printf("DEBUG - All incoming metadata: %+v\n", md)
 	requestID := md.Get(ctxHostRequestIDKey)
 	if len(requestID) == 0 {
 		return ""

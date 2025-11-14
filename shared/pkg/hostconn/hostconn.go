@@ -20,7 +20,7 @@ type HostConnection interface {
 	SetBroker(broker *plugin.GRPCBroker)
 
 	// EstablishHostServices receives the broker service ID for host services
-	EstablishHostServices(hostServiceID uint32)
+	EstablishHostServices(hostServiceID uint32) (clientID string, err error)
 
 	// DisconnectHostServices cleans up connections to host services
 	DisconnectHostServices()
@@ -53,29 +53,32 @@ func EstablishHostServices(
 	pluginClient interface{},
 	hostServices hostserve.IHostServices,
 	logger hclog.Logger,
-) error {
+) (string, error) {
 	// Check if plugin supports host service registration
 	registrar, ok := pluginClient.(HostServiceRegistrar)
 	if !ok {
 		logger.Debug("Plugin doesn't support host services (no HostServiceRegistrar)")
-		return nil // Not an error - plugin simply doesn't need host services
+		return "", nil // Not an error - plugin simply doesn't need host services
 	}
 
 	// Register host service with broker and get service ID
 	serviceID, err := registrar.RegisterHostService(hostServices)
 	if err != nil {
-		return fmt.Errorf("failed to register host service: %w", err)
+		return "", fmt.Errorf("failed to register host service: %w", err)
 	}
 	logger.Info("Host service registered with broker", "id", serviceID)
 
 	// Notify plugin of the service ID so it can dial back
 	if hostConn, ok := pluginClient.(HostConnection); ok {
-		hostConn.EstablishHostServices(serviceID)
-	} else {
-		logger.Warn("Plugin supports registration but not connection (no HostConnection)")
+		clientID, err := hostConn.EstablishHostServices(serviceID)
+		if err != nil {
+			return "", fmt.Errorf("failed to establish connection: %w", err)
+		}
+		logger.Info("Host services established", "serviceID", serviceID, "clientID", clientID)
+		return clientID, nil
 	}
-
-	return nil
+	logger.Warn("Plugin supports registration but not connection")
+	return "", nil
 }
 
 // DisconnectHostServices cleanly disconnects a plugin from host services.

@@ -2,6 +2,7 @@ package filelister
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/bmj2728/hst/shared/pkg/hostconn"
 	"github.com/bmj2728/hst/shared/pkg/hostserve"
@@ -40,15 +41,18 @@ func (s *GRPCServer) List(ctx context.Context,
 // The method accepts a context and a HostServiceRequest containing the host service ID.
 // Returns an Empty response and error if any issues occur during execution.
 func (s *GRPCServer) EstablishHostServices(ctx context.Context,
-	request *filelisterv1.HostServiceRequest) (*filelisterv1.Empty, error) {
+	request *filelisterv1.HostServiceRequest) (*filelisterv1.HostServiceResponse, error) {
 
-	// Only call EstablishHostServices if the plugin implements HostConnection
 	if hostConn, ok := s.Impl.(hostconn.HostConnection); ok {
-		hostConn.EstablishHostServices(request.HostService)
+		clientID, err := hostConn.EstablishHostServices(request.HostService)
+		if err != nil {
+			return nil, fmt.Errorf("plugin failed to establish host services: %w", err)
+		}
+		return &filelisterv1.HostServiceResponse{ClientId: clientID}, nil
 	}
-	// If plugin doesn't implement HostConnection, silently succeed
-	// (plugin doesn't need host services)
-	return &filelisterv1.Empty{}, nil
+
+	// Plugin doesn't implement HostConnection - not an error
+	return &filelisterv1.HostServiceResponse{}, nil
 }
 
 // GRPCClient is the client side of the plugin.
@@ -69,12 +73,18 @@ func (c *GRPCClient) SetBroker(broker *plugin.GRPCBroker) {
 }
 
 // EstablishHostServices sets the host service ID and notifies the plugin via gRPC to establish the host service.
-func (c *GRPCClient) EstablishHostServices(hostServiceID uint32) {
+func (c *GRPCClient) EstablishHostServices(hostServiceID uint32) (string, error) {
 	c.hostServiceID = hostServiceID
-	// Also call the gRPC method to notify the plugin
-	_, _ = c.client.EstablishHostServices(context.Background(), &filelisterv1.HostServiceRequest{
-		HostService: hostServiceID,
-	})
+
+	resp, err := c.client.EstablishHostServices(context.Background(),
+		&filelisterv1.HostServiceRequest{
+			HostService: hostServiceID,
+		})
+	if err != nil {
+		return "", fmt.Errorf("gRPC call failed: %w", err) // CHANGED - return error with context
+	}
+
+	return resp.ClientId, nil
 }
 
 // DisconnectHostServices performs cleanup actions during plugin shutdown, though no client-side cleanup is

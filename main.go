@@ -25,6 +25,11 @@ var pluginMap = map[string]plugin.Plugin{
 }
 
 func main() {
+	//TODO:
+	// clarify names - hostconn - helper EstablishHostServices shadows hostconn.EstablishHostServices with diff sigs
+	// clarify names - hostserve(internal) & hostservev1(gRPC) is confusing.
+	//                 Rename internal for clarity - nghost (shorthand for NovelGit Host)
+	// Propagate CID from clients back to host for tracking against plugin
 	logger := hclog.New(&hclog.LoggerOptions{
 		Name:   "host",
 		Output: os.Stdout,
@@ -70,9 +75,13 @@ func main() {
 	fileLister := raw.(filelister.FileLister)
 
 	// Setup host services for the plugin (if supported)
-	if err := hostconn.EstablishHostServices(raw, hostServices, logger); err != nil {
+	cid, err := hostconn.EstablishHostServices(raw, hostServices, logger)
+	if err != nil {
 		logger.Error("Failed to establish host services", "err", err)
 		os.Exit(1)
+	}
+	if cid != "" {
+		logger.Info("Host services established", "bin", flBin, "cid", cid)
 	}
 
 	// End plugin 1

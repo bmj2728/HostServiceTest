@@ -28,7 +28,7 @@ func NewHostServiceGRPCClient(client hostservev1.HostServiceClient) *HostService
 	}
 }
 
-func (c *HostServiceGRPCClient) GetClientId() ClientID {
+func (c *HostServiceGRPCClient) ClientID() ClientID {
 	if c == nil {
 		return ""
 	}

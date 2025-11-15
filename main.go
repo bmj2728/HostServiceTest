@@ -76,6 +76,11 @@ func main() {
 		os.Exit(1)
 	}
 	if cid != "" {
+		err = hostServices.ActiveClients.AddClient(cid, flBin)
+		if err != nil {
+			logger.Error("Failed to add client", "err", err)
+			os.Exit(1)
+		}
 		logger.Info("Host services established", "bin", flBin, "cid", cid)
 	}
 
@@ -116,16 +121,25 @@ func main() {
 	colorlister := rawColor.(filelister.FileLister)
 
 	// Setup host services for the plugin (if supported)
-	cdi2, err := hostconn.EstablishHostServiceConnection(rawColor, hostServices, logger)
+	cid2, err := hostconn.EstablishHostServiceConnection(rawColor, hostServices, logger)
 	if err != nil {
 		logger.Error("Failed to establish host services", "err", err)
 		os.Exit(1)
 	}
-	if cdi2 != "" {
-		logger.Info("Host services established", "bin", clBin, "cid", cdi2)
+	if cid2 != "" {
+		err = hostServices.ActiveClients.AddClient(cid2, clBin)
+		if err != nil {
+			logger.Error("Failed to add client", "err", err)
+			os.Exit(1)
+		}
+		logger.Info("Host services established", "bin", clBin, "cid", cid2)
 	}
 
 	// End plugin 2
+
+	logger.Info("Active clients",
+		"count", hostServices.ActiveClients.Len(),
+		"clients", hostServices.ActiveClients)
 
 	// Test the plugin by listing files in the current directory
 	entries, err := fileLister.ListFiles(".")
@@ -154,5 +168,6 @@ func main() {
 	logger.Info("Shutting down plugins")
 	hostconn.DisconnectHostServices(raw, logger)
 	hostconn.DisconnectHostServices(rawColor, logger)
+	hostServices.ActiveClients.Clear()
 	os.Exit(0)
 }

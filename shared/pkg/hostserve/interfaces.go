@@ -26,7 +26,6 @@ type IHostFS interface {
 	WriteFile(ctx context.Context, path string, data []byte, perm os.FileMode) error
 
 	//OpenFile(ctx context.Context, path string, flag int, perm os.FileMode) (*os.File, error)
-	//TODO - Add support for streaming reads and writes
 }
 
 // IHostEnv defines a contract for interacting with environment variables in the host system.

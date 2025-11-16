@@ -76,7 +76,7 @@ func main() {
 		os.Exit(1)
 	}
 	if cid != "" {
-		err = hostServices.ActiveClients.AddClient(cid, flBin)
+		err = hostServices.ActiveClients().AddClient(cid, flBin)
 		if err != nil {
 			logger.Error("Failed to add client", "err", err)
 			os.Exit(1)
@@ -127,7 +127,7 @@ func main() {
 		os.Exit(1)
 	}
 	if cid2 != "" {
-		err = hostServices.ActiveClients.AddClient(cid2, clBin)
+		err = hostServices.ActiveClients().AddClient(cid2, clBin)
 		if err != nil {
 			logger.Error("Failed to add client", "err", err)
 			os.Exit(1)
@@ -138,8 +138,8 @@ func main() {
 	// End plugin 2
 
 	logger.Info("Active clients",
-		"count", hostServices.ActiveClients.Len(),
-		"clients", hostServices.ActiveClients)
+		"count", hostServices.ActiveClients().Len(),
+		"clients", hostServices.ActiveClients())
 
 	// Test the plugin by listing files in the current directory
 	entries, err := fileLister.ListFiles(".")
@@ -168,6 +168,6 @@ func main() {
 	logger.Info("Shutting down plugins")
 	hostconn.DisconnectHostServices(raw, logger)
 	hostconn.DisconnectHostServices(rawColor, logger)
-	hostServices.ActiveClients.Clear()
+	hostServices.ActiveClients().Clear()
 	os.Exit(0)
 }

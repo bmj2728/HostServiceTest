@@ -13,7 +13,7 @@ type ActiveClients struct {
 	mu      sync.RWMutex
 }
 
-func NewActiveClients() *ActiveClients {
+func newActiveClients() *ActiveClients {
 	return &ActiveClients{
 		Clients: make(ActiveClientsMap),
 	}

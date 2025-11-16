@@ -25,6 +25,7 @@ type IHostFS interface {
 	// WriteFile writes data to the specified file within the given directory, applying the provided file permissions.
 	WriteFile(ctx context.Context, path string, data []byte, perm os.FileMode) error
 
+	//OpenFile(ctx context.Context, path string, flag int, perm os.FileMode) (*os.File, error)
 	//TODO - Add support for streaming reads and writes
 }
 

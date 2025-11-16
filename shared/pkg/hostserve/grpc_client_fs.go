@@ -73,3 +73,22 @@ func (c *HostServiceGRPCClient) WriteFile(ctx context.Context, path string, data
 	}
 	return nil
 }
+
+func (c *HostServiceGRPCClient) OpenFile(ctx context.Context, path string, flag int, perm os.FileMode) (FileHandle, uint64, error) {
+	ctx = addTracingIDsToContext(ctx, c.clientID, NewRequestID())
+	resp, err := c.client.OpenFile(ctx, &hostservev1.OpenFileRequest{
+		Path: path,
+		Mode: flagsToOpenFileMode(flag),
+		Perm: uint32(perm),
+	})
+	if err != nil {
+		return "", 0, &HostServiceError{Message: err.Error()}
+	}
+	if resp == nil {
+		return "", 0, &HostServiceError{Message: "nil response from OpenFile"}
+	}
+	if resp.Error != nil {
+		return "", 0, &HostServiceError{Message: *resp.Error}
+	}
+	return FileHandle(resp.Handle), resp.Size, nil
+}

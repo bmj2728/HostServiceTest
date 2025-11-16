@@ -87,3 +87,29 @@ func (hf *HostFS) WriteFile(ctx context.Context, path string, data []byte, perm 
 	}
 	return nil
 }
+
+func (hf *HostFS) OpenFile(ctx context.Context, path string, flag int, perm os.FileMode) (FileHandle, uint64, error) {
+	clientID := getClientIDFromContext(ctx)
+	d, f := filepath.Split(path)
+	r, err := getRoot(d)
+	if err != nil {
+		hclog.Default().Error("Failed to open root", "path", d, "err", err)
+		return "", 0, err
+	}
+	defer closeRoot(r)
+	file, err := r.OpenFile(f, flag, perm)
+	if err != nil {
+		hclog.Default().Error("Failed to open file", "path", path, "err", err)
+		return "", 0, err
+	}
+	fh := newFileHandle()
+	err = hf.openFiles.AddFile(clientID, fh, file)
+	if err != nil {
+		return "", 0, err
+	}
+	info, err := file.Stat()
+	if err != nil {
+		return fh, 0, err
+	}
+	return fh, uint64(info.Size()), nil
+}

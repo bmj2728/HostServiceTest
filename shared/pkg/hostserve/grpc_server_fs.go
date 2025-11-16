@@ -116,38 +116,3 @@ func (s *HostServiceGRPCServer) WriteFile(ctx context.Context,
 	}
 	return &hostservev1.WriteFileResponse{}, nil
 }
-
-func (s *HostServiceGRPCServer) OpenFile(ctx context.Context,
-	request *hostservev1.OpenFileRequest,
-) (*hostservev1.OpenFileResponse, error) {
-	clientID := getClientIDFromContext(ctx)
-	reqID := getRequestIDFromContext(ctx)
-	ap, err := filepath.Abs(request.Path)
-	if err != nil {
-		ap = request.Path
-	}
-	hclog.Default().Info("OpenFile request from client",
-		ctxClientIDKey, clientID,
-		ctxHostRequestIDKey, reqID,
-		"path", ap)
-	file, err := s.Impl.OpenFile(ctx, request.Path, openFileModeToFlags(request.Mode), os.FileMode(request.Perm))
-	if err != nil {
-		return &hostservev1.OpenFileResponse{Error: proto.String(err.Error())}, nil
-	}
-	fileHandle := newFileHandle()
-	fs, err := s.getHostFS()
-	if err != nil {
-		return &hostservev1.OpenFileResponse{Error: proto.String(err.Error())}, nil
-	}
-	err = fs.openFiles.AddFile(clientID, fileHandle, file)
-	if err != nil {
-		return &hostservev1.OpenFileResponse{Error: proto.String(err.Error())}, nil
-	}
-	hclog.Default().Info("File opened successfully.",
-		ctxClientIDKey, clientID,
-		ctxHostRequestIDKey, reqID,
-		"path", ap,
-		"handle", fileHandle.String(),
-	)
-	return &hostservev1.OpenFileResponse{Handle: fileHandle.String()}, nil
-}

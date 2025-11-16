@@ -2,6 +2,7 @@ package hostserve
 
 import (
 	"context"
+	"errors"
 	"os"
 	"path/filepath"
 
@@ -9,6 +10,22 @@ import (
 	"github.com/hashicorp/go-hclog"
 	"google.golang.org/protobuf/proto"
 )
+
+var (
+	ErrInvalidHostFS = errors.New("invalid host file system")
+)
+
+func (s *HostServiceGRPCServer) getHostFS() (*HostFS, error) {
+	hs, err := s.getHostServices()
+	if err != nil {
+		return nil, err
+	}
+	hfs, ok := hs.IHostFS.(*HostFS)
+	if !ok {
+		return nil, ErrInvalidHostFS
+	}
+	return hfs, nil
+}
 
 // ReadDir processes a gRPC request to read contents of a directory specified by the request path and returns
 // the results.

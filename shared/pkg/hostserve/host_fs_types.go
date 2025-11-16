@@ -14,8 +14,8 @@ func (rh RootHandle) String() string {
 	return string(rh)
 }
 
-func NewRootHandle() RootHandle {
-	return RootHandle(NewUUID().String())
+func newRootHandle() RootHandle {
+	return RootHandle(newUUID().String())
 }
 
 // OpenRootMap is a nested map associating a ClientID with RootHandles and their corresponding os.Root instances.
@@ -85,8 +85,8 @@ func (fh FileHandle) String() string {
 	return string(fh)
 }
 
-func NewFileHandle() FileHandle {
-	return FileHandle(NewUUID().String())
+func newFileHandle() FileHandle {
+	return FileHandle(newUUID().String())
 }
 
 // OpenFileMap represents a mapping of ClientIDs to their associated FileHandles and open file pointers.

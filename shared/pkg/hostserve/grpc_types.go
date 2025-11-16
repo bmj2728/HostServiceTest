@@ -1,15 +1,29 @@
 package hostserve
 
 import (
+	"errors"
+
 	"github.com/bmj2728/hst/shared/protogen/hostserve/v1"
 )
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 
+var (
+	ErrInvalidHostServices = errors.New("invalid host services")
+)
+
 // HostServiceGRPCServer provides a gRPC server implementation for host services using the IHostServices interface.
 type HostServiceGRPCServer struct {
 	Impl IHostServices
 	hostservev1.UnimplementedHostServiceServer
+}
+
+func (s *HostServiceGRPCServer) getHostServices() (*HostServices, error) {
+	hs, ok := s.Impl.(*HostServices)
+	if !ok {
+		return nil, ErrInvalidHostServices
+	}
+	return hs, nil
 }
 
 // HostServiceGRPCClient wraps the filesystemv1.HostServiceClient to provide higher-level client methods.
@@ -40,7 +54,7 @@ func (c *HostServiceGRPCClient) ClientID() ClientID {
 type ClientID string
 
 func newClientID() ClientID {
-	return ClientID(NewUUID().String())
+	return ClientID(newUUID().String())
 }
 
 // String returns the ClientID as its underlying string representation.
@@ -52,7 +66,7 @@ func (cid ClientID) String() string {
 type RequestID string
 
 func NewRequestID() RequestID {
-	return RequestID(NewUUID().String())
+	return RequestID(newUUID().String())
 }
 
 // String converts the RequestID value to its string representation.

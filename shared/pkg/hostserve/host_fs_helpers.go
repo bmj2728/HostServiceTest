@@ -32,6 +32,30 @@ func openFileModeToFlags(mode hostservev1.OpenFileMode) int {
 	}
 }
 
+// flagsToOpenFileMode converts os package file flags to the OpenFileMode enum.
+func flagsToOpenFileMode(flags int) hostservev1.OpenFileMode {
+	switch flags {
+	case os.O_RDONLY:
+		return hostservev1.OpenFileMode_READ_ONLY
+	case os.O_WRONLY | os.O_CREATE | os.O_TRUNC:
+		return hostservev1.OpenFileMode_WRITE_TRUNCATE
+	case os.O_WRONLY | os.O_CREATE | os.O_APPEND:
+		return hostservev1.OpenFileMode_WRITE_APPEND
+	case os.O_WRONLY | os.O_CREATE | os.O_EXCL:
+		return hostservev1.OpenFileMode_WRITE_EXCLUSIVE
+	case os.O_RDWR:
+		return hostservev1.OpenFileMode_READ_WRITE
+	case os.O_RDWR | os.O_CREATE:
+		return hostservev1.OpenFileMode_READ_WRITE_CREATE
+	case os.O_RDWR | os.O_CREATE | os.O_TRUNC:
+		return hostservev1.OpenFileMode_READ_WRITE_TRUNCATE
+	case os.O_RDWR | os.O_CREATE | os.O_APPEND:
+		return hostservev1.OpenFileMode_READ_WRITE_APPEND
+	default:
+		return hostservev1.OpenFileMode_READ_ONLY
+	}
+}
+
 // getRoot resolves the absolute path of the given directory and validates if it is a directory
 // before returning an Root object for it.
 func getRoot(dir string) (*os.Root, error) {

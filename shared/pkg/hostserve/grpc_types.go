@@ -2,7 +2,6 @@ package hostserve
 
 import (
 	"github.com/bmj2728/hst/shared/protogen/hostserve/v1"
-	"github.com/google/uuid"
 )
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -41,7 +40,7 @@ func (c *HostServiceGRPCClient) ClientID() ClientID {
 type ClientID string
 
 func newClientID() ClientID {
-	return ClientID(uuid.New().String())
+	return ClientID(NewUUID().String())
 }
 
 // String returns the ClientID as its underlying string representation.
@@ -53,7 +52,7 @@ func (cid ClientID) String() string {
 type RequestID string
 
 func NewRequestID() RequestID {
-	return RequestID(uuid.New().String())
+	return RequestID(NewUUID().String())
 }
 
 // String converts the RequestID value to its string representation.

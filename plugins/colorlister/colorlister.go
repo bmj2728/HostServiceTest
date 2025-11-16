@@ -41,16 +41,15 @@ func (f *ColorLister) ListFiles(dir string) ([]string, error) {
 	var entries []string
 	for _, entry := range dirEntries {
 		if entry.IsDir() {
-			entries = append(entries, dirFormat.Wrap(entry.Name()+"-d", true))
+			entries = append(entries, dirFormat.Wrap(entry.Name(), true))
 		} else {
 			data, err := f.hostServiceClient.ReadFile(ctx, filepath.Join(dir, entry.Name()))
 			if err != nil {
 				hclog.Default().Error("Failed to read file via host service", "dir", dir,
 					"file", entry.Name(), "err", err)
 			}
-			contents := string(data)
-			entries = append(entries, fileFormat.Wrap(entry.Name()+"-f", true))
-			entries = append(entries, "Contents:\n", contents)
+			contents := len(string(data))
+			entries = append(entries, fileFormat.Wrap(entry.Name(), true)+fmt.Sprintf(" Size: %d bytes", contents))
 		}
 	}
 

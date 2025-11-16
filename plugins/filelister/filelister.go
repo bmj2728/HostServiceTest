@@ -25,8 +25,12 @@ type FileLister struct {
 }
 
 func (f *FileLister) ListFiles(dir string) ([]string, error) {
-	ctx := context.Background()
+	ctx := context.Background() //this is needed for the host service calls
+
+	// simple env check
 	home := f.hostServiceClient.GetEnv(ctx, "HOME")
+
+	// Read Dir
 	dirEntries, err := f.hostServiceClient.ReadDir(ctx, dir)
 	if err != nil {
 		hclog.Default().Error("Failed to read directory via host service", "dir", dir, "err", err)
@@ -46,23 +50,52 @@ func (f *FileLister) ListFiles(dir string) ([]string, error) {
 		}
 	}
 
+	// Write file
 	err = f.hostServiceClient.WriteFile(ctx, filepath.Join(dir, "listed_files.txt"), buf.Bytes(), 0644)
 	if err != nil {
 		hclog.Default().Error("Failed to write file via host service", "dir", dir, "err", err)
 	}
 
+	// Open file
 	fh, sz, err := f.hostServiceClient.OpenFile(ctx, filepath.Join(dir, "listed_files.txt"), os.O_RDONLY, 0644)
 	if err != nil {
 		hclog.Default().Error("Failed to open file via host service", "dir", dir, "err", err)
 	}
-	hclog.Default().Info("File size", "size", sz)
-	f.fileHandles[filepath.Join(dir, "listed_files.txt")] = fh
+	hclog.Default().Info("Opened file", "handle", fh, "size", sz)
+	// Close File called in a closure for deferment
 	defer func(hostServiceClient hostserve.IHostServices, ctx context.Context, handle hostserve.FileHandle) {
 		err := hostServiceClient.CloseFile(ctx, handle)
 		if err != nil {
 			hclog.Default().Error("Failed to close file handle", "err", err)
 		}
 	}(f.hostServiceClient, ctx, fh)
+
+	//store the file handle
+	f.fileHandles[filepath.Join(dir, "listed_files.txt")] = fh
+
+	newFileName := filepath.Join(dir, "testing_open_create.txt")
+
+	fh2, sz2, err := f.hostServiceClient.OpenFile(ctx, newFileName, os.O_RDWR|os.O_CREATE, 0644)
+	if err != nil {
+		hclog.Default().Error("Failed to open file via host service", "dir", dir, "err", err)
+	}
+	hclog.Default().Info("Opened file", "handle", fh2, "size", sz2)
+
+	f.fileHandles[newFileName] = fh2
+
+	//retrieve the file handle
+	retrieved, ok := f.fileHandles[newFileName]
+	if !ok {
+		hclog.Default().Error("Failed to retrieve file handle")
+	}
+	hclog.Default().Info("Retrieved file handle", "handle", retrieved)
+
+	// just closing the file handle
+	err = f.hostServiceClient.CloseFile(ctx, retrieved)
+	if err != nil {
+		hclog.Default().Error("Failed to close file handle", "err", err)
+	}
+
 	return entries, nil
 }
 

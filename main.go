@@ -28,8 +28,10 @@ func main() {
 	logger := hclog.New(&hclog.LoggerOptions{
 		Name:   "host",
 		Output: os.Stdout,
-		Level:  hclog.Info,
+		Level:  hclog.Debug,
+		Color:  hclog.ForceColor,
 	})
+	hclog.SetDefault(logger)
 
 	// Set up host services - create the implementation
 	// HostServices is a struct that embeds the HostFS and HostEnv interfaces
@@ -168,6 +170,13 @@ func main() {
 	logger.Info("Shutting down plugins")
 	hostconn.DisconnectHostServices(raw, logger)
 	hostconn.DisconnectHostServices(rawColor, logger)
+	hfs, ok := hostServices.IHostFS.(*hostserve.HostFS)
+	if !ok {
+		logger.Error("Failed to cast host services to HostFS")
+		os.Exit(1)
+	}
+	hfs.Cleanup()
 	hostServices.ActiveClients().Clear()
+
 	os.Exit(0)
 }

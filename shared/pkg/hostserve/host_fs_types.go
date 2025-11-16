@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"os"
 	"sync"
+
+	"github.com/hashicorp/go-hclog"
 )
 
 // RootHandle represents a unique identifier for a root resource within the system.
@@ -154,4 +156,36 @@ func (of *OpenFiles) GetFile(clientID ClientID, fileHandle FileHandle) (*os.File
 		return nil, fmt.Errorf("file handle %s does not exist for client %s", fileHandle, clientID)
 	}
 	return files[fileHandle], nil
+}
+
+func (of *OpenFiles) GetFiles() OpenFileMap {
+	of.mu.RLock()
+	defer of.mu.RUnlock()
+	return of.files
+}
+
+func (of *OpenFiles) Len() int {
+	of.mu.RLock()
+	defer of.mu.RUnlock()
+	length := 0
+	for _, files := range of.files {
+		length += len(files)
+	}
+	return length
+}
+
+func (of *OpenFiles) CloseAll() {
+	of.mu.Lock()
+	defer of.mu.Unlock()
+	for c, files := range of.files {
+		hclog.Default().Debug("Closing files for client", "client", c)
+		for h, file := range files {
+			err := file.Close()
+			if err != nil {
+				hclog.Default().Error("Failed to close file", "file", h, "err", err)
+			}
+			hclog.Default().Debug("Closing file", "file", h)
+			delete(of.files[c], h)
+		}
+	}
 }

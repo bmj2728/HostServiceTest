@@ -20,6 +20,11 @@ var (
 	ErrInvalidPath = errors.New("invalid path")
 )
 
+func (hf *HostFS) Cleanup() {
+	hclog.Default().Info("Cleaning up HostFS resources")
+	hf.GetOpenFiles().CloseAll()
+}
+
 // HostFS is a file system abstraction that provides methods to interact with a host's file system.
 type HostFS struct {
 	openFiles *OpenFiles
@@ -32,6 +37,20 @@ func NewHostFS() *HostFS {
 		openFiles: NewOpenFiles(),
 		openRoots: NewOpenRoots(),
 	}
+}
+
+func (hf *HostFS) GetOpenFiles() *OpenFiles {
+	if hf.openFiles == nil {
+		hf.openFiles = NewOpenFiles()
+	}
+	return hf.openFiles
+}
+
+func (hf *HostFS) GetOpenRoots() *OpenRoots {
+	if hf.openRoots == nil {
+		hf.openRoots = NewOpenRoots()
+	}
+	return hf.openRoots
 }
 
 // ReadDir reads the contents of the specified directory path and returns a slice of directory entries or an error.

@@ -136,5 +136,11 @@ func (s *HostServiceGRPCServer) OpenFile(ctx context.Context,
 	if err != nil {
 		return &hostservev1.OpenFileResponse{Error: proto.String(err.Error())}, nil
 	}
-	return &hostservev1.OpenFileResponse{Handle: fh.String(), Size: uint64(size)}, nil
+	hclog.Default().Info("File opened successfully",
+		ctxClientIDKey, clientID,
+		ctxHostRequestIDKey, reqID,
+		"path", ap,
+		"handle", fh,
+		"size", size)
+	return &hostservev1.OpenFileResponse{Handle: fh.String(), Size: size}, nil
 }

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"os"
 	"path/filepath"
 	"sync"
 
@@ -16,6 +17,7 @@ import (
 )
 
 type FileLister struct {
+	fileHandles       map[string]hostserve.FileHandle
 	broker            *plugin.GRPCBroker
 	hostServiceClient hostserve.IHostServices
 	conn              *grpc.ClientConn
@@ -48,6 +50,12 @@ func (f *FileLister) ListFiles(dir string) ([]string, error) {
 	if err != nil {
 		hclog.Default().Error("Failed to write file via host service", "dir", dir, "err", err)
 	}
+	fh, sz, err := f.hostServiceClient.OpenFile(ctx, filepath.Join(dir, "listed_files.txt"), os.O_RDONLY, 0644)
+	if err != nil {
+		hclog.Default().Error("Failed to open file via host service", "dir", dir, "err", err)
+	}
+	hclog.Default().Info("File size", "size", sz)
+	f.fileHandles[filepath.Join(dir, "listed_files.txt")] = fh
 	return entries, nil
 }
 
@@ -92,7 +100,9 @@ var handshakeConfig = plugin.HandshakeConfig{
 }
 
 func main() {
-	fl := &FileLister{}
+	fl := &FileLister{
+		fileHandles: make(map[string]hostserve.FileHandle),
+	}
 
 	pluginMap := map[string]plugin.Plugin{
 		"fl-plugin": &filelister.FileListerGRPCPlugin{Impl: fl},

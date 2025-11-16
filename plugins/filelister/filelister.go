@@ -50,12 +50,19 @@ func (f *FileLister) ListFiles(dir string) ([]string, error) {
 	if err != nil {
 		hclog.Default().Error("Failed to write file via host service", "dir", dir, "err", err)
 	}
+
 	fh, sz, err := f.hostServiceClient.OpenFile(ctx, filepath.Join(dir, "listed_files.txt"), os.O_RDONLY, 0644)
 	if err != nil {
 		hclog.Default().Error("Failed to open file via host service", "dir", dir, "err", err)
 	}
 	hclog.Default().Info("File size", "size", sz)
 	f.fileHandles[filepath.Join(dir, "listed_files.txt")] = fh
+	defer func(hostServiceClient hostserve.IHostServices, ctx context.Context, handle hostserve.FileHandle) {
+		err := hostServiceClient.CloseFile(ctx, handle)
+		if err != nil {
+			hclog.Default().Error("Failed to close file handle", "err", err)
+		}
+	}(f.hostServiceClient, ctx, fh)
 	return entries, nil
 }
 

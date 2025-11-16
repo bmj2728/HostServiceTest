@@ -144,3 +144,20 @@ func (s *HostServiceGRPCServer) OpenFile(ctx context.Context,
 		"size", size)
 	return &hostservev1.OpenFileResponse{Handle: fh.String(), Size: size}, nil
 }
+
+func (s *HostServiceGRPCServer) CloseFile(ctx context.Context,
+	request *hostservev1.CloseFileRequest,
+) (*hostservev1.CloseFileResponse, error) {
+	clientID := getClientIDFromContext(ctx)
+	reqID := getRequestIDFromContext(ctx)
+	fh := FileHandle(request.Handle)
+	hclog.Default().Info("CloseFile request from client",
+		ctxClientIDKey, clientID,
+		ctxHostRequestIDKey, reqID,
+		"handle", fh)
+	err := s.Impl.CloseFile(ctx, fh)
+	if err != nil {
+		return &hostservev1.CloseFileResponse{Error: proto.String(err.Error())}, nil
+	}
+	return &hostservev1.CloseFileResponse{}, nil
+}

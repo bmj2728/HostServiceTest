@@ -92,3 +92,14 @@ func (c *HostServiceGRPCClient) OpenFile(ctx context.Context, path string, flag 
 	}
 	return FileHandle(resp.Handle), resp.Size, nil
 }
+
+func (c *HostServiceGRPCClient) CloseFile(ctx context.Context, handle FileHandle) error {
+	ctx = addTracingIDsToContext(ctx, c.clientID, NewRequestID())
+	_, err := c.client.CloseFile(ctx, &hostservev1.CloseFileRequest{
+		Handle: string(handle),
+	})
+	if err != nil {
+		return err
+	}
+	return nil
+}

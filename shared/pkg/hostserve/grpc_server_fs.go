@@ -15,8 +15,8 @@ var (
 	ErrInvalidHostFS = errors.New("invalid host file system")
 )
 
-func (s *HostServiceGRPCServer) getHostFS() (*HostFS, error) {
-	hs, err := s.getHostServices()
+func (s *HostServiceGRPCServer) GetHostFS() (*HostFS, error) {
+	hs, err := s.GetHostServices()
 	if err != nil {
 		return nil, err
 	}

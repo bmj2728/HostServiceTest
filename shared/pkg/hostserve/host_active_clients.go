@@ -109,3 +109,15 @@ func (ac *ActiveClients) Clear() {
 	defer ac.mu.Unlock()
 	ac.Clients = make(ActiveClientsMap)
 }
+
+// ClientID represents a unique identifier for a client in a system or application.
+type ClientID string
+
+func newClientID() ClientID {
+	return ClientID(newUUID().String())
+}
+
+// String returns the ClientID as its underlying string representation.
+func (cid ClientID) String() string {
+	return string(cid)
+}

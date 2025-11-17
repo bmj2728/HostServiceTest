@@ -18,7 +18,7 @@ type HostServiceGRPCServer struct {
 	hostservev1.UnimplementedHostServiceServer
 }
 
-func (s *HostServiceGRPCServer) getHostServices() (*HostServices, error) {
+func (s *HostServiceGRPCServer) GetHostServices() (*HostServices, error) {
 	hs, ok := s.Impl.(*HostServices)
 	if !ok {
 		return nil, ErrInvalidHostServices
@@ -49,30 +49,6 @@ func (c *HostServiceGRPCClient) ClientID() ClientID {
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////
-
-// ClientID represents a unique identifier for a client in a system or application.
-type ClientID string
-
-func newClientID() ClientID {
-	return ClientID(newUUID().String())
-}
-
-// String returns the ClientID as its underlying string representation.
-func (cid ClientID) String() string {
-	return string(cid)
-}
-
-// RequestID represents a unique identifier for a specific request, typically used for tracing and tracking purposes.
-type RequestID string
-
-func NewRequestID() RequestID {
-	return RequestID(newUUID().String())
-}
-
-// String converts the RequestID value to its string representation.
-func (rid RequestID) String() string {
-	return string(rid)
-}
 
 // HostServiceError represents an error returned by the host service.
 // Message is a description of the error.

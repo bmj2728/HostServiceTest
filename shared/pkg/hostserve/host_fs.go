@@ -36,7 +36,7 @@ type HostFS struct {
 func NewHostFS() *HostFS {
 	return &HostFS{
 		openFiles: NewOpenFiles(),
-		openRoots: NewOpenRoots(),
+		openRoots: newOpenRoots(),
 	}
 }
 
@@ -49,7 +49,7 @@ func (hf *HostFS) GetOpenFiles() *OpenFiles {
 
 func (hf *HostFS) GetOpenRoots() *OpenRoots {
 	if hf.openRoots == nil {
-		hf.openRoots = NewOpenRoots()
+		hf.openRoots = newOpenRoots()
 	}
 	return hf.openRoots
 }

@@ -8,6 +8,8 @@ import (
 	"github.com/hashicorp/go-hclog"
 )
 
+//**************************HANDLE****************************************
+
 // FileHandle represents a unique identifier for an open file within a specific client context.
 type FileHandle string
 
@@ -19,6 +21,8 @@ func (fh FileHandle) String() string {
 func newFileHandle() FileHandle {
 	return FileHandle(newUUID().String())
 }
+
+//**************************Map Structure****************************************
 
 // OpenFileMap represents a mapping of ClientIDs to their associated FileHandles and open file pointers.
 type OpenFileMap map[ClientID]map[FileHandle]*os.File
@@ -35,6 +39,8 @@ func NewOpenFiles() *OpenFiles {
 		files: make(OpenFileMap),
 	}
 }
+
+//**************************Functions****************************************
 
 func (of *OpenFiles) AddFile(clientID ClientID, fileHandle FileHandle, file *os.File) error {
 	of.mu.Lock()

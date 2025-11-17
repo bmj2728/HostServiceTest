@@ -47,10 +47,11 @@ func (hf *HostFS) GetOpenFiles() *OpenFiles {
 	return hf.openFiles
 }
 
-func (hf *HostFS) GetOpenRoots() *OpenRoots {
+func (hf *HostFS) GetOpenRoots(clientID ClientID) *OpenRoots {
 	if hf.openRoots == nil {
 		hf.openRoots = newOpenRoots()
 	}
+	hf.openRoots.Roots(clientID)
 	return hf.openRoots
 }
 

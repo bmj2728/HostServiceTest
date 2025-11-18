@@ -2,11 +2,30 @@ package hostserve
 
 import (
 	"context"
+	"errors"
 	"os"
+	"path/filepath"
 
 	"github.com/bmj2728/hst/shared/protogen/hostserve/v1"
 	"github.com/hashicorp/go-hclog"
+	"google.golang.org/protobuf/proto"
 )
+
+var (
+	ErrInvalidHostFS = errors.New("invalid host file system")
+)
+
+func (s *HostServiceGRPCServer) GetHostFS() (*HostFS, error) {
+	hs, err := s.GetHostServices()
+	if err != nil {
+		return nil, err
+	}
+	hfs, ok := hs.IHostFS.(*HostFS)
+	if !ok {
+		return nil, ErrInvalidHostFS
+	}
+	return hfs, nil
+}
 
 // ReadDir processes a gRPC request to read contents of a directory specified by the request path and returns
 // the results.
@@ -15,14 +34,21 @@ func (s *HostServiceGRPCServer) ReadDir(ctx context.Context,
 ) (*hostservev1.ReadDirResponse, error) {
 
 	clientID := getClientIDFromContext(ctx)
-	hclog.Default().Info("ReadDir request from client", "clientID", clientID)
+	reqID := getRequestIDFromContext(ctx)
+	ap, err := filepath.Abs(request.Path)
+	if err != nil {
+		ap = request.Path
+	}
+	hclog.Default().Info("ReadDir request from client",
+		ctxClientIDKey, clientID,
+		ctxHostRequestIDKey, reqID,
+		"path", ap)
 
 	entries, err := s.Impl.ReadDir(ctx, request.Path)
 	if err != nil {
-		errMsg := err.Error()
 		return &hostservev1.ReadDirResponse{
 			Entries: nil,
-			Error:   &errMsg,
+			Error:   proto.String(err.Error()),
 		}, nil
 	}
 
@@ -37,7 +63,6 @@ func (s *HostServiceGRPCServer) ReadDir(ctx context.Context,
 
 	return &hostservev1.ReadDirResponse{
 		Entries: pbEntries,
-		Error:   nil,
 	}, nil
 }
 
@@ -48,19 +73,25 @@ func (s *HostServiceGRPCServer) ReadFile(ctx context.Context,
 ) (*hostservev1.ReadFileResponse, error) {
 
 	clientID := getClientIDFromContext(ctx)
-	hclog.Default().Info("ReadFile request from client", "clientID", clientID)
+	reqID := getRequestIDFromContext(ctx)
+	ap, err := filepath.Abs(request.Path)
+	if err != nil {
+		ap = request.Path
+	}
+	hclog.Default().Info("ReadFile request from client",
+		ctxClientIDKey, clientID,
+		ctxHostRequestIDKey, reqID,
+		"path", ap)
 
 	bytes, err := s.Impl.ReadFile(ctx, request.Path)
 	if err != nil {
-		errMsg := err.Error()
 		return &hostservev1.ReadFileResponse{
 			Contents: nil,
-			Error:    &errMsg,
+			Error:    proto.String(err.Error()),
 		}, nil
 	}
 	return &hostservev1.ReadFileResponse{
 		Contents: bytes,
-		Error:    nil,
 	}, nil
 }
 
@@ -69,12 +100,64 @@ func (s *HostServiceGRPCServer) WriteFile(ctx context.Context,
 ) (*hostservev1.WriteFileResponse, error) {
 
 	clientID := getClientIDFromContext(ctx)
-	hclog.Default().Info("WriteFile request from client", "clientID", clientID)
-
-	err := s.Impl.WriteFile(ctx, request.Path, request.Data, os.FileMode(request.Perm))
+	reqID := getRequestIDFromContext(ctx)
+	ap, err := filepath.Abs(request.Path)
 	if err != nil {
-		errMsg := err.Error()
-		return &hostservev1.WriteFileResponse{Error: &errMsg}, nil
+		ap = request.Path
 	}
-	return &hostservev1.WriteFileResponse{Error: nil}, nil
+	hclog.Default().Info("WriteFile request from client",
+		ctxClientIDKey, clientID,
+		ctxHostRequestIDKey, reqID,
+		"path", ap)
+
+	err = s.Impl.WriteFile(ctx, request.Path, request.Data, os.FileMode(request.Perm))
+	if err != nil {
+		return &hostservev1.WriteFileResponse{Error: proto.String(err.Error())}, nil
+	}
+	return &hostservev1.WriteFileResponse{}, nil
+}
+
+func (s *HostServiceGRPCServer) FileOpen(ctx context.Context,
+	request *hostservev1.FileOpenRequest,
+) (*hostservev1.FileOpenResponse, error) {
+
+	clientID := getClientIDFromContext(ctx)
+	reqID := getRequestIDFromContext(ctx)
+	ap, err := filepath.Abs(request.Path)
+	if err != nil {
+		ap = request.Path
+	}
+	hclog.Default().Info("FileOpen request from client",
+		ctxClientIDKey, clientID,
+		ctxHostRequestIDKey, reqID,
+		"path", ap)
+
+	fh, size, err := s.Impl.FileOpen(ctx, request.Path, openFileModeToFlags(request.Mode), os.FileMode(request.Perm))
+	if err != nil {
+		return &hostservev1.FileOpenResponse{Error: proto.String(err.Error())}, nil
+	}
+	hclog.Default().Info("File opened successfully",
+		ctxClientIDKey, clientID,
+		ctxHostRequestIDKey, reqID,
+		"path", ap,
+		"handle", fh,
+		"size", size)
+	return &hostservev1.FileOpenResponse{Handle: fh.String(), Size: size}, nil
+}
+
+func (s *HostServiceGRPCServer) FileClose(ctx context.Context,
+	request *hostservev1.FileCloseRequest,
+) (*hostservev1.FileCloseResponse, error) {
+	clientID := getClientIDFromContext(ctx)
+	reqID := getRequestIDFromContext(ctx)
+	fh := FileHandle(request.Handle)
+	hclog.Default().Info("FileClose request from client",
+		ctxClientIDKey, clientID,
+		ctxHostRequestIDKey, reqID,
+		"handle", fh)
+	err := s.Impl.FileClose(ctx, fh)
+	if err != nil {
+		return &hostservev1.FileCloseResponse{Error: proto.String(err.Error())}, nil
+	}
+	return &hostservev1.FileCloseResponse{}, nil
 }

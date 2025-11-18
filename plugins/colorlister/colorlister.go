@@ -3,6 +3,7 @@ package main
 //note that we do not need to import os or fs here, as we are using the host service to read the files
 import (
 	"context"
+	"fmt"
 	"path/filepath"
 	"sync"
 
@@ -40,35 +41,35 @@ func (f *ColorLister) ListFiles(dir string) ([]string, error) {
 	var entries []string
 	for _, entry := range dirEntries {
 		if entry.IsDir() {
-			entries = append(entries, dirFormat.Wrap(entry.Name()+"-d", true))
+			entries = append(entries, dirFormat.Wrap(entry.Name(), true))
 		} else {
 			data, err := f.hostServiceClient.ReadFile(ctx, filepath.Join(dir, entry.Name()))
 			if err != nil {
 				hclog.Default().Error("Failed to read file via host service", "dir", dir,
 					"file", entry.Name(), "err", err)
 			}
-			contents := string(data)
-			entries = append(entries, fileFormat.Wrap(entry.Name()+"-f", true))
-			entries = append(entries, "Contents:\n", contents)
+			contents := len(string(data))
+			entries = append(entries, fileFormat.Wrap(entry.Name(), true)+fmt.Sprintf(" Size: %d bytes", contents))
 		}
 	}
 
 	return entries, nil
 }
 
-func (f *ColorLister) EstablishHostServices(hostServiceID uint32) {
+func (f *ColorLister) EstablishHostServices(hostServiceID uint32) (hostserve.ClientID, error) {
 	f.connMutex.Lock()
 	defer f.connMutex.Unlock()
 
 	conn, err := f.broker.Dial(hostServiceID)
 	if err != nil {
 		hclog.Default().Error("Failed to dial host service", "err", err)
-		return
+		return "", fmt.Errorf("failed to dial broker: %w", err)
 	}
 
 	f.conn = conn
-	f.hostServiceClient = hostserve.NewHostServiceGRPCClient(hostservev1.NewHostServiceClient(conn))
-	hclog.Default().Info("Established host services", "id", hostServiceID)
+	client := hostserve.NewHostServiceGRPCClient(hostservev1.NewHostServiceClient(conn))
+	f.hostServiceClient = client
+	return client.ClientID(), nil
 }
 
 func (f *ColorLister) DisconnectHostServices() {

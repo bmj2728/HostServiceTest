@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"path/filepath"
 
 	"github.com/bmj2728/hst/shared/pkg/filelister"
 	"github.com/bmj2728/hst/shared/pkg/hostconn"
@@ -28,18 +29,26 @@ func main() {
 		Name:   "host",
 		Output: os.Stdout,
 		Level:  hclog.Info,
+		Color:  hclog.ForceColor,
 	})
+	hclog.SetDefault(logger)
 
 	// Set up host services - create the implementation
 	// HostServices is a struct that embeds the HostFS and HostEnv interfaces
 	hostServices := hostserve.NewHostServices(hostserve.NewHostFS(), hostserve.NewHostEnv())
 	//Start plugin 1
-
+	flAbspath, err := filepath.Abs("./plugins/filelister/filelister")
+	if err != nil {
+		logger.Error("Failed to get absolute path", "err", err)
+		flAbspath = "./plugins/filelister/filelister"
+	}
+	flDir, flBin := filepath.Split(flAbspath)
+	logger.Info("Starting plugin", "dir", flDir, "bin", flBin)
 	// Create the plugin client - plumbing
 	client := plugin.NewClient(&plugin.ClientConfig{
 		HandshakeConfig:  handshakeConfig,
 		Plugins:          pluginMap,
-		Cmd:              exec.Command("./plugins/filelister/filelister"),
+		Cmd:              exec.Command(flAbspath),
 		AllowedProtocols: []plugin.Protocol{plugin.ProtocolGRPC},
 		Logger:           logger,
 	})
@@ -63,18 +72,34 @@ func main() {
 	fileLister := raw.(filelister.FileLister)
 
 	// Setup host services for the plugin (if supported)
-	if err := hostconn.EstablishHostServices(raw, hostServices, logger); err != nil {
+	cid, err := hostconn.EstablishHostServiceConnection(raw, hostServices, logger)
+	if err != nil {
 		logger.Error("Failed to establish host services", "err", err)
 		os.Exit(1)
+	}
+	if cid != "" {
+		err = hostServices.ActiveClients().AddClient(cid, flBin)
+		if err != nil {
+			logger.Error("Failed to add client", "err", err)
+			os.Exit(1)
+		}
+		logger.Info("Host services established", "bin", flBin, "cid", cid)
 	}
 
 	// End plugin 1
 
-	//Start plugin 2
+	////Start plugin 2
+	clAbspath, err := filepath.Abs("./plugins/colorlister/colorlister")
+	if err != nil {
+		logger.Error("Failed to get absolute path", "err", err)
+		clAbspath = "./plugins/colorlister/colorlister"
+	}
+	clDir, clBin := filepath.Split(clAbspath)
+	logger.Info("Starting plugin", "dir", clDir, "bin", clBin)
 	color := plugin.NewClient(&plugin.ClientConfig{
 		HandshakeConfig:  handshakeConfig,
 		Plugins:          pluginMap,
-		Cmd:              exec.Command("./plugins/colorlister/colorlister"),
+		Cmd:              exec.Command(clAbspath),
 		AllowedProtocols: []plugin.Protocol{plugin.ProtocolGRPC},
 		Logger:           logger,
 	})
@@ -98,12 +123,25 @@ func main() {
 	colorlister := rawColor.(filelister.FileLister)
 
 	// Setup host services for the plugin (if supported)
-	if err := hostconn.EstablishHostServices(rawColor, hostServices, logger); err != nil {
+	cid2, err := hostconn.EstablishHostServiceConnection(rawColor, hostServices, logger)
+	if err != nil {
 		logger.Error("Failed to establish host services", "err", err)
 		os.Exit(1)
 	}
+	if cid2 != "" {
+		err = hostServices.ActiveClients().AddClient(cid2, clBin)
+		if err != nil {
+			logger.Error("Failed to add client", "err", err)
+			os.Exit(1)
+		}
+		logger.Info("Host services established", "bin", clBin, "cid", cid2)
+	}
 
 	// End plugin 2
+
+	logger.Info("Active clients",
+		"count", hostServices.ActiveClients().Len(),
+		"clients", hostServices.ActiveClients())
 
 	// Test the plugin by listing files in the current directory
 	entries, err := fileLister.ListFiles(".")
@@ -132,5 +170,13 @@ func main() {
 	logger.Info("Shutting down plugins")
 	hostconn.DisconnectHostServices(raw, logger)
 	hostconn.DisconnectHostServices(rawColor, logger)
+	hfs, ok := hostServices.IHostFS.(*hostserve.HostFS)
+	if !ok {
+		logger.Error("Failed to cast host services to HostFS")
+		os.Exit(1)
+	}
+	hfs.Cleanup()
+	hostServices.ActiveClients().Clear()
+
 	os.Exit(0)
 }

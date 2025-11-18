@@ -25,7 +25,9 @@ type IHostFS interface {
 	// WriteFile writes data to the specified file within the given directory, applying the provided file permissions.
 	WriteFile(ctx context.Context, path string, data []byte, perm os.FileMode) error
 
-	//TODO - Add support for streaming reads and writes
+	FileOpen(ctx context.Context, path string, flag int, perm os.FileMode) (FileHandle, uint64, error)
+
+	FileClose(ctx context.Context, handle FileHandle) error
 }
 
 // IHostEnv defines a contract for interacting with environment variables in the host system.

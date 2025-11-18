@@ -11,12 +11,13 @@ import (
 // ReadDir retrieves a list of directory entries from the given path through a gRPC call to the host service.
 // Returns a slice of fs.DirEntry or an error if the operation fails.
 func (c *HostServiceGRPCClient) ReadDir(ctx context.Context, path string) ([]fs.DirEntry, error) {
-	ctx = addClientIDToContext(ctx, c.clientID)
+
+	ctx = addTracingIDsToContext(ctx, c.clientID, NewRequestID())
 	resp, err := c.client.ReadDir(ctx, &hostservev1.ReadDirRequest{
 		Path: path,
 	})
 	if err != nil {
-		return nil, err
+		return nil, &HostServiceError{Message: err.Error()}
 	}
 	if resp.Error != nil {
 		return nil, &HostServiceError{Message: *resp.Error}
@@ -37,7 +38,7 @@ func (c *HostServiceGRPCClient) ReadDir(ctx context.Context, path string) ([]fs.
 // ReadFile reads the specified file from the given directory and returns its contents as a byte slice.
 // Returns an error if the file cannot be read or the service encounters an issue.
 func (c *HostServiceGRPCClient) ReadFile(ctx context.Context, path string) ([]byte, error) {
-	ctx = addClientIDToContext(ctx, c.clientID)
+	ctx = addTracingIDsToContext(ctx, c.clientID, NewRequestID())
 	resp, err := c.client.ReadFile(ctx, &hostservev1.ReadFileRequest{
 		Path: path,
 	})
@@ -51,7 +52,7 @@ func (c *HostServiceGRPCClient) ReadFile(ctx context.Context, path string) ([]by
 }
 
 func (c *HostServiceGRPCClient) WriteFile(ctx context.Context, path string, data []byte, perm os.FileMode) error {
-	ctx = addClientIDToContext(ctx, c.clientID)
+	ctx = addTracingIDsToContext(ctx, c.clientID, NewRequestID())
 	if perm == 0 {
 		perm = StandardPermissions
 	}
@@ -69,6 +70,36 @@ func (c *HostServiceGRPCClient) WriteFile(ctx context.Context, path string, data
 	}
 	if resp.Error != nil {
 		return &HostServiceError{Message: *resp.Error}
+	}
+	return nil
+}
+
+func (c *HostServiceGRPCClient) FileOpen(ctx context.Context, path string, flag int, perm os.FileMode) (FileHandle, uint64, error) {
+	ctx = addTracingIDsToContext(ctx, c.clientID, NewRequestID())
+	resp, err := c.client.FileOpen(ctx, &hostservev1.FileOpenRequest{
+		Path: path,
+		Mode: flagsToOpenFileMode(flag),
+		Perm: uint32(perm),
+	})
+	if err != nil {
+		return "", 0, &HostServiceError{Message: err.Error()}
+	}
+	if resp == nil {
+		return "", 0, &HostServiceError{Message: "nil response from FileOpen"}
+	}
+	if resp.Error != nil {
+		return "", 0, &HostServiceError{Message: *resp.Error}
+	}
+	return FileHandle(resp.Handle), resp.Size, nil
+}
+
+func (c *HostServiceGRPCClient) FileClose(ctx context.Context, handle FileHandle) error {
+	ctx = addTracingIDsToContext(ctx, c.clientID, NewRequestID())
+	_, err := c.client.FileClose(ctx, &hostservev1.FileCloseRequest{
+		Handle: string(handle),
+	})
+	if err != nil {
+		return &HostServiceError{Message: err.Error()}
 	}
 	return nil
 }

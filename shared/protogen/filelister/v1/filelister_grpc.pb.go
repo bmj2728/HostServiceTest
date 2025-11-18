@@ -27,7 +27,7 @@ const (
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type FileListerClient interface {
-	EstablishHostServices(ctx context.Context, in *HostServiceRequest, opts ...grpc.CallOption) (*Empty, error)
+	EstablishHostServices(ctx context.Context, in *HostServiceRequest, opts ...grpc.CallOption) (*HostServiceResponse, error)
 	List(ctx context.Context, in *FileListRequest, opts ...grpc.CallOption) (*FileListResponse, error)
 }
 
@@ -39,9 +39,9 @@ func NewFileListerClient(cc grpc.ClientConnInterface) FileListerClient {
 	return &fileListerClient{cc}
 }
 
-func (c *fileListerClient) EstablishHostServices(ctx context.Context, in *HostServiceRequest, opts ...grpc.CallOption) (*Empty, error) {
+func (c *fileListerClient) EstablishHostServices(ctx context.Context, in *HostServiceRequest, opts ...grpc.CallOption) (*HostServiceResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(Empty)
+	out := new(HostServiceResponse)
 	err := c.cc.Invoke(ctx, FileLister_EstablishHostServices_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
@@ -63,7 +63,7 @@ func (c *fileListerClient) List(ctx context.Context, in *FileListRequest, opts .
 // All implementations must embed UnimplementedFileListerServer
 // for forward compatibility.
 type FileListerServer interface {
-	EstablishHostServices(context.Context, *HostServiceRequest) (*Empty, error)
+	EstablishHostServices(context.Context, *HostServiceRequest) (*HostServiceResponse, error)
 	List(context.Context, *FileListRequest) (*FileListResponse, error)
 	mustEmbedUnimplementedFileListerServer()
 }
@@ -75,7 +75,7 @@ type FileListerServer interface {
 // pointer dereference when methods are called.
 type UnimplementedFileListerServer struct{}
 
-func (UnimplementedFileListerServer) EstablishHostServices(context.Context, *HostServiceRequest) (*Empty, error) {
+func (UnimplementedFileListerServer) EstablishHostServices(context.Context, *HostServiceRequest) (*HostServiceResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method EstablishHostServices not implemented")
 }
 func (UnimplementedFileListerServer) List(context.Context, *FileListRequest) (*FileListResponse, error) {

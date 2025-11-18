@@ -10,33 +10,49 @@ import (
 
 //**************************HANDLE****************************************
 
-// FileHandle represents a unique identifier for an open file within a specific client context.
+// FileHandle represents a unique identifier for an open file in the system.
 type FileHandle string
 
-// String converts the FileHandle to its underlying string representation.
+// String returns the string representation of the FileHandle.
 func (fh FileHandle) String() string {
 	return string(fh)
 }
 
+// newFileHandle generates and returns a new unique FileHandle using a UUID.
 func newFileHandle() FileHandle {
 	return FileHandle(newUUID().String())
 }
 
 //**************************Map Structure****************************************
 
-// OpenFileMap represents a mapping of ClientIDs to their associated FileHandles and open file pointers.
-type OpenFileMap map[ClientID]map[FileHandle]*os.File
+// FileMap represents a mapping of FileHandle identifiers to their corresponding *os.File instances.
+type FileMap map[FileHandle]*os.File
 
-// OpenFiles manages a thread-safe collection of open file references, grouped by client and file handle.
+func newFileMap() FileMap {
+	return make(FileMap)
+}
+
+// ClientFileMap is a nested map structure, where each ClientID maps to another map of FileHandle to *os.File.
+type ClientFileMap map[ClientID]FileMap
+
+// newClientFileMap initializes and returns a new instance of ClientFileMap.
+// It creates an empty map structure to store file handles organized by client IDs.
+func newClientFileMap() ClientFileMap {
+	return make(ClientFileMap)
+}
+
+//**************************Thread-safe Struct****************************************
+
+// OpenFiles is a thread-safe struct for managing a collection of open files organized by client IDs and file handles.
 type OpenFiles struct {
-	files OpenFileMap
+	files ClientFileMap
 	mu    sync.RWMutex
 }
 
-// NewOpenFiles initializes and returns a new instance of OpenFiles with an empty OpenFileMap and a RWMutex.
-func NewOpenFiles() *OpenFiles {
+// newOpenFiles initializes and returns a new instance of OpenFiles with an empty ClientFileMap.
+func newOpenFiles() *OpenFiles {
 	return &OpenFiles{
-		files: make(OpenFileMap),
+		files: newClientFileMap(),
 	}
 }
 
@@ -93,7 +109,7 @@ func (of *OpenFiles) GetFile(clientID ClientID, fileHandle FileHandle) (*os.File
 	return files[fileHandle], nil
 }
 
-func (of *OpenFiles) GetFiles() OpenFileMap {
+func (of *OpenFiles) GetFiles() ClientFileMap {
 	of.mu.RLock()
 	defer of.mu.RUnlock()
 	return of.files

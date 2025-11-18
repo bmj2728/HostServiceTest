@@ -35,14 +35,14 @@ type HostFS struct {
 // NewHostFS creates and returns a new instance of HostFS.
 func NewHostFS() *HostFS {
 	return &HostFS{
-		openFiles: NewOpenFiles(),
+		openFiles: newOpenFiles(),
 		openRoots: newOpenRoots(),
 	}
 }
 
 func (hf *HostFS) GetOpenFiles() *OpenFiles {
 	if hf.openFiles == nil {
-		hf.openFiles = NewOpenFiles()
+		hf.openFiles = newOpenFiles()
 	}
 	return hf.openFiles
 }

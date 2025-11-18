@@ -47,7 +47,7 @@ func (or *OpenRoot) Root() *os.Root {
 // OpenFiles ensures the OpenFiles instance is initialized and returns it, creating a new one if it is nil.
 func (or *OpenRoot) OpenFiles() *OpenFiles {
 	if or.openFiles == nil {
-		or.openFiles = NewOpenFiles()
+		or.openFiles = newOpenFiles()
 	}
 	return or.openFiles
 }

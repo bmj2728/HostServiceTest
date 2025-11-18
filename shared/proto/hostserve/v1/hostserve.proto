@@ -38,8 +38,8 @@ service HostService {
   // FS - File Handle Endpoints
   rpc FileOpen(FileOpenRequest) returns (FileOpenResponse);
   rpc FileClose(FileCloseRequest) returns (FileCloseResponse);
-  rpc FileRead(FileReadRequest) returns (FileReadResponse);
-  rpc FileWrite(FileWriteRequest) returns (FileWriteResponse);
+  rpc FileRead(FileReadRequest) returns (stream FileReadResponse);
+  rpc FileWrite(stream FileWriteRequest) returns (FileWriteResponse);
 
   // Env Endpoints
   rpc GetEnv(GetEnvRequest) returns (GetEnvResponse);

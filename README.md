@@ -119,6 +119,18 @@ func (h *HostServices) ReadDir(ctx context.Context, path string) ([]fs.DirEntry,
 
 This is the foundation for building plugin systems users can trust.
 
+## Recent Updates
+
+**Latest improvements to the architecture:**
+
+- **Streaming file operations**: Added infrastructure for streaming large files via `FileRead` (server streaming) and `FileWrite` (client streaming) to handle large files efficiently without loading everything into memory
+- **File handle management**: Introduced `FileOpen`/`FileClose` endpoints with handle-based operations, enabling better resource management and explicit lifecycle control
+- **Simplified architecture**: Removed `OpenRoots` complexity in favor of cleaner internal path confinement
+- **Consistent naming**: Standardized method names (`FileOpen`, `FileClose`) for better API clarity
+- **Dual access patterns**: Both simple unary operations (for small files) and handle-based streaming (for large files) are now supported
+
+See the [Dual File Access Patterns](#dual-file-access-patterns) section for details on how to use both approaches.
+
 ## Quick Start
 
 ### Prerequisites
@@ -140,8 +152,8 @@ go build -o plugins/colorlister/colorlister ./plugins/colorlister
 You'll see:
 - The host spawning two plugins
 - Plugins calling back to host services to read directories
-- `filelister` writing a file via host service
-- `colorlister` reading file contents with colored output
+- `filelister` demonstrating file handle operations (open, use, close)
+- `colorlister` reading file contents with colored output and context propagation
 - Clean shutdown with proper connection cleanup
 
 ## Architecture: The Big Picture
@@ -181,20 +193,62 @@ You'll see:
 This demo includes:
 
 **Two Example Plugins:**
-- `filelister`: Lists files and writes output to a file via host service
-- `colorlister`: Reads files with colored output, demonstrates context propagation
+- `filelister`: Lists files and demonstrates file handle operations (`FileOpen`/`FileClose`) for resource management
+- `colorlister`: Reads files with colored output, demonstrates context propagation and client identification
 
 **Host Services:**
-- `ReadDir(path)`: Read directory contents
-- `ReadFile(dir, file)`: Read file contents
-- `WriteFile(dir, file, data, perm)`: Write file
+
+*Simple Unary Operations:*
+- `ReadDir(path)`: Read directory contents (unary RPC)
+- `ReadFile(path)`: Read file contents (unary RPC)
+- `WriteFile(path, data, perm)`: Write file (unary RPC)
 - `GetEnv(key)`: Get environment variable
+
+*File Handle Operations (for larger files and streaming):*
+- `FileOpen(path, mode, perm)`: Open file and return handle
+- `FileClose(handle)`: Close file handle
+- `FileRead(handle, chunk_size)`: Read file in chunks (server streaming)
+- `FileWrite(handle, chunks)`: Write file in chunks (client streaming)
 
 **Infrastructure:**
 - `hostconn` package: Reusable connection management for any plugin type
 - Clean separation between business logic and infrastructure
 - Proper connection lifecycle (setup → use → teardown)
 - Thread-safe broker multiplexing
+- File handle management for streaming operations
+
+### Dual File Access Patterns
+
+The project provides two ways to work with files:
+
+**1. Simple Unary Operations** (for small files):
+```go
+// Read entire file at once
+data, err := hostServiceClient.ReadFile(ctx, "/path/to/file")
+
+// Write entire file at once
+err = hostServiceClient.WriteFile(ctx, "/path/to/file", data, 0644)
+```
+
+**2. File Handle Operations** (for large files and streaming):
+```go
+// Open file and get handle
+handle, size, err := hostServiceClient.FileOpen(ctx, "/path/to/file", READ_ONLY, 0)
+
+// Read in chunks via streaming (when implemented)
+stream, err := hostServiceClient.FileRead(ctx, handle, 8192)
+
+// Close when done
+err = hostServiceClient.FileClose(ctx, handle)
+```
+
+The file handle pattern enables:
+- **Streaming large files** without loading everything into memory
+- **Progressive processing** of file contents
+- **Better resource management** with explicit open/close lifecycle
+- **Future extensibility** for seeking, partial writes, etc.
+
+**Note:** The streaming implementations for `FileRead` and `FileWrite` are defined in the proto and infrastructure is in place, but full implementations are still in progress.
 
 ## Project Structure
 
@@ -219,25 +273,23 @@ This demo includes:
 
 ## How to Extend: Add a New Host Service Function
 
-Let's add a `DeleteFile` function:
+Adding new functionality is straightforward. Here's the general process:
 
-**Step 1**: Edit `shared/proto/hostserve/v1/hostserve.proto`:
+**Step 1**: Edit `shared/proto/hostserve/v1/hostserve.proto` and add your new RPC:
 ```protobuf
 service HostService {
-  rpc ReadDir(ReadDirRequest) returns (ReadDirResponse);
-  rpc ReadFile(ReadFileRequest) returns (ReadFileResponse);
-  rpc WriteFile(WriteFileRequest) returns (WriteFileResponse);
-  rpc DeleteFile(DeleteFileRequest) returns (DeleteFileResponse);  // NEW
-  rpc GetEnv(GetEnvRequest) returns (GetEnvResponse);
+  // ... existing methods ...
+  rpc YourNewMethod(YourRequest) returns (YourResponse);  // NEW
 }
 
-message DeleteFileRequest {
-  string dir = 1;
-  string file = 2;
+message YourRequest {
+  string param1 = 1;
+  int32 param2 = 2;
 }
 
-message DeleteFileResponse {
-  optional string error = 1;
+message YourResponse {
+  string result = 1;
+  optional string error = 2;
 }
 ```
 
@@ -246,20 +298,12 @@ message DeleteFileResponse {
 buf generate
 ```
 
-**Step 3**: Implement in `shared/pkg/hostserve/host_fs.go`:
-```go
-func (h *HostFS) DeleteFile(ctx context.Context, dir, file string) error {
-    root, err := os.OpenRoot(dir)
-    if err != nil {
-        return err
-    }
-    defer root.Close()
+**Step 3**: Implement the method:
+- Add the business logic to `shared/pkg/hostserve/` (e.g., in `host_fs.go` for file operations)
+- Add the gRPC server handler in `grpc_server_*.go`
+- Add the gRPC client wrapper in `grpc_client_*.go`
 
-    return root.Remove(file)
-}
-```
-
-**Done!** All plugins can now call `hostServiceClient.DeleteFile()`. No changes needed to:
+**Done!** All plugins can now call your new method. No changes needed to:
 - The broker setup
 - The connection management
 - Any plugin code (unless they want to use the new function)
@@ -376,14 +420,12 @@ func (h *HostServices) ReadDir(ctx context.Context, path string) ([]fs.DirEntry,
         return nil, ErrAccessDenied
     }
 
-    // Only allow access within configured root
-    root, err := os.OpenRoot(h.pluginRoots[clientID])
-    if err != nil {
-        return nil, err
+    // Validate path is within allowed boundaries
+    if !isPathAllowed(clientID, path) {
+        return nil, ErrAccessDenied
     }
-    defer root.Close()
 
-    return fs.ReadDir(root.FS(), path)
+    return h.hostFS.ReadDir(ctx, path)
 }
 ```
 
@@ -495,26 +537,44 @@ ctx = context.WithValue(ctx, "client", "cl-plugin")
 result := hostServiceClient.ReadDir(ctx, dir)
 ```
 
-**Pattern**: Safe file operations (host_fs.go uses `os.OpenRoot()` throughout)
+**Pattern**: Safe file operations with internal root confinement (host_fs.go:48-62)
 ```go
-root, _ := os.OpenRoot(dir)
-defer root.Close()
-return fs.ReadDir(root.FS(), ".")
+// HostFS internally uses os.OpenRoot() for path confinement
+func (hf *HostFS) ReadDir(ctx context.Context, path string) ([]fs.DirEntry, error) {
+    r, err := getRoot(path)
+    if err != nil {
+        return nil, err
+    }
+    defer closeRoot(r)
+    return fs.ReadDir(r.FS(), ".")
+}
 ```
 
-**Pattern**: Connection lifecycle management (filelister.go:52-79)
+**Pattern**: Connection lifecycle management
 ```go
-// Setup
+// Setup - connect to host services
 conn, _ := broker.Dial(serviceID)
-f.conn = conn
+plugin.conn = conn
 
-// Use
-result := client.ReadDir(...)
+// Use - call host services
+entries := hostServiceClient.ReadDir(ctx, path)
 
-// Teardown
-if f.conn != nil {
-    f.conn.Close()
+// Teardown - clean up connection
+if plugin.conn != nil {
+    plugin.conn.Close()
 }
+```
+
+**Pattern**: File handle lifecycle (for large file operations)
+```go
+// Open file and get handle
+handle, size, _ := hostServiceClient.FileOpen(ctx, path, mode, perm)
+
+// Use handle for operations
+// ... read or write operations ...
+
+// Always close handle when done
+defer hostServiceClient.FileClose(ctx, handle)
 ```
 
 ## Comparison to go-plugin Examples

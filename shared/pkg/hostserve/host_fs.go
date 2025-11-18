@@ -29,14 +29,12 @@ func (hf *HostFS) Cleanup() {
 // HostFS is a file system abstraction that provides methods to interact with a host's file system.
 type HostFS struct {
 	openFiles *OpenFiles
-	openRoots *OpenRoots
 }
 
 // NewHostFS creates and returns a new instance of HostFS.
 func NewHostFS() *HostFS {
 	return &HostFS{
 		openFiles: newOpenFiles(),
-		openRoots: newOpenRoots(),
 	}
 }
 
@@ -45,14 +43,6 @@ func (hf *HostFS) GetOpenFiles() *OpenFiles {
 		hf.openFiles = newOpenFiles()
 	}
 	return hf.openFiles
-}
-
-func (hf *HostFS) GetOpenRoots(clientID ClientID) *OpenRoots {
-	if hf.openRoots == nil {
-		hf.openRoots = newOpenRoots()
-	}
-	hf.openRoots.Roots(clientID)
-	return hf.openRoots
 }
 
 // ReadDir reads the contents of the specified directory path and returns a slice of directory entries or an error.

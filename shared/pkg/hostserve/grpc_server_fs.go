@@ -117,9 +117,9 @@ func (s *HostServiceGRPCServer) WriteFile(ctx context.Context,
 	return &hostservev1.WriteFileResponse{}, nil
 }
 
-func (s *HostServiceGRPCServer) OpenFile(ctx context.Context,
-	request *hostservev1.OpenFileRequest,
-) (*hostservev1.OpenFileResponse, error) {
+func (s *HostServiceGRPCServer) FileOpen(ctx context.Context,
+	request *hostservev1.FileOpenRequest,
+) (*hostservev1.FileOpenResponse, error) {
 
 	clientID := getClientIDFromContext(ctx)
 	reqID := getRequestIDFromContext(ctx)
@@ -127,14 +127,14 @@ func (s *HostServiceGRPCServer) OpenFile(ctx context.Context,
 	if err != nil {
 		ap = request.Path
 	}
-	hclog.Default().Info("OpenFile request from client",
+	hclog.Default().Info("FileOpen request from client",
 		ctxClientIDKey, clientID,
 		ctxHostRequestIDKey, reqID,
 		"path", ap)
 
-	fh, size, err := s.Impl.OpenFile(ctx, request.Path, openFileModeToFlags(request.Mode), os.FileMode(request.Perm))
+	fh, size, err := s.Impl.FileOpen(ctx, request.Path, openFileModeToFlags(request.Mode), os.FileMode(request.Perm))
 	if err != nil {
-		return &hostservev1.OpenFileResponse{Error: proto.String(err.Error())}, nil
+		return &hostservev1.FileOpenResponse{Error: proto.String(err.Error())}, nil
 	}
 	hclog.Default().Info("File opened successfully",
 		ctxClientIDKey, clientID,
@@ -142,22 +142,22 @@ func (s *HostServiceGRPCServer) OpenFile(ctx context.Context,
 		"path", ap,
 		"handle", fh,
 		"size", size)
-	return &hostservev1.OpenFileResponse{Handle: fh.String(), Size: size}, nil
+	return &hostservev1.FileOpenResponse{Handle: fh.String(), Size: size}, nil
 }
 
-func (s *HostServiceGRPCServer) CloseFile(ctx context.Context,
-	request *hostservev1.CloseFileRequest,
-) (*hostservev1.CloseFileResponse, error) {
+func (s *HostServiceGRPCServer) FileClose(ctx context.Context,
+	request *hostservev1.FileCloseRequest,
+) (*hostservev1.FileCloseResponse, error) {
 	clientID := getClientIDFromContext(ctx)
 	reqID := getRequestIDFromContext(ctx)
 	fh := FileHandle(request.Handle)
-	hclog.Default().Info("CloseFile request from client",
+	hclog.Default().Info("FileClose request from client",
 		ctxClientIDKey, clientID,
 		ctxHostRequestIDKey, reqID,
 		"handle", fh)
-	err := s.Impl.CloseFile(ctx, fh)
+	err := s.Impl.FileClose(ctx, fh)
 	if err != nil {
-		return &hostservev1.CloseFileResponse{Error: proto.String(err.Error())}, nil
+		return &hostservev1.FileCloseResponse{Error: proto.String(err.Error())}, nil
 	}
-	return &hostservev1.CloseFileResponse{}, nil
+	return &hostservev1.FileCloseResponse{}, nil
 }

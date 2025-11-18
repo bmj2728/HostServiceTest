@@ -57,14 +57,14 @@ func (f *FileLister) ListFiles(dir string) ([]string, error) {
 	}
 
 	// Open file
-	fh, sz, err := f.hostServiceClient.OpenFile(ctx, filepath.Join(dir, "listed_files.txt"), os.O_RDONLY, 0644)
+	fh, sz, err := f.hostServiceClient.FileOpen(ctx, filepath.Join(dir, "listed_files.txt"), os.O_RDONLY, 0644)
 	if err != nil {
 		hclog.Default().Error("Failed to open file via host service", "dir", dir, "err", err)
 	}
 	hclog.Default().Info("Opened file", "handle", fh, "size", sz)
 	// Close File called in a closure for deferment
 	defer func(hostServiceClient hostserve.IHostServices, ctx context.Context, handle hostserve.FileHandle) {
-		err := hostServiceClient.CloseFile(ctx, handle)
+		err := hostServiceClient.FileClose(ctx, handle)
 		if err != nil {
 			hclog.Default().Error("Failed to close file handle", "err", err)
 		}
@@ -75,7 +75,7 @@ func (f *FileLister) ListFiles(dir string) ([]string, error) {
 
 	newFileName := filepath.Join(dir, "testing_open_create.txt")
 
-	fh2, sz2, err := f.hostServiceClient.OpenFile(ctx, newFileName, os.O_RDWR|os.O_CREATE, 0644)
+	fh2, sz2, err := f.hostServiceClient.FileOpen(ctx, newFileName, os.O_RDWR|os.O_CREATE, 0644)
 	if err != nil {
 		hclog.Default().Error("Failed to open file via host service", "dir", dir, "err", err)
 	}
@@ -91,7 +91,7 @@ func (f *FileLister) ListFiles(dir string) ([]string, error) {
 	hclog.Default().Info("Retrieved file handle", "handle", retrieved)
 
 	// just closing the file handle
-	err = f.hostServiceClient.CloseFile(ctx, retrieved)
+	err = f.hostServiceClient.FileClose(ctx, retrieved)
 	if err != nil {
 		hclog.Default().Error("Failed to close file handle", "err", err)
 	}

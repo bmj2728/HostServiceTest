@@ -74,9 +74,9 @@ func (c *HostServiceGRPCClient) WriteFile(ctx context.Context, path string, data
 	return nil
 }
 
-func (c *HostServiceGRPCClient) OpenFile(ctx context.Context, path string, flag int, perm os.FileMode) (FileHandle, uint64, error) {
+func (c *HostServiceGRPCClient) FileOpen(ctx context.Context, path string, flag int, perm os.FileMode) (FileHandle, uint64, error) {
 	ctx = addTracingIDsToContext(ctx, c.clientID, NewRequestID())
-	resp, err := c.client.OpenFile(ctx, &hostservev1.OpenFileRequest{
+	resp, err := c.client.FileOpen(ctx, &hostservev1.FileOpenRequest{
 		Path: path,
 		Mode: flagsToOpenFileMode(flag),
 		Perm: uint32(perm),
@@ -85,7 +85,7 @@ func (c *HostServiceGRPCClient) OpenFile(ctx context.Context, path string, flag 
 		return "", 0, &HostServiceError{Message: err.Error()}
 	}
 	if resp == nil {
-		return "", 0, &HostServiceError{Message: "nil response from OpenFile"}
+		return "", 0, &HostServiceError{Message: "nil response from FileOpen"}
 	}
 	if resp.Error != nil {
 		return "", 0, &HostServiceError{Message: *resp.Error}
@@ -93,13 +93,13 @@ func (c *HostServiceGRPCClient) OpenFile(ctx context.Context, path string, flag 
 	return FileHandle(resp.Handle), resp.Size, nil
 }
 
-func (c *HostServiceGRPCClient) CloseFile(ctx context.Context, handle FileHandle) error {
+func (c *HostServiceGRPCClient) FileClose(ctx context.Context, handle FileHandle) error {
 	ctx = addTracingIDsToContext(ctx, c.clientID, NewRequestID())
-	_, err := c.client.CloseFile(ctx, &hostservev1.CloseFileRequest{
+	_, err := c.client.FileClose(ctx, &hostservev1.FileCloseRequest{
 		Handle: string(handle),
 	})
 	if err != nil {
-		return err
+		return &HostServiceError{Message: err.Error()}
 	}
 	return nil
 }

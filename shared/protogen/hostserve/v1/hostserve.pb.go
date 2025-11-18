@@ -500,7 +500,7 @@ func (x *WriteFileResponse) GetError() string {
 	return ""
 }
 
-type OpenFileRequest struct {
+type FileOpenRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Path          string                 `protobuf:"bytes,1,opt,name=path,proto3" json:"path,omitempty"`
 	Mode          OpenFileMode           `protobuf:"varint,2,opt,name=mode,proto3,enum=hostserve.v1.OpenFileMode" json:"mode,omitempty"`
@@ -509,20 +509,20 @@ type OpenFileRequest struct {
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *OpenFileRequest) Reset() {
-	*x = OpenFileRequest{}
+func (x *FileOpenRequest) Reset() {
+	*x = FileOpenRequest{}
 	mi := &file_hostserve_v1_hostserve_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *OpenFileRequest) String() string {
+func (x *FileOpenRequest) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*OpenFileRequest) ProtoMessage() {}
+func (*FileOpenRequest) ProtoMessage() {}
 
-func (x *OpenFileRequest) ProtoReflect() protoreflect.Message {
+func (x *FileOpenRequest) ProtoReflect() protoreflect.Message {
 	mi := &file_hostserve_v1_hostserve_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -534,33 +534,33 @@ func (x *OpenFileRequest) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use OpenFileRequest.ProtoReflect.Descriptor instead.
-func (*OpenFileRequest) Descriptor() ([]byte, []int) {
+// Deprecated: Use FileOpenRequest.ProtoReflect.Descriptor instead.
+func (*FileOpenRequest) Descriptor() ([]byte, []int) {
 	return file_hostserve_v1_hostserve_proto_rawDescGZIP(), []int{8}
 }
 
-func (x *OpenFileRequest) GetPath() string {
+func (x *FileOpenRequest) GetPath() string {
 	if x != nil {
 		return x.Path
 	}
 	return ""
 }
 
-func (x *OpenFileRequest) GetMode() OpenFileMode {
+func (x *FileOpenRequest) GetMode() OpenFileMode {
 	if x != nil {
 		return x.Mode
 	}
 	return OpenFileMode_OPEN_FILE_MODE_UNSPECIFIED
 }
 
-func (x *OpenFileRequest) GetPerm() uint32 {
+func (x *FileOpenRequest) GetPerm() uint32 {
 	if x != nil {
 		return x.Perm
 	}
 	return 0
 }
 
-type OpenFileResponse struct {
+type FileOpenResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Handle        string                 `protobuf:"bytes,1,opt,name=handle,proto3" json:"handle,omitempty"`
 	Size          uint64                 `protobuf:"varint,2,opt,name=size,proto3" json:"size,omitempty"`
@@ -569,20 +569,20 @@ type OpenFileResponse struct {
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *OpenFileResponse) Reset() {
-	*x = OpenFileResponse{}
+func (x *FileOpenResponse) Reset() {
+	*x = FileOpenResponse{}
 	mi := &file_hostserve_v1_hostserve_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *OpenFileResponse) String() string {
+func (x *FileOpenResponse) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*OpenFileResponse) ProtoMessage() {}
+func (*FileOpenResponse) ProtoMessage() {}
 
-func (x *OpenFileResponse) ProtoReflect() protoreflect.Message {
+func (x *FileOpenResponse) ProtoReflect() protoreflect.Message {
 	mi := &file_hostserve_v1_hostserve_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -594,53 +594,53 @@ func (x *OpenFileResponse) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use OpenFileResponse.ProtoReflect.Descriptor instead.
-func (*OpenFileResponse) Descriptor() ([]byte, []int) {
+// Deprecated: Use FileOpenResponse.ProtoReflect.Descriptor instead.
+func (*FileOpenResponse) Descriptor() ([]byte, []int) {
 	return file_hostserve_v1_hostserve_proto_rawDescGZIP(), []int{9}
 }
 
-func (x *OpenFileResponse) GetHandle() string {
+func (x *FileOpenResponse) GetHandle() string {
 	if x != nil {
 		return x.Handle
 	}
 	return ""
 }
 
-func (x *OpenFileResponse) GetSize() uint64 {
+func (x *FileOpenResponse) GetSize() uint64 {
 	if x != nil {
 		return x.Size
 	}
 	return 0
 }
 
-func (x *OpenFileResponse) GetError() string {
+func (x *FileOpenResponse) GetError() string {
 	if x != nil && x.Error != nil {
 		return *x.Error
 	}
 	return ""
 }
 
-type CloseFileRequest struct {
+type FileCloseRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Handle        string                 `protobuf:"bytes,1,opt,name=handle,proto3" json:"handle,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *CloseFileRequest) Reset() {
-	*x = CloseFileRequest{}
+func (x *FileCloseRequest) Reset() {
+	*x = FileCloseRequest{}
 	mi := &file_hostserve_v1_hostserve_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *CloseFileRequest) String() string {
+func (x *FileCloseRequest) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*CloseFileRequest) ProtoMessage() {}
+func (*FileCloseRequest) ProtoMessage() {}
 
-func (x *CloseFileRequest) ProtoReflect() protoreflect.Message {
+func (x *FileCloseRequest) ProtoReflect() protoreflect.Message {
 	mi := &file_hostserve_v1_hostserve_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -652,39 +652,39 @@ func (x *CloseFileRequest) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use CloseFileRequest.ProtoReflect.Descriptor instead.
-func (*CloseFileRequest) Descriptor() ([]byte, []int) {
+// Deprecated: Use FileCloseRequest.ProtoReflect.Descriptor instead.
+func (*FileCloseRequest) Descriptor() ([]byte, []int) {
 	return file_hostserve_v1_hostserve_proto_rawDescGZIP(), []int{10}
 }
 
-func (x *CloseFileRequest) GetHandle() string {
+func (x *FileCloseRequest) GetHandle() string {
 	if x != nil {
 		return x.Handle
 	}
 	return ""
 }
 
-type CloseFileResponse struct {
+type FileCloseResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Error         *string                `protobuf:"bytes,1,opt,name=error,proto3,oneof" json:"error,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *CloseFileResponse) Reset() {
-	*x = CloseFileResponse{}
+func (x *FileCloseResponse) Reset() {
+	*x = FileCloseResponse{}
 	mi := &file_hostserve_v1_hostserve_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *CloseFileResponse) String() string {
+func (x *FileCloseResponse) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*CloseFileResponse) ProtoMessage() {}
+func (*FileCloseResponse) ProtoMessage() {}
 
-func (x *CloseFileResponse) ProtoReflect() protoreflect.Message {
+func (x *FileCloseResponse) ProtoReflect() protoreflect.Message {
 	mi := &file_hostserve_v1_hostserve_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -696,19 +696,19 @@ func (x *CloseFileResponse) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use CloseFileResponse.ProtoReflect.Descriptor instead.
-func (*CloseFileResponse) Descriptor() ([]byte, []int) {
+// Deprecated: Use FileCloseResponse.ProtoReflect.Descriptor instead.
+func (*FileCloseResponse) Descriptor() ([]byte, []int) {
 	return file_hostserve_v1_hostserve_proto_rawDescGZIP(), []int{11}
 }
 
-func (x *CloseFileResponse) GetError() string {
+func (x *FileCloseResponse) GetError() string {
 	if x != nil && x.Error != nil {
 		return *x.Error
 	}
 	return ""
 }
 
-type ReadRequest struct {
+type FileReadRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Handle        string                 `protobuf:"bytes,1,opt,name=handle,proto3" json:"handle,omitempty"`
 	ChunkSize     uint32                 `protobuf:"varint,2,opt,name=chunk_size,json=chunkSize,proto3" json:"chunk_size,omitempty"`
@@ -716,20 +716,20 @@ type ReadRequest struct {
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *ReadRequest) Reset() {
-	*x = ReadRequest{}
+func (x *FileReadRequest) Reset() {
+	*x = FileReadRequest{}
 	mi := &file_hostserve_v1_hostserve_proto_msgTypes[12]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *ReadRequest) String() string {
+func (x *FileReadRequest) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*ReadRequest) ProtoMessage() {}
+func (*FileReadRequest) ProtoMessage() {}
 
-func (x *ReadRequest) ProtoReflect() protoreflect.Message {
+func (x *FileReadRequest) ProtoReflect() protoreflect.Message {
 	mi := &file_hostserve_v1_hostserve_proto_msgTypes[12]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -741,26 +741,26 @@ func (x *ReadRequest) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use ReadRequest.ProtoReflect.Descriptor instead.
-func (*ReadRequest) Descriptor() ([]byte, []int) {
+// Deprecated: Use FileReadRequest.ProtoReflect.Descriptor instead.
+func (*FileReadRequest) Descriptor() ([]byte, []int) {
 	return file_hostserve_v1_hostserve_proto_rawDescGZIP(), []int{12}
 }
 
-func (x *ReadRequest) GetHandle() string {
+func (x *FileReadRequest) GetHandle() string {
 	if x != nil {
 		return x.Handle
 	}
 	return ""
 }
 
-func (x *ReadRequest) GetChunkSize() uint32 {
+func (x *FileReadRequest) GetChunkSize() uint32 {
 	if x != nil {
 		return x.ChunkSize
 	}
 	return 0
 }
 
-type ReadResponse struct {
+type FileReadResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Chunk         *FileChunk             `protobuf:"bytes,1,opt,name=chunk,proto3" json:"chunk,omitempty"`
 	Error         *string                `protobuf:"bytes,2,opt,name=error,proto3,oneof" json:"error,omitempty"`
@@ -768,20 +768,20 @@ type ReadResponse struct {
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *ReadResponse) Reset() {
-	*x = ReadResponse{}
+func (x *FileReadResponse) Reset() {
+	*x = FileReadResponse{}
 	mi := &file_hostserve_v1_hostserve_proto_msgTypes[13]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *ReadResponse) String() string {
+func (x *FileReadResponse) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*ReadResponse) ProtoMessage() {}
+func (*FileReadResponse) ProtoMessage() {}
 
-func (x *ReadResponse) ProtoReflect() protoreflect.Message {
+func (x *FileReadResponse) ProtoReflect() protoreflect.Message {
 	mi := &file_hostserve_v1_hostserve_proto_msgTypes[13]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -793,26 +793,26 @@ func (x *ReadResponse) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use ReadResponse.ProtoReflect.Descriptor instead.
-func (*ReadResponse) Descriptor() ([]byte, []int) {
+// Deprecated: Use FileReadResponse.ProtoReflect.Descriptor instead.
+func (*FileReadResponse) Descriptor() ([]byte, []int) {
 	return file_hostserve_v1_hostserve_proto_rawDescGZIP(), []int{13}
 }
 
-func (x *ReadResponse) GetChunk() *FileChunk {
+func (x *FileReadResponse) GetChunk() *FileChunk {
 	if x != nil {
 		return x.Chunk
 	}
 	return nil
 }
 
-func (x *ReadResponse) GetError() string {
+func (x *FileReadResponse) GetError() string {
 	if x != nil && x.Error != nil {
 		return *x.Error
 	}
 	return ""
 }
 
-type WriteRequest struct {
+type FileWriteRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Handle        string                 `protobuf:"bytes,1,opt,name=handle,proto3" json:"handle,omitempty"`
 	Chunk         *FileChunk             `protobuf:"bytes,2,opt,name=chunk,proto3" json:"chunk,omitempty"`
@@ -820,20 +820,20 @@ type WriteRequest struct {
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *WriteRequest) Reset() {
-	*x = WriteRequest{}
+func (x *FileWriteRequest) Reset() {
+	*x = FileWriteRequest{}
 	mi := &file_hostserve_v1_hostserve_proto_msgTypes[14]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *WriteRequest) String() string {
+func (x *FileWriteRequest) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*WriteRequest) ProtoMessage() {}
+func (*FileWriteRequest) ProtoMessage() {}
 
-func (x *WriteRequest) ProtoReflect() protoreflect.Message {
+func (x *FileWriteRequest) ProtoReflect() protoreflect.Message {
 	mi := &file_hostserve_v1_hostserve_proto_msgTypes[14]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -845,26 +845,26 @@ func (x *WriteRequest) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use WriteRequest.ProtoReflect.Descriptor instead.
-func (*WriteRequest) Descriptor() ([]byte, []int) {
+// Deprecated: Use FileWriteRequest.ProtoReflect.Descriptor instead.
+func (*FileWriteRequest) Descriptor() ([]byte, []int) {
 	return file_hostserve_v1_hostserve_proto_rawDescGZIP(), []int{14}
 }
 
-func (x *WriteRequest) GetHandle() string {
+func (x *FileWriteRequest) GetHandle() string {
 	if x != nil {
 		return x.Handle
 	}
 	return ""
 }
 
-func (x *WriteRequest) GetChunk() *FileChunk {
+func (x *FileWriteRequest) GetChunk() *FileChunk {
 	if x != nil {
 		return x.Chunk
 	}
 	return nil
 }
 
-type WriteResponse struct {
+type FileWriteResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	BytesWritten  uint32                 `protobuf:"varint,1,opt,name=bytes_written,json=bytesWritten,proto3" json:"bytes_written,omitempty"`
 	Error         *string                `protobuf:"bytes,2,opt,name=error,proto3,oneof" json:"error,omitempty"`
@@ -872,20 +872,20 @@ type WriteResponse struct {
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *WriteResponse) Reset() {
-	*x = WriteResponse{}
+func (x *FileWriteResponse) Reset() {
+	*x = FileWriteResponse{}
 	mi := &file_hostserve_v1_hostserve_proto_msgTypes[15]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *WriteResponse) String() string {
+func (x *FileWriteResponse) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*WriteResponse) ProtoMessage() {}
+func (*FileWriteResponse) ProtoMessage() {}
 
-func (x *WriteResponse) ProtoReflect() protoreflect.Message {
+func (x *FileWriteResponse) ProtoReflect() protoreflect.Message {
 	mi := &file_hostserve_v1_hostserve_proto_msgTypes[15]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -897,19 +897,19 @@ func (x *WriteResponse) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use WriteResponse.ProtoReflect.Descriptor instead.
-func (*WriteResponse) Descriptor() ([]byte, []int) {
+// Deprecated: Use FileWriteResponse.ProtoReflect.Descriptor instead.
+func (*FileWriteResponse) Descriptor() ([]byte, []int) {
 	return file_hostserve_v1_hostserve_proto_rawDescGZIP(), []int{15}
 }
 
-func (x *WriteResponse) GetBytesWritten() uint32 {
+func (x *FileWriteResponse) GetBytesWritten() uint32 {
 	if x != nil {
 		return x.BytesWritten
 	}
 	return 0
 }
 
-func (x *WriteResponse) GetError() string {
+func (x *FileWriteResponse) GetError() string {
 	if x != nil && x.Error != nil {
 		return *x.Error
 	}
@@ -1035,32 +1035,32 @@ const file_hostserve_v1_hostserve_proto_rawDesc = "" +
 	"\x11WriteFileResponse\x12\x19\n" +
 	"\x05error\x18\x01 \x01(\tH\x00R\x05error\x88\x01\x01B\b\n" +
 	"\x06_error\"i\n" +
-	"\x0fOpenFileRequest\x12\x12\n" +
+	"\x0fFileOpenRequest\x12\x12\n" +
 	"\x04path\x18\x01 \x01(\tR\x04path\x12.\n" +
 	"\x04mode\x18\x02 \x01(\x0e2\x1a.hostserve.v1.OpenFileModeR\x04mode\x12\x12\n" +
 	"\x04perm\x18\x03 \x01(\rR\x04perm\"c\n" +
-	"\x10OpenFileResponse\x12\x16\n" +
+	"\x10FileOpenResponse\x12\x16\n" +
 	"\x06handle\x18\x01 \x01(\tR\x06handle\x12\x12\n" +
 	"\x04size\x18\x02 \x01(\x04R\x04size\x12\x19\n" +
 	"\x05error\x18\x03 \x01(\tH\x00R\x05error\x88\x01\x01B\b\n" +
 	"\x06_error\"*\n" +
-	"\x10CloseFileRequest\x12\x16\n" +
+	"\x10FileCloseRequest\x12\x16\n" +
 	"\x06handle\x18\x01 \x01(\tR\x06handle\"8\n" +
-	"\x11CloseFileResponse\x12\x19\n" +
+	"\x11FileCloseResponse\x12\x19\n" +
 	"\x05error\x18\x01 \x01(\tH\x00R\x05error\x88\x01\x01B\b\n" +
-	"\x06_error\"D\n" +
-	"\vReadRequest\x12\x16\n" +
+	"\x06_error\"H\n" +
+	"\x0fFileReadRequest\x12\x16\n" +
 	"\x06handle\x18\x01 \x01(\tR\x06handle\x12\x1d\n" +
 	"\n" +
-	"chunk_size\x18\x02 \x01(\rR\tchunkSize\"b\n" +
-	"\fReadResponse\x12-\n" +
+	"chunk_size\x18\x02 \x01(\rR\tchunkSize\"f\n" +
+	"\x10FileReadResponse\x12-\n" +
 	"\x05chunk\x18\x01 \x01(\v2\x17.hostserve.v1.FileChunkR\x05chunk\x12\x19\n" +
 	"\x05error\x18\x02 \x01(\tH\x00R\x05error\x88\x01\x01B\b\n" +
-	"\x06_error\"U\n" +
-	"\fWriteRequest\x12\x16\n" +
+	"\x06_error\"Y\n" +
+	"\x10FileWriteRequest\x12\x16\n" +
 	"\x06handle\x18\x01 \x01(\tR\x06handle\x12-\n" +
-	"\x05chunk\x18\x02 \x01(\v2\x17.hostserve.v1.FileChunkR\x05chunk\"Y\n" +
-	"\rWriteResponse\x12#\n" +
+	"\x05chunk\x18\x02 \x01(\v2\x17.hostserve.v1.FileChunkR\x05chunk\"]\n" +
+	"\x11FileWriteResponse\x12#\n" +
 	"\rbytes_written\x18\x01 \x01(\rR\fbytesWritten\x12\x19\n" +
 	"\x05error\x18\x02 \x01(\tH\x00R\x05error\x88\x01\x01B\b\n" +
 	"\x06_error\"!\n" +
@@ -1078,15 +1078,15 @@ const file_hostserve_v1_hostserve_proto_rawDesc = "" +
 	"READ_WRITE\x10\x05\x12\x15\n" +
 	"\x11READ_WRITE_CREATE\x10\x06\x12\x17\n" +
 	"\x13READ_WRITE_TRUNCATE\x10\a\x12\x15\n" +
-	"\x11READ_WRITE_APPEND\x10\b2\xcd\x04\n" +
+	"\x11READ_WRITE_APPEND\x10\b2\xe5\x04\n" +
 	"\vHostService\x12F\n" +
 	"\aReadDir\x12\x1c.hostserve.v1.ReadDirRequest\x1a\x1d.hostserve.v1.ReadDirResponse\x12I\n" +
 	"\bReadFile\x12\x1d.hostserve.v1.ReadFileRequest\x1a\x1e.hostserve.v1.ReadFileResponse\x12L\n" +
 	"\tWriteFile\x12\x1e.hostserve.v1.WriteFileRequest\x1a\x1f.hostserve.v1.WriteFileResponse\x12I\n" +
-	"\bOpenFile\x12\x1d.hostserve.v1.OpenFileRequest\x1a\x1e.hostserve.v1.OpenFileResponse\x12L\n" +
-	"\tCloseFile\x12\x1e.hostserve.v1.CloseFileRequest\x1a\x1f.hostserve.v1.CloseFileResponse\x12=\n" +
-	"\x04Read\x12\x19.hostserve.v1.ReadRequest\x1a\x1a.hostserve.v1.ReadResponse\x12@\n" +
-	"\x05Write\x12\x1a.hostserve.v1.WriteRequest\x1a\x1b.hostserve.v1.WriteResponse\x12C\n" +
+	"\bFileOpen\x12\x1d.hostserve.v1.FileOpenRequest\x1a\x1e.hostserve.v1.FileOpenResponse\x12L\n" +
+	"\tFileClose\x12\x1e.hostserve.v1.FileCloseRequest\x1a\x1f.hostserve.v1.FileCloseResponse\x12I\n" +
+	"\bFileRead\x12\x1d.hostserve.v1.FileReadRequest\x1a\x1e.hostserve.v1.FileReadResponse\x12L\n" +
+	"\tFileWrite\x12\x1e.hostserve.v1.FileWriteRequest\x1a\x1f.hostserve.v1.FileWriteResponse\x12C\n" +
 	"\x06GetEnv\x12\x1b.hostserve.v1.GetEnvRequest\x1a\x1c.hostserve.v1.GetEnvResponseB\xc0\x01\n" +
 	"\x10com.hostserve.v1B\x0eHostserveProtoP\x01ZKgithub.com/bmj2728/HostServiceTest/shared/protogen/hostserve/v1;hostservev1\xa2\x02\x03HXX\xaa\x02\fHostserve.V1\xca\x02\fHostserve\\V1\xe2\x02\x18Hostserve\\V1\\GPBMetadata\xea\x02\rHostserve::V1b\x06proto3"
 
@@ -1114,37 +1114,37 @@ var file_hostserve_v1_hostserve_proto_goTypes = []any{
 	(*ReadFileResponse)(nil),  // 6: hostserve.v1.ReadFileResponse
 	(*WriteFileRequest)(nil),  // 7: hostserve.v1.WriteFileRequest
 	(*WriteFileResponse)(nil), // 8: hostserve.v1.WriteFileResponse
-	(*OpenFileRequest)(nil),   // 9: hostserve.v1.OpenFileRequest
-	(*OpenFileResponse)(nil),  // 10: hostserve.v1.OpenFileResponse
-	(*CloseFileRequest)(nil),  // 11: hostserve.v1.CloseFileRequest
-	(*CloseFileResponse)(nil), // 12: hostserve.v1.CloseFileResponse
-	(*ReadRequest)(nil),       // 13: hostserve.v1.ReadRequest
-	(*ReadResponse)(nil),      // 14: hostserve.v1.ReadResponse
-	(*WriteRequest)(nil),      // 15: hostserve.v1.WriteRequest
-	(*WriteResponse)(nil),     // 16: hostserve.v1.WriteResponse
+	(*FileOpenRequest)(nil),   // 9: hostserve.v1.FileOpenRequest
+	(*FileOpenResponse)(nil),  // 10: hostserve.v1.FileOpenResponse
+	(*FileCloseRequest)(nil),  // 11: hostserve.v1.FileCloseRequest
+	(*FileCloseResponse)(nil), // 12: hostserve.v1.FileCloseResponse
+	(*FileReadRequest)(nil),   // 13: hostserve.v1.FileReadRequest
+	(*FileReadResponse)(nil),  // 14: hostserve.v1.FileReadResponse
+	(*FileWriteRequest)(nil),  // 15: hostserve.v1.FileWriteRequest
+	(*FileWriteResponse)(nil), // 16: hostserve.v1.FileWriteResponse
 	(*GetEnvRequest)(nil),     // 17: hostserve.v1.GetEnvRequest
 	(*GetEnvResponse)(nil),    // 18: hostserve.v1.GetEnvResponse
 }
 var file_hostserve_v1_hostserve_proto_depIdxs = []int32{
 	1,  // 0: hostserve.v1.ReadDirResponse.entries:type_name -> hostserve.v1.DirEntry
-	0,  // 1: hostserve.v1.OpenFileRequest.mode:type_name -> hostserve.v1.OpenFileMode
-	2,  // 2: hostserve.v1.ReadResponse.chunk:type_name -> hostserve.v1.FileChunk
-	2,  // 3: hostserve.v1.WriteRequest.chunk:type_name -> hostserve.v1.FileChunk
+	0,  // 1: hostserve.v1.FileOpenRequest.mode:type_name -> hostserve.v1.OpenFileMode
+	2,  // 2: hostserve.v1.FileReadResponse.chunk:type_name -> hostserve.v1.FileChunk
+	2,  // 3: hostserve.v1.FileWriteRequest.chunk:type_name -> hostserve.v1.FileChunk
 	3,  // 4: hostserve.v1.HostService.ReadDir:input_type -> hostserve.v1.ReadDirRequest
 	5,  // 5: hostserve.v1.HostService.ReadFile:input_type -> hostserve.v1.ReadFileRequest
 	7,  // 6: hostserve.v1.HostService.WriteFile:input_type -> hostserve.v1.WriteFileRequest
-	9,  // 7: hostserve.v1.HostService.OpenFile:input_type -> hostserve.v1.OpenFileRequest
-	11, // 8: hostserve.v1.HostService.CloseFile:input_type -> hostserve.v1.CloseFileRequest
-	13, // 9: hostserve.v1.HostService.Read:input_type -> hostserve.v1.ReadRequest
-	15, // 10: hostserve.v1.HostService.Write:input_type -> hostserve.v1.WriteRequest
+	9,  // 7: hostserve.v1.HostService.FileOpen:input_type -> hostserve.v1.FileOpenRequest
+	11, // 8: hostserve.v1.HostService.FileClose:input_type -> hostserve.v1.FileCloseRequest
+	13, // 9: hostserve.v1.HostService.FileRead:input_type -> hostserve.v1.FileReadRequest
+	15, // 10: hostserve.v1.HostService.FileWrite:input_type -> hostserve.v1.FileWriteRequest
 	17, // 11: hostserve.v1.HostService.GetEnv:input_type -> hostserve.v1.GetEnvRequest
 	4,  // 12: hostserve.v1.HostService.ReadDir:output_type -> hostserve.v1.ReadDirResponse
 	6,  // 13: hostserve.v1.HostService.ReadFile:output_type -> hostserve.v1.ReadFileResponse
 	8,  // 14: hostserve.v1.HostService.WriteFile:output_type -> hostserve.v1.WriteFileResponse
-	10, // 15: hostserve.v1.HostService.OpenFile:output_type -> hostserve.v1.OpenFileResponse
-	12, // 16: hostserve.v1.HostService.CloseFile:output_type -> hostserve.v1.CloseFileResponse
-	14, // 17: hostserve.v1.HostService.Read:output_type -> hostserve.v1.ReadResponse
-	16, // 18: hostserve.v1.HostService.Write:output_type -> hostserve.v1.WriteResponse
+	10, // 15: hostserve.v1.HostService.FileOpen:output_type -> hostserve.v1.FileOpenResponse
+	12, // 16: hostserve.v1.HostService.FileClose:output_type -> hostserve.v1.FileCloseResponse
+	14, // 17: hostserve.v1.HostService.FileRead:output_type -> hostserve.v1.FileReadResponse
+	16, // 18: hostserve.v1.HostService.FileWrite:output_type -> hostserve.v1.FileWriteResponse
 	18, // 19: hostserve.v1.HostService.GetEnv:output_type -> hostserve.v1.GetEnvResponse
 	12, // [12:20] is the sub-list for method output_type
 	4,  // [4:12] is the sub-list for method input_type

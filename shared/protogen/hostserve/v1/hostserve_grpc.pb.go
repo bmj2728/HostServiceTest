@@ -22,10 +22,10 @@ const (
 	HostService_ReadDir_FullMethodName   = "/hostserve.v1.HostService/ReadDir"
 	HostService_ReadFile_FullMethodName  = "/hostserve.v1.HostService/ReadFile"
 	HostService_WriteFile_FullMethodName = "/hostserve.v1.HostService/WriteFile"
-	HostService_OpenFile_FullMethodName  = "/hostserve.v1.HostService/OpenFile"
-	HostService_CloseFile_FullMethodName = "/hostserve.v1.HostService/CloseFile"
-	HostService_Read_FullMethodName      = "/hostserve.v1.HostService/Read"
-	HostService_Write_FullMethodName     = "/hostserve.v1.HostService/Write"
+	HostService_FileOpen_FullMethodName  = "/hostserve.v1.HostService/FileOpen"
+	HostService_FileClose_FullMethodName = "/hostserve.v1.HostService/FileClose"
+	HostService_FileRead_FullMethodName  = "/hostserve.v1.HostService/FileRead"
+	HostService_FileWrite_FullMethodName = "/hostserve.v1.HostService/FileWrite"
 	HostService_GetEnv_FullMethodName    = "/hostserve.v1.HostService/GetEnv"
 )
 
@@ -36,14 +36,16 @@ const (
 // HostService is a service provided by the host process and is generally preferred over granting direct
 // access to the plugin process
 type HostServiceClient interface {
+	// FS Endpoints - Unary Calls
 	ReadDir(ctx context.Context, in *ReadDirRequest, opts ...grpc.CallOption) (*ReadDirResponse, error)
 	ReadFile(ctx context.Context, in *ReadFileRequest, opts ...grpc.CallOption) (*ReadFileResponse, error)
 	WriteFile(ctx context.Context, in *WriteFileRequest, opts ...grpc.CallOption) (*WriteFileResponse, error)
-	// FS Streaming Endpoints
-	OpenFile(ctx context.Context, in *OpenFileRequest, opts ...grpc.CallOption) (*OpenFileResponse, error)
-	CloseFile(ctx context.Context, in *CloseFileRequest, opts ...grpc.CallOption) (*CloseFileResponse, error)
-	Read(ctx context.Context, in *ReadRequest, opts ...grpc.CallOption) (*ReadResponse, error)
-	Write(ctx context.Context, in *WriteRequest, opts ...grpc.CallOption) (*WriteResponse, error)
+	// FS - File Handle Endpoints
+	FileOpen(ctx context.Context, in *FileOpenRequest, opts ...grpc.CallOption) (*FileOpenResponse, error)
+	FileClose(ctx context.Context, in *FileCloseRequest, opts ...grpc.CallOption) (*FileCloseResponse, error)
+	FileRead(ctx context.Context, in *FileReadRequest, opts ...grpc.CallOption) (*FileReadResponse, error)
+	FileWrite(ctx context.Context, in *FileWriteRequest, opts ...grpc.CallOption) (*FileWriteResponse, error)
+	// Env Endpoints
 	GetEnv(ctx context.Context, in *GetEnvRequest, opts ...grpc.CallOption) (*GetEnvResponse, error)
 }
 
@@ -85,40 +87,40 @@ func (c *hostServiceClient) WriteFile(ctx context.Context, in *WriteFileRequest,
 	return out, nil
 }
 
-func (c *hostServiceClient) OpenFile(ctx context.Context, in *OpenFileRequest, opts ...grpc.CallOption) (*OpenFileResponse, error) {
+func (c *hostServiceClient) FileOpen(ctx context.Context, in *FileOpenRequest, opts ...grpc.CallOption) (*FileOpenResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(OpenFileResponse)
-	err := c.cc.Invoke(ctx, HostService_OpenFile_FullMethodName, in, out, cOpts...)
+	out := new(FileOpenResponse)
+	err := c.cc.Invoke(ctx, HostService_FileOpen_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *hostServiceClient) CloseFile(ctx context.Context, in *CloseFileRequest, opts ...grpc.CallOption) (*CloseFileResponse, error) {
+func (c *hostServiceClient) FileClose(ctx context.Context, in *FileCloseRequest, opts ...grpc.CallOption) (*FileCloseResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(CloseFileResponse)
-	err := c.cc.Invoke(ctx, HostService_CloseFile_FullMethodName, in, out, cOpts...)
+	out := new(FileCloseResponse)
+	err := c.cc.Invoke(ctx, HostService_FileClose_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *hostServiceClient) Read(ctx context.Context, in *ReadRequest, opts ...grpc.CallOption) (*ReadResponse, error) {
+func (c *hostServiceClient) FileRead(ctx context.Context, in *FileReadRequest, opts ...grpc.CallOption) (*FileReadResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(ReadResponse)
-	err := c.cc.Invoke(ctx, HostService_Read_FullMethodName, in, out, cOpts...)
+	out := new(FileReadResponse)
+	err := c.cc.Invoke(ctx, HostService_FileRead_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *hostServiceClient) Write(ctx context.Context, in *WriteRequest, opts ...grpc.CallOption) (*WriteResponse, error) {
+func (c *hostServiceClient) FileWrite(ctx context.Context, in *FileWriteRequest, opts ...grpc.CallOption) (*FileWriteResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(WriteResponse)
-	err := c.cc.Invoke(ctx, HostService_Write_FullMethodName, in, out, cOpts...)
+	out := new(FileWriteResponse)
+	err := c.cc.Invoke(ctx, HostService_FileWrite_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -142,14 +144,16 @@ func (c *hostServiceClient) GetEnv(ctx context.Context, in *GetEnvRequest, opts 
 // HostService is a service provided by the host process and is generally preferred over granting direct
 // access to the plugin process
 type HostServiceServer interface {
+	// FS Endpoints - Unary Calls
 	ReadDir(context.Context, *ReadDirRequest) (*ReadDirResponse, error)
 	ReadFile(context.Context, *ReadFileRequest) (*ReadFileResponse, error)
 	WriteFile(context.Context, *WriteFileRequest) (*WriteFileResponse, error)
-	// FS Streaming Endpoints
-	OpenFile(context.Context, *OpenFileRequest) (*OpenFileResponse, error)
-	CloseFile(context.Context, *CloseFileRequest) (*CloseFileResponse, error)
-	Read(context.Context, *ReadRequest) (*ReadResponse, error)
-	Write(context.Context, *WriteRequest) (*WriteResponse, error)
+	// FS - File Handle Endpoints
+	FileOpen(context.Context, *FileOpenRequest) (*FileOpenResponse, error)
+	FileClose(context.Context, *FileCloseRequest) (*FileCloseResponse, error)
+	FileRead(context.Context, *FileReadRequest) (*FileReadResponse, error)
+	FileWrite(context.Context, *FileWriteRequest) (*FileWriteResponse, error)
+	// Env Endpoints
 	GetEnv(context.Context, *GetEnvRequest) (*GetEnvResponse, error)
 	mustEmbedUnimplementedHostServiceServer()
 }
@@ -170,17 +174,17 @@ func (UnimplementedHostServiceServer) ReadFile(context.Context, *ReadFileRequest
 func (UnimplementedHostServiceServer) WriteFile(context.Context, *WriteFileRequest) (*WriteFileResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method WriteFile not implemented")
 }
-func (UnimplementedHostServiceServer) OpenFile(context.Context, *OpenFileRequest) (*OpenFileResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method OpenFile not implemented")
+func (UnimplementedHostServiceServer) FileOpen(context.Context, *FileOpenRequest) (*FileOpenResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method FileOpen not implemented")
 }
-func (UnimplementedHostServiceServer) CloseFile(context.Context, *CloseFileRequest) (*CloseFileResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method CloseFile not implemented")
+func (UnimplementedHostServiceServer) FileClose(context.Context, *FileCloseRequest) (*FileCloseResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method FileClose not implemented")
 }
-func (UnimplementedHostServiceServer) Read(context.Context, *ReadRequest) (*ReadResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method Read not implemented")
+func (UnimplementedHostServiceServer) FileRead(context.Context, *FileReadRequest) (*FileReadResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method FileRead not implemented")
 }
-func (UnimplementedHostServiceServer) Write(context.Context, *WriteRequest) (*WriteResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method Write not implemented")
+func (UnimplementedHostServiceServer) FileWrite(context.Context, *FileWriteRequest) (*FileWriteResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method FileWrite not implemented")
 }
 func (UnimplementedHostServiceServer) GetEnv(context.Context, *GetEnvRequest) (*GetEnvResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetEnv not implemented")
@@ -260,74 +264,74 @@ func _HostService_WriteFile_Handler(srv interface{}, ctx context.Context, dec fu
 	return interceptor(ctx, in, info, handler)
 }
 
-func _HostService_OpenFile_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(OpenFileRequest)
+func _HostService_FileOpen_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(FileOpenRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(HostServiceServer).OpenFile(ctx, in)
+		return srv.(HostServiceServer).FileOpen(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: HostService_OpenFile_FullMethodName,
+		FullMethod: HostService_FileOpen_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(HostServiceServer).OpenFile(ctx, req.(*OpenFileRequest))
+		return srv.(HostServiceServer).FileOpen(ctx, req.(*FileOpenRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _HostService_CloseFile_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(CloseFileRequest)
+func _HostService_FileClose_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(FileCloseRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(HostServiceServer).CloseFile(ctx, in)
+		return srv.(HostServiceServer).FileClose(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: HostService_CloseFile_FullMethodName,
+		FullMethod: HostService_FileClose_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(HostServiceServer).CloseFile(ctx, req.(*CloseFileRequest))
+		return srv.(HostServiceServer).FileClose(ctx, req.(*FileCloseRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _HostService_Read_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ReadRequest)
+func _HostService_FileRead_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(FileReadRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(HostServiceServer).Read(ctx, in)
+		return srv.(HostServiceServer).FileRead(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: HostService_Read_FullMethodName,
+		FullMethod: HostService_FileRead_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(HostServiceServer).Read(ctx, req.(*ReadRequest))
+		return srv.(HostServiceServer).FileRead(ctx, req.(*FileReadRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _HostService_Write_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(WriteRequest)
+func _HostService_FileWrite_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(FileWriteRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(HostServiceServer).Write(ctx, in)
+		return srv.(HostServiceServer).FileWrite(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: HostService_Write_FullMethodName,
+		FullMethod: HostService_FileWrite_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(HostServiceServer).Write(ctx, req.(*WriteRequest))
+		return srv.(HostServiceServer).FileWrite(ctx, req.(*FileWriteRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -370,20 +374,20 @@ var HostService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _HostService_WriteFile_Handler,
 		},
 		{
-			MethodName: "OpenFile",
-			Handler:    _HostService_OpenFile_Handler,
+			MethodName: "FileOpen",
+			Handler:    _HostService_FileOpen_Handler,
 		},
 		{
-			MethodName: "CloseFile",
-			Handler:    _HostService_CloseFile_Handler,
+			MethodName: "FileClose",
+			Handler:    _HostService_FileClose_Handler,
 		},
 		{
-			MethodName: "Read",
-			Handler:    _HostService_Read_Handler,
+			MethodName: "FileRead",
+			Handler:    _HostService_FileRead_Handler,
 		},
 		{
-			MethodName: "Write",
-			Handler:    _HostService_Write_Handler,
+			MethodName: "FileWrite",
+			Handler:    _HostService_FileWrite_Handler,
 		},
 		{
 			MethodName: "GetEnv",

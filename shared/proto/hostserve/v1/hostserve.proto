@@ -29,20 +29,19 @@ enum OpenFileMode {
 // HostService is a service provided by the host process and is generally preferred over granting direct
 // access to the plugin process
 service HostService {
-  // FS Endpoints
 
+  // FS Endpoints - Unary Calls
   rpc ReadDir(ReadDirRequest) returns (ReadDirResponse);
   rpc ReadFile(ReadFileRequest) returns (ReadFileResponse);
   rpc WriteFile(WriteFileRequest) returns (WriteFileResponse);
 
-  //FS Streaming Endpoints
-  rpc OpenFile(OpenFileRequest) returns (OpenFileResponse);
-  rpc CloseFile(CloseFileRequest) returns (CloseFileResponse);
-  rpc Read(ReadRequest) returns (ReadResponse);
-  rpc Write(WriteRequest) returns (WriteResponse);
+  // FS - File Handle Endpoints
+  rpc FileOpen(FileOpenRequest) returns (FileOpenResponse);
+  rpc FileClose(FileCloseRequest) returns (FileCloseResponse);
+  rpc FileRead(FileReadRequest) returns (FileReadResponse);
+  rpc FileWrite(FileWriteRequest) returns (FileWriteResponse);
 
   // Env Endpoints
-
   rpc GetEnv(GetEnvRequest) returns (GetEnvResponse);
 }
 
@@ -94,42 +93,42 @@ message WriteFileResponse {
   optional string error = 1;
 }
 
-message OpenFileRequest {
+message FileOpenRequest {
   string path = 1;
   OpenFileMode mode = 2;
   uint32 perm = 3;
 }
 
-message OpenFileResponse {
+message FileOpenResponse {
   string handle = 1;
   uint64 size = 2;
   optional string error = 3;
 }
 
-message CloseFileRequest {
+message FileCloseRequest {
   string handle = 1;
 }
 
-message CloseFileResponse {
+message FileCloseResponse {
   optional string error = 1;
 }
 
-message ReadRequest {
+message FileReadRequest {
   string handle = 1;
   uint32 chunk_size = 2;
 }
 
-message ReadResponse {
+message FileReadResponse {
   FileChunk chunk = 1;
   optional string error = 2;
 }
 
-message WriteRequest {
+message FileWriteRequest {
   string handle = 1;
   FileChunk chunk = 2;
 }
 
-message WriteResponse {
+message FileWriteResponse {
   uint32 bytes_written = 1;
   optional string error = 2;
 }

@@ -109,7 +109,7 @@ func (hf *HostFS) WriteFile(ctx context.Context, path string, data []byte, perm 
 	return nil
 }
 
-func (hf *HostFS) OpenFile(ctx context.Context, path string, flag int, perm os.FileMode) (FileHandle, uint64, error) {
+func (hf *HostFS) FileOpen(ctx context.Context, path string, flag int, perm os.FileMode) (FileHandle, uint64, error) {
 	clientID := getClientIDFromContext(ctx)
 	d, f := filepath.Split(path)
 	r, err := getRoot(d)
@@ -135,7 +135,7 @@ func (hf *HostFS) OpenFile(ctx context.Context, path string, flag int, perm os.F
 	return fh, uint64(info.Size()), nil
 }
 
-func (hf *HostFS) CloseFile(ctx context.Context, handle FileHandle) error {
+func (hf *HostFS) FileClose(ctx context.Context, handle FileHandle) error {
 	clientID := getClientIDFromContext(ctx)
 	files, err := hf.GetOpenFiles().GetFilesByClient(clientID)
 	if err != nil {

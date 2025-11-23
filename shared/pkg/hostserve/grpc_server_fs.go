@@ -16,7 +16,7 @@ var (
 )
 
 func (s *HostServiceGRPCServer) GetHostFS() (*HostFS, error) {
-	hs, err := s.GetHostServices()
+	hs, err := s.getHostServices()
 	if err != nil {
 		return nil, err
 	}

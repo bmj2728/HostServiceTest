@@ -28,6 +28,8 @@ type IHostFS interface {
 	FileOpen(ctx context.Context, path string, flag int, perm os.FileMode) (FileHandle, uint64, error)
 
 	FileClose(ctx context.Context, handle FileHandle) error
+
+	//FileRead(ctx context.Context, handle FileHandle, chunkSize uint32) (io.Reader, error)
 }
 
 // IHostEnv defines a contract for interacting with environment variables in the host system.

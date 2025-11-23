@@ -18,14 +18,6 @@ type HostServiceGRPCServer struct {
 	hostservev1.UnimplementedHostServiceServer
 }
 
-func (s *HostServiceGRPCServer) GetHostServices() (*HostServices, error) {
-	hs, ok := s.Impl.(*HostServices)
-	if !ok {
-		return nil, ErrInvalidHostServices
-	}
-	return hs, nil
-}
-
 // HostServiceGRPCClient wraps the filesystemv1.HostServiceClient to provide higher-level client methods.
 type HostServiceGRPCClient struct {
 	client   hostservev1.HostServiceClient

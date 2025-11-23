@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io"
 	"io/fs"
 	"os"
 	"path/filepath"
@@ -12,8 +13,16 @@ import (
 )
 
 const (
-	PermissionsMask     = fs.FileMode(0777)
-	StandardPermissions = fs.FileMode(0644)
+	permissionsMask     = fs.FileMode(0777)
+	standardPermissions = fs.FileMode(0644)
+
+	// minChunkSize is used to avoid excessive overhead
+	// 8K is used as it aligns with common buffer and block sizes
+	minChunkSize = 8 * 1024
+
+	// maxChunkSize gRPC allows a maximum of 4MB(4194304) per message.
+	// Setting to 4,000,000(3.81MB) to allow room for message overhead.
+	maxChunkSize = 4000000
 )
 
 // ErrInvalidPath represents an error indicating the provided path is invalid or not a directory.
@@ -79,10 +88,10 @@ func (hf *HostFS) ReadFile(ctx context.Context, path string) ([]byte, error) {
 }
 
 // WriteFile writes the specified data to a file within the given directory using the provided permissions.
-// If the provided permissions are zero, it defaults to StandardPermissions. Returns an error if the operation fails.
+// If the provided permissions are zero, it defaults to standardPermissions. Returns an error if the operation fails.
 func (hf *HostFS) WriteFile(ctx context.Context, path string, data []byte, perm os.FileMode) error {
-	if perm&PermissionsMask == 0 {
-		perm = StandardPermissions
+	if perm&permissionsMask == 0 {
+		perm = standardPermissions
 	}
 	dir, file := filepath.Split(path)
 	r, err := getRoot(dir)
@@ -144,4 +153,52 @@ func (hf *HostFS) FileClose(ctx context.Context, handle FileHandle) error {
 		return err
 	}
 	return nil
+}
+
+// FileRead returns a reader for the specified file handle, typically os.File/fs.File.
+// This implementation contains pseudocode for suggested security checks.
+func (hf *HostFS) FileRead(ctx context.Context, handle FileHandle, chunkSize uint32) (io.Reader, error) {
+	// Validate chunk size - return early if invalid
+	if chunkSize < minChunkSize || chunkSize > maxChunkSize {
+		return nil, fmt.Errorf("chunk size must be between %d and %d bytes", minChunkSize, maxChunkSize)
+	}
+	// Extract client ID from context
+	clientId := getClientIDFromContext(ctx)
+
+	/*
+		// Identify the owning plugin for capability checks
+		owner := getClientOwnerFromContext(ctx)
+		// Then check cache/db to confirm that owner plugin is allowed to read files.
+		canRead := capabilities.CapabilityCheck(owner, []{capabilities.CAP_FILE_READ})
+		// Function queries capabilities and returns true if the plugin is allowed to read files
+		// It will be beneficial to cache this value as it will be called frequently. Though cache lifecycle will need
+		// careful consideration to insure we invalidate when needed.
+		// It's key to validate this frequently in the event the plugin's capabilities are revoked.
+	*/
+	file, err := hf.GetOpenFiles().GetFile(clientId, handle)
+	if err != nil {
+		return nil, err
+	}
+
+	/*
+		// Once we have the file we can construct the path and then validate the plugin is allowed access to it
+		info, err := file.Stat()
+		if err != nil {
+			return nil, err
+		}
+		fileName := info.Name()
+		path, err := filepath.Abs(fileName)
+		if err != nil {
+			return nil, err
+		}
+		//hasAccess := capabilities.AccessCheck(owner, path)
+		//this function would be responsible for determining if the owning plugin has
+		//- direct access to the file
+		//- access to the file's directory
+		//- recursive access to a parent directory within the absolute path of the file
+		//- an explicit exclusion for the file
+		//returns true if the plugin is allowed to read the file
+	*/
+
+	return file, nil
 }

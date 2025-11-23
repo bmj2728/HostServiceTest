@@ -54,7 +54,7 @@ func (c *HostServiceGRPCClient) ReadFile(ctx context.Context, path string) ([]by
 func (c *HostServiceGRPCClient) WriteFile(ctx context.Context, path string, data []byte, perm os.FileMode) error {
 	ctx = addTracingIDsToContext(ctx, c.clientID, NewRequestID())
 	if perm == 0 {
-		perm = StandardPermissions
+		perm = standardPermissions
 	}
 	resp, err := c.client.WriteFile(ctx, &hostservev1.WriteFileRequest{
 		Path: path,

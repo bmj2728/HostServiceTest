@@ -2,7 +2,6 @@ package hostserve
 
 import (
 	"context"
-	"fmt"
 
 	hostservev1 "github.com/bmj2728/hst/shared/protogen/hostserve/v1"
 	"github.com/hashicorp/go-hclog"
@@ -20,5 +19,8 @@ func (c *HostServiceGRPCClient) GetEnv(ctx context.Context, key string) (string,
 	if err != nil {
 		return "", err
 	}
-	return resp.Val, fmt.Errorf("%s", *resp.Error)
+	if resp.GetError() != "" {
+		return "", &HostServiceError{Message: resp.GetError()}
+	}
+	return resp.Val, nil
 }

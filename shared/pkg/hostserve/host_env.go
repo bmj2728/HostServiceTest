@@ -2,6 +2,7 @@ package hostserve
 
 import (
 	"context"
+	"fmt"
 	"os"
 )
 
@@ -17,6 +18,22 @@ func NewHostEnv() *HostEnv {
 }
 
 // GetEnv retrieves the environment variable value associated with the provided key.
-func (he *HostEnv) GetEnv(ctx context.Context, key string) string {
-	return os.Getenv(key)
+func (he *HostEnv) GetEnv(ctx context.Context, key string) (string, error) {
+
+	// Future State - Capability Check - we may need to update service to return an error
+	// get the owner from the context
+	// owner := getClientOwnerFromContext(ctx)
+	// if owner == "" {
+	// 	return ""
+	// }
+	// canRead := capabilities.CapabilityCheck(owner, []string{capabilities.CAP_ENV_READ})
+	// if !canRead {
+	// 	return ""
+	//	//return errors.New("insufficient permissions to read environment variables")}
+
+	val := os.Getenv(key)
+	if val == "" {
+		return val, fmt.Errorf("environment variable %s not found", key)
+	}
+	return val, nil
 }

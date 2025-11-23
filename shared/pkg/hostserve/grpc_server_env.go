@@ -27,6 +27,9 @@ func (s *HostServiceGRPCServer) GetEnv(ctx context.Context,
 		ctxHostRequestIDKey, reqID,
 		"key", request.Key)
 
-	val := s.Impl.GetEnv(ctx, request.Key)
+	val, err := s.Impl.GetEnv(ctx, request.Key)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get environment variable: %w", err)
+	}
 	return &hostservev1.GetEnvResponse{Val: val}, nil
 }

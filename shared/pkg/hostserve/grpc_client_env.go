@@ -9,7 +9,7 @@ import (
 
 // GetEnv retrieves the value of the specified environment variable via a gRPC call to the host service.
 // Returns an empty string if an error occurs.
-func (c *HostServiceGRPCClient) GetEnv(ctx context.Context, key string) string {
+func (c *HostServiceGRPCClient) GetEnv(ctx context.Context, key string) (string, error) {
 	reqID := NewRequestID()
 	hclog.Default().Info("GetEnv request ID", "request", reqID.String())
 	ctx = addTracingIDsToContext(ctx, c.clientID, reqID)
@@ -17,7 +17,7 @@ func (c *HostServiceGRPCClient) GetEnv(ctx context.Context, key string) string {
 		Key: key,
 	})
 	if err != nil {
-		return ""
+		return "", err
 	}
-	return resp.Val
+	return resp.Val, nil
 }

@@ -36,5 +36,5 @@ type IHostFS interface {
 type IHostEnv interface {
 
 	// GetEnv fetches the value of an environment variable by its key and returns it as a string.
-	GetEnv(ctx context.Context, key string) string
+	GetEnv(ctx context.Context, key string) (string, error)
 }

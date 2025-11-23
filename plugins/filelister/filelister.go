@@ -28,7 +28,10 @@ func (f *FileLister) ListFiles(dir string) ([]string, error) {
 	ctx := context.Background() //this is needed for the host service calls
 
 	// simple env check
-	home := f.hostServiceClient.GetEnv(ctx, "HOME")
+	home, err := f.hostServiceClient.GetEnv(ctx, "HOME")
+	if err != nil {
+		hclog.Default().Error("Failed to get env variable", "err", err)
+	}
 
 	// Read Dir
 	dirEntries, err := f.hostServiceClient.ReadDir(ctx, dir)

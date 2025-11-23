@@ -143,4 +143,5 @@ message GetEnvRequest {
 
 message GetEnvResponse {
   string val = 1;
+  optional string error =2;
 }

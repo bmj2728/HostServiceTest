@@ -963,6 +963,7 @@ func (x *GetEnvRequest) GetKey() string {
 type GetEnvResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Val           string                 `protobuf:"bytes,1,opt,name=val,proto3" json:"val,omitempty"`
+	Error         *string                `protobuf:"bytes,2,opt,name=error,proto3,oneof" json:"error,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1000,6 +1001,13 @@ func (*GetEnvResponse) Descriptor() ([]byte, []int) {
 func (x *GetEnvResponse) GetVal() string {
 	if x != nil {
 		return x.Val
+	}
+	return ""
+}
+
+func (x *GetEnvResponse) GetError() string {
+	if x != nil && x.Error != nil {
+		return *x.Error
 	}
 	return ""
 }
@@ -1065,9 +1073,11 @@ const file_hostserve_v1_hostserve_proto_rawDesc = "" +
 	"\x05error\x18\x02 \x01(\tH\x00R\x05error\x88\x01\x01B\b\n" +
 	"\x06_error\"!\n" +
 	"\rGetEnvRequest\x12\x10\n" +
-	"\x03key\x18\x01 \x01(\tR\x03key\"\"\n" +
+	"\x03key\x18\x01 \x01(\tR\x03key\"G\n" +
 	"\x0eGetEnvResponse\x12\x10\n" +
-	"\x03val\x18\x01 \x01(\tR\x03val*\xcf\x01\n" +
+	"\x03val\x18\x01 \x01(\tR\x03val\x12\x19\n" +
+	"\x05error\x18\x02 \x01(\tH\x00R\x05error\x88\x01\x01B\b\n" +
+	"\x06_error*\xcf\x01\n" +
 	"\fOpenFileMode\x12\x1e\n" +
 	"\x1aOPEN_FILE_MODE_UNSPECIFIED\x10\x00\x12\r\n" +
 	"\tREAD_ONLY\x10\x01\x12\x12\n" +
@@ -1165,6 +1175,7 @@ func file_hostserve_v1_hostserve_proto_init() {
 	file_hostserve_v1_hostserve_proto_msgTypes[11].OneofWrappers = []any{}
 	file_hostserve_v1_hostserve_proto_msgTypes[13].OneofWrappers = []any{}
 	file_hostserve_v1_hostserve_proto_msgTypes[15].OneofWrappers = []any{}
+	file_hostserve_v1_hostserve_proto_msgTypes[17].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{

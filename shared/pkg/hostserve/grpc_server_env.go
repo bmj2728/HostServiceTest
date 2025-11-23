@@ -2,7 +2,6 @@ package hostserve
 
 import (
 	"context"
-	"fmt"
 
 	hostservev1 "github.com/bmj2728/hst/shared/protogen/hostserve/v1"
 	"github.com/hashicorp/go-hclog"
@@ -13,15 +12,15 @@ import (
 func (s *HostServiceGRPCServer) GetEnv(ctx context.Context,
 	request *hostservev1.GetEnvRequest) (*hostservev1.GetEnvResponse, error) {
 
-	clientID := getClientIDFromContext(ctx)
-	reqID := getRequestIDFromContext(ctx)
-
-	owner, err := s.clientIdToOwner(clientID)
+	ctx, clientID, reqID, owner, err := s.processRequestContext(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get client owner: %w", err)
+		return &hostservev1.GetEnvResponse{
+			Val:   "",
+			Error: proto.String(err.Error()),
+		}, nil
 	}
-	ctx = addClientOwnerToContext(ctx, owner)
 
+	// Log the request
 	hclog.Default().Info("GetEnv request from client",
 		ctxClientIDKey, clientID,
 		ctxClientOwner, owner,

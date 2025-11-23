@@ -33,14 +33,22 @@ func (s *HostServiceGRPCServer) ReadDir(ctx context.Context,
 	request *hostservev1.ReadDirRequest,
 ) (*hostservev1.ReadDirResponse, error) {
 
-	clientID := getClientIDFromContext(ctx)
-	reqID := getRequestIDFromContext(ctx)
+	ctx, clientID, reqID, owner, err := s.processRequestContext(ctx)
+	if err != nil {
+		return &hostservev1.ReadDirResponse{
+			Entries: nil,
+			Error:   proto.String(err.Error()),
+		}, nil
+	}
+
 	ap, err := filepath.Abs(request.Path)
 	if err != nil {
 		ap = request.Path
 	}
+
 	hclog.Default().Info("ReadDir request from client",
 		ctxClientIDKey, clientID,
+		ctxClientOwner, owner,
 		ctxHostRequestIDKey, reqID,
 		"path", ap)
 
@@ -72,14 +80,21 @@ func (s *HostServiceGRPCServer) ReadFile(ctx context.Context,
 	request *hostservev1.ReadFileRequest,
 ) (*hostservev1.ReadFileResponse, error) {
 
-	clientID := getClientIDFromContext(ctx)
-	reqID := getRequestIDFromContext(ctx)
+	ctx, clientID, reqID, owner, err := s.processRequestContext(ctx)
+	if err != nil {
+		return &hostservev1.ReadFileResponse{
+			Contents: nil,
+			Error:    proto.String(err.Error()),
+		}, nil
+	}
+
 	ap, err := filepath.Abs(request.Path)
 	if err != nil {
 		ap = request.Path
 	}
 	hclog.Default().Info("ReadFile request from client",
 		ctxClientIDKey, clientID,
+		ctxClientOwner, owner,
 		ctxHostRequestIDKey, reqID,
 		"path", ap)
 
@@ -99,14 +114,20 @@ func (s *HostServiceGRPCServer) WriteFile(ctx context.Context,
 	request *hostservev1.WriteFileRequest,
 ) (*hostservev1.WriteFileResponse, error) {
 
-	clientID := getClientIDFromContext(ctx)
-	reqID := getRequestIDFromContext(ctx)
+	ctx, clientID, reqID, owner, err := s.processRequestContext(ctx)
+	if err != nil {
+		return &hostservev1.WriteFileResponse{
+			Error: proto.String(err.Error()),
+		}, nil
+	}
+
 	ap, err := filepath.Abs(request.Path)
 	if err != nil {
 		ap = request.Path
 	}
 	hclog.Default().Info("WriteFile request from client",
 		ctxClientIDKey, clientID,
+		ctxClientOwner, owner,
 		ctxHostRequestIDKey, reqID,
 		"path", ap)
 
@@ -121,14 +142,21 @@ func (s *HostServiceGRPCServer) FileOpen(ctx context.Context,
 	request *hostservev1.FileOpenRequest,
 ) (*hostservev1.FileOpenResponse, error) {
 
-	clientID := getClientIDFromContext(ctx)
-	reqID := getRequestIDFromContext(ctx)
+	ctx, clientID, reqID, owner, err := s.processRequestContext(ctx)
+	if err != nil {
+		return &hostservev1.FileOpenResponse{
+			Error: proto.String(err.Error()),
+		}, nil
+	}
+
 	ap, err := filepath.Abs(request.Path)
 	if err != nil {
 		ap = request.Path
 	}
+
 	hclog.Default().Info("FileOpen request from client",
 		ctxClientIDKey, clientID,
+		ctxClientOwner, owner,
 		ctxHostRequestIDKey, reqID,
 		"path", ap)
 
@@ -136,8 +164,10 @@ func (s *HostServiceGRPCServer) FileOpen(ctx context.Context,
 	if err != nil {
 		return &hostservev1.FileOpenResponse{Error: proto.String(err.Error())}, nil
 	}
+
 	hclog.Default().Info("File opened successfully",
 		ctxClientIDKey, clientID,
+		ctxClientOwner, owner,
 		ctxHostRequestIDKey, reqID,
 		"path", ap,
 		"handle", fh,
@@ -148,14 +178,21 @@ func (s *HostServiceGRPCServer) FileOpen(ctx context.Context,
 func (s *HostServiceGRPCServer) FileClose(ctx context.Context,
 	request *hostservev1.FileCloseRequest,
 ) (*hostservev1.FileCloseResponse, error) {
-	clientID := getClientIDFromContext(ctx)
-	reqID := getRequestIDFromContext(ctx)
+
+	ctx, clientID, reqID, owner, err := s.processRequestContext(ctx)
+	if err != nil {
+		return &hostservev1.FileCloseResponse{
+			Error: proto.String(err.Error()),
+		}, nil
+	}
+
 	fh := FileHandle(request.Handle)
 	hclog.Default().Info("FileClose request from client",
 		ctxClientIDKey, clientID,
+		ctxClientOwner, owner,
 		ctxHostRequestIDKey, reqID,
 		"handle", fh)
-	err := s.Impl.FileClose(ctx, fh)
+	err = s.Impl.FileClose(ctx, fh)
 	if err != nil {
 		return &hostservev1.FileCloseResponse{Error: proto.String(err.Error())}, nil
 	}

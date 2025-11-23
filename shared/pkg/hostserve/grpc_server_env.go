@@ -6,6 +6,7 @@ import (
 
 	hostservev1 "github.com/bmj2728/hst/shared/protogen/hostserve/v1"
 	"github.com/hashicorp/go-hclog"
+	"google.golang.org/protobuf/proto"
 )
 
 // GetEnv handles a gRPC request to retrieve the value of an environment variable identified by the request key.
@@ -29,7 +30,12 @@ func (s *HostServiceGRPCServer) GetEnv(ctx context.Context,
 
 	val, err := s.Impl.GetEnv(ctx, request.Key)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get environment variable: %w", err)
+		return &hostservev1.GetEnvResponse{
+			Val:   val,
+			Error: proto.String(err.Error()),
+		}, nil
 	}
-	return &hostservev1.GetEnvResponse{Val: val}, nil
+	return &hostservev1.GetEnvResponse{
+		Val: val,
+	}, nil
 }

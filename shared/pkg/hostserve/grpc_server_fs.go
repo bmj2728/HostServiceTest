@@ -201,7 +201,7 @@ func (s *HostServiceGRPCServer) FileClose(ctx context.Context,
 	return &hostservev1.FileCloseResponse{}, nil
 }
 
-func (s *HostServiceGRPCServer) FileRead(request *hostservev1.FileReadRequest,
+func (s *HostServiceGRPCServer) FileReader(request *hostservev1.FileReadRequest,
 	stream grpc.ServerStreamingServer[hostservev1.FileReadResponse],
 ) error {
 
@@ -215,7 +215,7 @@ func (s *HostServiceGRPCServer) FileRead(request *hostservev1.FileReadRequest,
 	ctx, clientID, reqID, owner, err := s.processRequestContext(ctx)
 	if err != nil {
 		// Log error and return if we can't validate this request
-		hclog.Default().Error("FileRead request with Error from client",
+		hclog.Default().Error("FileReader request with Error from client",
 			ctxClientIDKey, clientID,
 			ctxClientOwner, owner,
 			ctxHostRequestIDKey, reqID,
@@ -228,7 +228,7 @@ func (s *HostServiceGRPCServer) FileRead(request *hostservev1.FileReadRequest,
 		})
 	}
 	// Log request
-	hclog.Default().Info("FileRead request from client",
+	hclog.Default().Info("FileReader request from client",
 		ctxClientIDKey, clientID,
 		ctxClientOwner, owner,
 		ctxHostRequestIDKey, reqID,
@@ -236,7 +236,7 @@ func (s *HostServiceGRPCServer) FileRead(request *hostservev1.FileReadRequest,
 		"chunkSize", request.ChunkSize)
 
 	// Get the file from the open files map
-	reader, err := s.Impl.FileRead(ctx, fh, request.ChunkSize)
+	reader, err := s.Impl.FileReader(ctx, fh, request.ChunkSize)
 	if err != nil {
 		return stream.Send(&hostservev1.FileReadResponse{Error: proto.String(err.Error())})
 	}

@@ -26,11 +26,17 @@ type IHostFS interface {
 	// WriteFile writes data to the specified file within the given directory, applying the provided file permissions.
 	WriteFile(ctx context.Context, path string, data []byte, perm os.FileMode) error
 
+	// FileOpen opens a file at the specified path with the given flags and permissions,
+	// returning a handle, file size, and error.
 	FileOpen(ctx context.Context, path string, flag int, perm os.FileMode) (FileHandle, uint64, error)
 
+	// FileClose closes an open file identified by the provided FileHandle. Returns an error if the operation fails.
 	FileClose(ctx context.Context, handle FileHandle) error
 
-	FileRead(ctx context.Context, handle FileHandle, chunkSize uint32) (io.Reader, error)
+	// FileReader reads data from an open file, identified by the provided FileHandle, in chunks of the specified size.
+	FileReader(ctx context.Context, handle FileHandle, chunkSize uint32) (io.Reader, error)
+
+	//FileWriter(ctx context.Context, handle FileHandle, data []bytes) (io.Writer, error)
 }
 
 // IHostEnv defines a contract for interacting with environment variables in the host system.

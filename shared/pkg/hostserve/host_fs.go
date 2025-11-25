@@ -155,9 +155,9 @@ func (hf *HostFS) FileClose(ctx context.Context, handle FileHandle) error {
 	return nil
 }
 
-// FileRead returns a reader for the specified file handle, typically os.File/fs.File.
+// FileReader returns a reader for the specified file handle, typically os.File/fs.File.
 // This implementation contains pseudocode for suggested security checks.
-func (hf *HostFS) FileRead(ctx context.Context, handle FileHandle, chunkSize uint32) (io.Reader, error) {
+func (hf *HostFS) FileReader(ctx context.Context, handle FileHandle, chunkSize uint32) (io.Reader, error) {
 	// Validate chunk size - return early if invalid
 	if chunkSize < minChunkSize || chunkSize > maxChunkSize {
 		return nil, fmt.Errorf("chunk size must be between %d and %d bytes", minChunkSize, maxChunkSize)

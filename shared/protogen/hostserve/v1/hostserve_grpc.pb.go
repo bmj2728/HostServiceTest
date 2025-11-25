@@ -19,14 +19,14 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	HostService_ReadDir_FullMethodName   = "/hostserve.v1.HostService/ReadDir"
-	HostService_ReadFile_FullMethodName  = "/hostserve.v1.HostService/ReadFile"
-	HostService_WriteFile_FullMethodName = "/hostserve.v1.HostService/WriteFile"
-	HostService_FileOpen_FullMethodName  = "/hostserve.v1.HostService/FileOpen"
-	HostService_FileClose_FullMethodName = "/hostserve.v1.HostService/FileClose"
-	HostService_FileRead_FullMethodName  = "/hostserve.v1.HostService/FileRead"
-	HostService_FileWrite_FullMethodName = "/hostserve.v1.HostService/FileWrite"
-	HostService_GetEnv_FullMethodName    = "/hostserve.v1.HostService/GetEnv"
+	HostService_ReadDir_FullMethodName    = "/hostserve.v1.HostService/ReadDir"
+	HostService_ReadFile_FullMethodName   = "/hostserve.v1.HostService/ReadFile"
+	HostService_WriteFile_FullMethodName  = "/hostserve.v1.HostService/WriteFile"
+	HostService_FileOpen_FullMethodName   = "/hostserve.v1.HostService/FileOpen"
+	HostService_FileClose_FullMethodName  = "/hostserve.v1.HostService/FileClose"
+	HostService_FileReader_FullMethodName = "/hostserve.v1.HostService/FileReader"
+	HostService_FileWriter_FullMethodName = "/hostserve.v1.HostService/FileWriter"
+	HostService_GetEnv_FullMethodName     = "/hostserve.v1.HostService/GetEnv"
 )
 
 // HostServiceClient is the client API for HostService service.
@@ -43,8 +43,8 @@ type HostServiceClient interface {
 	// FS - File Handle Endpoints
 	FileOpen(ctx context.Context, in *FileOpenRequest, opts ...grpc.CallOption) (*FileOpenResponse, error)
 	FileClose(ctx context.Context, in *FileCloseRequest, opts ...grpc.CallOption) (*FileCloseResponse, error)
-	FileRead(ctx context.Context, in *FileReadRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[FileReadResponse], error)
-	FileWrite(ctx context.Context, opts ...grpc.CallOption) (grpc.ClientStreamingClient[FileWriteRequest, FileWriteResponse], error)
+	FileReader(ctx context.Context, in *FileReadRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[FileReadResponse], error)
+	FileWriter(ctx context.Context, opts ...grpc.CallOption) (grpc.ClientStreamingClient[FileWriteRequest, FileWriteResponse], error)
 	// Env Endpoints
 	GetEnv(ctx context.Context, in *GetEnvRequest, opts ...grpc.CallOption) (*GetEnvResponse, error)
 }
@@ -107,9 +107,9 @@ func (c *hostServiceClient) FileClose(ctx context.Context, in *FileCloseRequest,
 	return out, nil
 }
 
-func (c *hostServiceClient) FileRead(ctx context.Context, in *FileReadRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[FileReadResponse], error) {
+func (c *hostServiceClient) FileReader(ctx context.Context, in *FileReadRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[FileReadResponse], error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	stream, err := c.cc.NewStream(ctx, &HostService_ServiceDesc.Streams[0], HostService_FileRead_FullMethodName, cOpts...)
+	stream, err := c.cc.NewStream(ctx, &HostService_ServiceDesc.Streams[0], HostService_FileReader_FullMethodName, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -124,11 +124,11 @@ func (c *hostServiceClient) FileRead(ctx context.Context, in *FileReadRequest, o
 }
 
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
-type HostService_FileReadClient = grpc.ServerStreamingClient[FileReadResponse]
+type HostService_FileReaderClient = grpc.ServerStreamingClient[FileReadResponse]
 
-func (c *hostServiceClient) FileWrite(ctx context.Context, opts ...grpc.CallOption) (grpc.ClientStreamingClient[FileWriteRequest, FileWriteResponse], error) {
+func (c *hostServiceClient) FileWriter(ctx context.Context, opts ...grpc.CallOption) (grpc.ClientStreamingClient[FileWriteRequest, FileWriteResponse], error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	stream, err := c.cc.NewStream(ctx, &HostService_ServiceDesc.Streams[1], HostService_FileWrite_FullMethodName, cOpts...)
+	stream, err := c.cc.NewStream(ctx, &HostService_ServiceDesc.Streams[1], HostService_FileWriter_FullMethodName, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -137,7 +137,7 @@ func (c *hostServiceClient) FileWrite(ctx context.Context, opts ...grpc.CallOpti
 }
 
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
-type HostService_FileWriteClient = grpc.ClientStreamingClient[FileWriteRequest, FileWriteResponse]
+type HostService_FileWriterClient = grpc.ClientStreamingClient[FileWriteRequest, FileWriteResponse]
 
 func (c *hostServiceClient) GetEnv(ctx context.Context, in *GetEnvRequest, opts ...grpc.CallOption) (*GetEnvResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
@@ -163,8 +163,8 @@ type HostServiceServer interface {
 	// FS - File Handle Endpoints
 	FileOpen(context.Context, *FileOpenRequest) (*FileOpenResponse, error)
 	FileClose(context.Context, *FileCloseRequest) (*FileCloseResponse, error)
-	FileRead(*FileReadRequest, grpc.ServerStreamingServer[FileReadResponse]) error
-	FileWrite(grpc.ClientStreamingServer[FileWriteRequest, FileWriteResponse]) error
+	FileReader(*FileReadRequest, grpc.ServerStreamingServer[FileReadResponse]) error
+	FileWriter(grpc.ClientStreamingServer[FileWriteRequest, FileWriteResponse]) error
 	// Env Endpoints
 	GetEnv(context.Context, *GetEnvRequest) (*GetEnvResponse, error)
 	mustEmbedUnimplementedHostServiceServer()
@@ -192,11 +192,11 @@ func (UnimplementedHostServiceServer) FileOpen(context.Context, *FileOpenRequest
 func (UnimplementedHostServiceServer) FileClose(context.Context, *FileCloseRequest) (*FileCloseResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method FileClose not implemented")
 }
-func (UnimplementedHostServiceServer) FileRead(*FileReadRequest, grpc.ServerStreamingServer[FileReadResponse]) error {
-	return status.Errorf(codes.Unimplemented, "method FileRead not implemented")
+func (UnimplementedHostServiceServer) FileReader(*FileReadRequest, grpc.ServerStreamingServer[FileReadResponse]) error {
+	return status.Errorf(codes.Unimplemented, "method FileReader not implemented")
 }
-func (UnimplementedHostServiceServer) FileWrite(grpc.ClientStreamingServer[FileWriteRequest, FileWriteResponse]) error {
-	return status.Errorf(codes.Unimplemented, "method FileWrite not implemented")
+func (UnimplementedHostServiceServer) FileWriter(grpc.ClientStreamingServer[FileWriteRequest, FileWriteResponse]) error {
+	return status.Errorf(codes.Unimplemented, "method FileWriter not implemented")
 }
 func (UnimplementedHostServiceServer) GetEnv(context.Context, *GetEnvRequest) (*GetEnvResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetEnv not implemented")
@@ -312,23 +312,23 @@ func _HostService_FileClose_Handler(srv interface{}, ctx context.Context, dec fu
 	return interceptor(ctx, in, info, handler)
 }
 
-func _HostService_FileRead_Handler(srv interface{}, stream grpc.ServerStream) error {
+func _HostService_FileReader_Handler(srv interface{}, stream grpc.ServerStream) error {
 	m := new(FileReadRequest)
 	if err := stream.RecvMsg(m); err != nil {
 		return err
 	}
-	return srv.(HostServiceServer).FileRead(m, &grpc.GenericServerStream[FileReadRequest, FileReadResponse]{ServerStream: stream})
+	return srv.(HostServiceServer).FileReader(m, &grpc.GenericServerStream[FileReadRequest, FileReadResponse]{ServerStream: stream})
 }
 
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
-type HostService_FileReadServer = grpc.ServerStreamingServer[FileReadResponse]
+type HostService_FileReaderServer = grpc.ServerStreamingServer[FileReadResponse]
 
-func _HostService_FileWrite_Handler(srv interface{}, stream grpc.ServerStream) error {
-	return srv.(HostServiceServer).FileWrite(&grpc.GenericServerStream[FileWriteRequest, FileWriteResponse]{ServerStream: stream})
+func _HostService_FileWriter_Handler(srv interface{}, stream grpc.ServerStream) error {
+	return srv.(HostServiceServer).FileWriter(&grpc.GenericServerStream[FileWriteRequest, FileWriteResponse]{ServerStream: stream})
 }
 
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
-type HostService_FileWriteServer = grpc.ClientStreamingServer[FileWriteRequest, FileWriteResponse]
+type HostService_FileWriterServer = grpc.ClientStreamingServer[FileWriteRequest, FileWriteResponse]
 
 func _HostService_GetEnv_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(GetEnvRequest)
@@ -382,13 +382,13 @@ var HostService_ServiceDesc = grpc.ServiceDesc{
 	},
 	Streams: []grpc.StreamDesc{
 		{
-			StreamName:    "FileRead",
-			Handler:       _HostService_FileRead_Handler,
+			StreamName:    "FileReader",
+			Handler:       _HostService_FileReader_Handler,
 			ServerStreams: true,
 		},
 		{
-			StreamName:    "FileWrite",
-			Handler:       _HostService_FileWrite_Handler,
+			StreamName:    "FileWriter",
+			Handler:       _HostService_FileWriter_Handler,
 			ClientStreams: true,
 		},
 	},

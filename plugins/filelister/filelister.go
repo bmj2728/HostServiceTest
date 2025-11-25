@@ -78,7 +78,7 @@ func (f *FileLister) ListFiles(dir string) ([]string, error) {
 	//store the file handle
 	f.fileHandles[filepath.Join(dir, "listed_files.txt")] = fh
 
-	stream, err := f.hostServiceClient.FileRead(ctx, fh, 64*1024)
+	stream, err := f.hostServiceClient.FileReader(ctx, fh, 64*1024)
 	if err != nil {
 		hclog.Default().Error("FileRead failed to read file via host service", "dir", dir, "err", err)
 	}

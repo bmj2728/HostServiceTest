@@ -105,9 +105,9 @@ func (c *HostServiceGRPCClient) FileClose(ctx context.Context, handle FileHandle
 	return nil
 }
 
-func (c *HostServiceGRPCClient) FileRead(ctx context.Context, handle FileHandle, chunkSize uint32) (io.Reader, error) {
+func (c *HostServiceGRPCClient) FileReader(ctx context.Context, handle FileHandle, chunkSize uint32) (io.Reader, error) {
 	ctx = addTracingIDsToContext(ctx, c.clientID, NewRequestID())
-	stream, err := c.client.FileRead(ctx, &hostservev1.FileReadRequest{
+	stream, err := c.client.FileReader(ctx, &hostservev1.FileReadRequest{
 		Handle:    string(handle),
 		ChunkSize: chunkSize,
 	})

@@ -123,7 +123,8 @@ This is the foundation for building plugin systems users can trust.
 
 **Latest improvements to the architecture:**
 
-- **Streaming file operations**: Added infrastructure for streaming large files via `FileRead` (server streaming) and `FileWrite` (client streaming) to handle large files efficiently without loading everything into memory
+- **Streaming file operations**: Fully implemented streaming for large files via `FileRead` (server streaming) and `FileWrite` (client streaming) to handle large files efficiently without loading everything into memory
+- **Chunk size constraints**: `FileRead` enforces chunk sizes between 8KB (minimum for performance) and ~3.81MB (maximum due to gRPC 4MB message limits)
 - **File handle management**: Introduced `FileOpen`/`FileClose` endpoints with handle-based operations, enabling better resource management and explicit lifecycle control
 - **Simplified architecture**: Removed `OpenRoots` complexity in favor of cleaner internal path confinement
 - **Consistent naming**: Standardized method names (`FileOpen`, `FileClose`) for better API clarity
@@ -207,7 +208,9 @@ This demo includes:
 *File Handle Operations (for larger files and streaming):*
 - `FileOpen(path, mode, perm)`: Open file and return handle
 - `FileClose(handle)`: Close file handle
-- `FileRead(handle, chunk_size)`: Read file in chunks (server streaming)
+- `FileRead(handle, chunk_size)`: Read file in chunks via server streaming (fully implemented)
+  - Requires `chunk_size` between 8KB and ~3.81MB
+  - Returns an `io.Reader` for progressive file reading
 - `FileWrite(handle, chunks)`: Write file in chunks (client streaming)
 
 **Infrastructure:**
@@ -235,8 +238,26 @@ err = hostServiceClient.WriteFile(ctx, "/path/to/file", data, 0644)
 // Open file and get handle
 handle, size, err := hostServiceClient.FileOpen(ctx, "/path/to/file", READ_ONLY, 0)
 
-// Read in chunks via streaming (when implemented)
-stream, err := hostServiceClient.FileRead(ctx, handle, 8192)
+// Read in chunks via streaming
+// chunk_size must be between 8KB (8192) and ~3.81MB (4000000)
+chunkSize := uint32(64 * 1024) // 64KB is a good default
+stream, err := hostServiceClient.FileRead(ctx, handle, chunkSize)
+
+// Stream implements io.Reader, so you can use it directly
+buffer := make([]byte, 1024)
+for {
+    n, err := stream.Read(buffer)
+    if n > 0 {
+        // Process the data in buffer[:n]
+    }
+    if err == io.EOF {
+        break
+    }
+    if err != nil {
+        // Handle error
+        break
+    }
+}
 
 // Close when done
 err = hostServiceClient.FileClose(ctx, handle)
@@ -246,9 +267,28 @@ The file handle pattern enables:
 - **Streaming large files** without loading everything into memory
 - **Progressive processing** of file contents
 - **Better resource management** with explicit open/close lifecycle
-- **Future extensibility** for seeking, partial writes, etc.
+- **Configurable chunk sizes** for optimal performance
 
-**Note:** The streaming implementations for `FileRead` and `FileWrite` are defined in the proto and infrastructure is in place, but full implementations are still in progress.
+**Chunk Size Guidelines:**
+
+The `FileRead` operation requires a chunk size parameter with the following constraints:
+
+- **Minimum: 8KB (8,192 bytes)** - Enforced to avoid excessive overhead and align with common buffer/block sizes
+- **Maximum: ~3.81MB (4,000,000 bytes)** - gRPC enforces a 4MB message limit; this leaves room for message overhead
+- **Recommended: 64KB-1MB** - Balances memory usage with network efficiency for most use cases
+
+```go
+// Common chunk size examples:
+const (
+    ChunkSize8KB   = 8 * 1024      // 8KB  - minimum allowed
+    ChunkSize64KB  = 64 * 1024     // 64KB - good default for most files
+    ChunkSize256KB = 256 * 1024    // 256KB - better for larger files
+    ChunkSize1MB   = 1024 * 1024   // 1MB - maximum efficiency for very large files
+    ChunkSize4MB   = 4000000       // ~3.81MB - maximum allowed
+)
+```
+
+**Note:** See `plugins/filelister/filelister.go` for a complete working example of file handle operations with `FileRead` streaming.
 
 ## Project Structure
 

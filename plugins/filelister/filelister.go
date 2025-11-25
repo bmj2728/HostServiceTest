@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 	"sync"
@@ -79,16 +80,20 @@ func (f *FileLister) ListFiles(dir string) ([]string, error) {
 
 	stream, err := f.hostServiceClient.FileRead(ctx, fh, 64*1024)
 	if err != nil {
-		hclog.Default().Error("Failed to read file via host service", "dir", dir, "err", err)
+		hclog.Default().Error("FileRead failed to read file via host service", "dir", dir, "err", err)
 	}
 	sb := make([]byte, 10)
 	for {
 		n, err := stream.Read(sb)
-		if err != nil {
-			hclog.Default().Error("Failed to read file via host service", "dir", dir, "err", err)
+		if err != nil && err != io.EOF {
+			hclog.Default().Error("FileRead failed to read file via host service", "dir", dir, "err", err)
 			break
 		}
-		hclog.Default().Info("Read file", "read", n)
+		if n == 0 && err == io.EOF {
+			hclog.Default().Info("FileRead reached end of file")
+			break
+		}
+		hclog.Default().Info("FileRead read file", "read", n)
 	}
 
 	newFileName := filepath.Join(dir, "testing_open_create.txt")

@@ -2,6 +2,7 @@ package hostserve
 
 import (
 	"context"
+	"io"
 	"io/fs"
 	"os"
 
@@ -102,4 +103,16 @@ func (c *HostServiceGRPCClient) FileClose(ctx context.Context, handle FileHandle
 		return &HostServiceError{Message: err.Error()}
 	}
 	return nil
+}
+
+func (c *HostServiceGRPCClient) FileRead(ctx context.Context, handle FileHandle, chunkSize uint32) (io.Reader, error) {
+	ctx = addTracingIDsToContext(ctx, c.clientID, NewRequestID())
+	stream, err := c.client.FileRead(ctx, &hostservev1.FileReadRequest{
+		Handle:    string(handle),
+		ChunkSize: chunkSize,
+	})
+	if err != nil {
+		return nil, &HostServiceError{Message: err.Error()}
+	}
+	return &grpcFileStreamReader{stream: stream}, nil
 }

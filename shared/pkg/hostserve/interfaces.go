@@ -2,6 +2,7 @@ package hostserve
 
 import (
 	"context"
+	"io"
 	"io/fs"
 	"os"
 )
@@ -29,7 +30,7 @@ type IHostFS interface {
 
 	FileClose(ctx context.Context, handle FileHandle) error
 
-	//FileRead(ctx context.Context, handle FileHandle, chunkSize uint32) (io.Reader, error)
+	FileRead(ctx context.Context, handle FileHandle, chunkSize uint32) (io.Reader, error)
 }
 
 // IHostEnv defines a contract for interacting with environment variables in the host system.

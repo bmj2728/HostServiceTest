@@ -65,6 +65,7 @@ func (f *FileLister) ListFiles(dir string) ([]string, error) {
 		hclog.Default().Error("Failed to open file via host service", "dir", dir, "err", err)
 	}
 	hclog.Default().Info("Opened file", "handle", fh, "size", sz)
+
 	// Close File called in a closure for deferment
 	defer func(hostServiceClient hostserve.IHostServices, ctx context.Context, handle hostserve.FileHandle) {
 		err := hostServiceClient.FileClose(ctx, handle)
@@ -75,6 +76,20 @@ func (f *FileLister) ListFiles(dir string) ([]string, error) {
 
 	//store the file handle
 	f.fileHandles[filepath.Join(dir, "listed_files.txt")] = fh
+
+	stream, err := f.hostServiceClient.FileRead(ctx, fh, 64*1024)
+	if err != nil {
+		hclog.Default().Error("Failed to read file via host service", "dir", dir, "err", err)
+	}
+	sb := make([]byte, 10)
+	for {
+		n, err := stream.Read(sb)
+		if err != nil {
+			hclog.Default().Error("Failed to read file via host service", "dir", dir, "err", err)
+			break
+		}
+		hclog.Default().Info("Read file", "read", n)
+	}
 
 	newFileName := filepath.Join(dir, "testing_open_create.txt")
 

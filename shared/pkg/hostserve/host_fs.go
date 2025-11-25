@@ -165,40 +165,10 @@ func (hf *HostFS) FileRead(ctx context.Context, handle FileHandle, chunkSize uin
 	// Extract client ID from context
 	clientId := getClientIDFromContext(ctx)
 
-	/*
-		// Identify the owning plugin for capability checks
-		owner := getClientOwnerFromContext(ctx)
-		// Then check cache/db to confirm that owner plugin is allowed to read files.
-		canRead := capabilities.CapabilityCheck(owner, []{capabilities.CAP_FILE_READ})
-		// Function queries capabilities and returns true if the plugin is allowed to read files
-		// It will be beneficial to cache this value as it will be called frequently. Though cache lifecycle will need
-		// careful consideration to insure we invalidate when needed.
-		// It's key to validate this frequently in the event the plugin's capabilities are revoked.
-	*/
 	file, err := hf.GetOpenFiles().GetFile(clientId, handle)
 	if err != nil {
 		return nil, err
 	}
-
-	/*
-		// Once we have the file we can construct the path and then validate the plugin is allowed access to it
-		info, err := file.Stat()
-		if err != nil {
-			return nil, err
-		}
-		fileName := info.Name()
-		path, err := filepath.Abs(fileName)
-		if err != nil {
-			return nil, err
-		}
-		//hasAccess := capabilities.AccessCheck(owner, path)
-		//this function would be responsible for determining if the owning plugin has
-		//- direct access to the file
-		//- access to the file's directory
-		//- recursive access to a parent directory within the absolute path of the file
-		//- an explicit exclusion for the file
-		//returns true if the plugin is allowed to read the file
-	*/
 
 	return file, nil
 }

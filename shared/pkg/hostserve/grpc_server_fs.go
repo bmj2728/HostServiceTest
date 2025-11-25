@@ -3,11 +3,13 @@ package hostserve
 import (
 	"context"
 	"errors"
+	"io"
 	"os"
 	"path/filepath"
 
 	"github.com/bmj2728/hst/shared/protogen/hostserve/v1"
 	"github.com/hashicorp/go-hclog"
+	"google.golang.org/grpc"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -197,4 +199,84 @@ func (s *HostServiceGRPCServer) FileClose(ctx context.Context,
 		return &hostservev1.FileCloseResponse{Error: proto.String(err.Error())}, nil
 	}
 	return &hostservev1.FileCloseResponse{}, nil
+}
+
+func (s *HostServiceGRPCServer) FileRead(request *hostservev1.FileReadRequest,
+	stream grpc.ServerStreamingServer[hostservev1.FileReadResponse],
+) error {
+
+	// Get context
+	ctx := stream.Context()
+
+	// Get file handle
+	fh := FileHandle(request.Handle)
+
+	// Get request metadata and add the client owner
+	ctx, clientID, reqID, owner, err := s.processRequestContext(ctx)
+	if err != nil {
+		// Log error and return if we can't validate this request
+		hclog.Default().Error("FileRead request with Error from client",
+			ctxClientIDKey, clientID,
+			ctxClientOwner, owner,
+			ctxHostRequestIDKey, reqID,
+			"handle", fh,
+			"chunkSize", request.ChunkSize,
+			"error", err)
+
+		return stream.Send(&hostservev1.FileReadResponse{
+			Error: proto.String(err.Error()),
+		})
+	}
+	// Log request
+	hclog.Default().Info("FileRead request from client",
+		ctxClientIDKey, clientID,
+		ctxClientOwner, owner,
+		ctxHostRequestIDKey, reqID,
+		"handle", fh,
+		"chunkSize", request.ChunkSize)
+
+	// Get the file from the open files map
+	reader, err := s.Impl.FileRead(ctx, fh, request.ChunkSize)
+	if err != nil {
+		return stream.Send(&hostservev1.FileReadResponse{Error: proto.String(err.Error())})
+	}
+
+	// A buffer to read data into
+	buffer := make([]byte, request.ChunkSize)
+	// Offset is the number of bytes read from the file so far
+	var offset uint64
+
+	// Loop by chunk size until EOF
+	for {
+		// Read from the file into the buffer
+		n, err := reader.Read(buffer)
+		// Check the bytes read
+		if n > 0 {
+			// set isFinal to true if we've reached EOF
+			isFinal := err == io.EOF
+			// Send the chunk
+			if sendErr := stream.Send(&hostservev1.FileReadResponse{
+				Chunk: &hostservev1.FileChunk{
+					Data:    buffer[:n],
+					Offset:  offset,
+					IsFinal: isFinal,
+				},
+			}); sendErr != nil {
+				// break if we have an error sending the chunk
+				return sendErr
+			}
+			// update the offset
+			offset += uint64(n)
+		}
+		// break if we have reached EOF
+		if err == io.EOF {
+			return nil
+		}
+		// break if we have an error reading from the file - propagating to the client
+		if err != nil {
+			return stream.Send(&hostservev1.FileReadResponse{
+				Error: proto.String(err.Error()),
+			})
+		}
+	}
 }

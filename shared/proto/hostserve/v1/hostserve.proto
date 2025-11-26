@@ -35,7 +35,11 @@ service HostService {
   rpc ReadFile(ReadFileRequest) returns (ReadFileResponse);
   rpc WriteFile(WriteFileRequest) returns (WriteFileResponse);
 
+  rpc Mkdir(MkdirRequest) returns (MkdirResponse);
+  rpc MkdirAll(MkdirAllRequest) returns (MkdirAllResponse);
+
   // FS - File Handle Endpoints
+  rpc FileCreate(FileCreateRequest) returns (FileCreateResponse);
   rpc FileOpen(FileOpenRequest) returns (FileOpenResponse);
   rpc FileClose(FileCloseRequest) returns (FileCloseResponse);
   rpc FileReader(FileReadRequest) returns (stream FileReadResponse);
@@ -91,6 +95,35 @@ message WriteFileRequest {
 
 message WriteFileResponse {
   optional string error = 1;
+}
+
+message MkdirRequest {
+  string root_dir = 1;
+  string name = 2;
+  uint32 perm = 3;
+}
+
+message MkdirResponse {
+  optional string error = 1;
+}
+
+message MkdirAllRequest {
+  string root_dir = 1;
+  string path = 2;
+  uint32 perm = 3;
+}
+
+message MkdirAllResponse {
+  optional string error = 1;
+}
+
+message FileCreateRequest {
+  string path = 1;
+}
+
+message FileCreateResponse {
+  string handle = 1;
+  optional string error = 3;
 }
 
 message FileOpenRequest {

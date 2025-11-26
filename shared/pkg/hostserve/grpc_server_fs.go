@@ -18,6 +18,7 @@ var (
 	ErrInvalidHostFS = errors.New("invalid host file system")
 )
 
+// GetHostFS retrieves the HostFS instance from the internal host services or returns an error if unavailable or invalid.
 func (s *HostServiceGRPCServer) GetHostFS() (*HostFS, error) {
 	hs, err := s.getHostServices()
 	if err != nil {
@@ -139,6 +140,83 @@ func (s *HostServiceGRPCServer) WriteFile(ctx context.Context,
 		return &hostservev1.WriteFileResponse{Error: proto.String(err.Error())}, nil
 	}
 	return &hostservev1.WriteFileResponse{}, nil
+}
+
+func (s *HostServiceGRPCServer) Mkdir(ctx context.Context,
+	request *hostservev1.MkdirRequest,
+) (*hostservev1.MkdirResponse, error) {
+
+	ctx, clientID, reqID, owner, err := s.processRequestContext(ctx)
+	if err != nil {
+		return &hostservev1.MkdirResponse{
+			Error: proto.String(err.Error()),
+		}, nil
+	}
+
+	hclog.Default().Info("Mkdir request from client",
+		ctxClientIDKey, clientID,
+		ctxClientOwner, owner,
+		ctxHostRequestIDKey, reqID,
+		"rootDir", request.RootDir,
+		"name", request.Name,
+		"perm", request.Perm)
+
+	err = s.Impl.Mkdir(ctx, request.RootDir, request.Name, os.FileMode(request.Perm))
+	if err != nil {
+		return &hostservev1.MkdirResponse{
+			Error: proto.String(err.Error()),
+		}, nil
+	}
+	return &hostservev1.MkdirResponse{}, nil
+}
+
+func (s *HostServiceGRPCServer) MkdirAll(ctx context.Context, request *hostservev1.MkdirAllRequest) (*hostservev1.MkdirAllResponse, error) {
+	ctx, clientID, reqID, owner, err := s.processRequestContext(ctx)
+	if err != nil {
+		return &hostservev1.MkdirAllResponse{
+			Error: proto.String(err.Error()),
+		}, nil
+	}
+
+	hclog.Default().Info("MkdirAll request from client",
+		ctxClientIDKey, clientID,
+		ctxClientOwner, owner,
+		ctxHostRequestIDKey, reqID,
+		"rootDir", request.RootDir,
+		"path", request.Path,
+		"perm", request.Perm)
+
+	err = s.Impl.MkdirAll(ctx, request.RootDir, request.Path, os.FileMode(request.Perm))
+	if err != nil {
+		return &hostservev1.MkdirAllResponse{
+			Error: proto.String(err.Error()),
+		}, nil
+	}
+	return &hostservev1.MkdirAllResponse{}, nil
+}
+
+func (s *HostServiceGRPCServer) FileCreate(ctx context.Context,
+	request *hostservev1.FileCreateRequest) (response *hostservev1.FileCreateResponse, err error) {
+	ctx, clientID, reqID, owner, err := s.processRequestContext(ctx)
+	if err != nil {
+		return &hostservev1.FileCreateResponse{
+			Error: proto.String(err.Error()),
+		}, nil
+	}
+
+	hclog.Default().Info("FileCreate request from client",
+		ctxClientIDKey, clientID,
+		ctxClientOwner, owner,
+		ctxHostRequestIDKey, reqID,
+		"path", request.Path)
+
+	fh, err := s.Impl.FileCreate(ctx, request.Path)
+	if err != nil {
+		return &hostservev1.FileCreateResponse{
+			Error: proto.String(err.Error()),
+		}, nil
+	}
+	return &hostservev1.FileCreateResponse{Handle: fh.String()}, nil
 }
 
 func (s *HostServiceGRPCServer) FileOpen(ctx context.Context,
@@ -324,7 +402,7 @@ func (s *HostServiceGRPCServer) FileWriter(stream grpc.ClientStreamingServer[hos
 				Error: proto.String(err.Error()),
 			})
 		}
-		hclog.Default().Info("Wrote chunk", "bytes", n, "handle", handle)
+		hclog.Default().Debug("Wrote chunk", "bytes", n, "handle", handle)
 		totalBytes += uint32(n)
 	}
 
@@ -355,7 +433,7 @@ func (s *HostServiceGRPCServer) FileWriter(stream grpc.ClientStreamingServer[hos
 					Error: proto.String(err.Error()),
 				})
 			}
-			hclog.Default().Info("Wrote chunk", "bytes", n, "handle", handle)
+			hclog.Default().Debug("Wrote chunk", "bytes", n, "handle", handle)
 			totalBytes += uint32(n)
 		}
 

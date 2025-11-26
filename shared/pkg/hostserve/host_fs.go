@@ -56,6 +56,8 @@ func (hf *HostFS) GetOpenFiles() *OpenFiles {
 
 // ReadDir reads the contents of the specified directory path and returns a slice of directory entries or an error.
 func (hf *HostFS) ReadDir(ctx context.Context, path string) ([]fs.DirEntry, error) {
+	clientID := getClientIDFromContext(ctx)
+	hclog.Default().Debug("Placeholder Pseudo Cap Check...", "clientID", clientID, "path", path)
 	r, err := getRoot(path)
 	if err != nil {
 		hclog.Default().Error("Failed to open root", "path", path, "err", err)
@@ -72,6 +74,8 @@ func (hf *HostFS) ReadDir(ctx context.Context, path string) ([]fs.DirEntry, erro
 
 // ReadFile reads the specified file from the given directory and returns its contents as a byte slice or an error.
 func (hf *HostFS) ReadFile(ctx context.Context, path string) ([]byte, error) {
+	clientID := getClientIDFromContext(ctx)
+	hclog.Default().Debug("Placeholder Pseudo Cap Check...", "clientID", clientID, "path", path)
 	dir, file := filepath.Split(path)
 	r, err := getRoot(dir)
 	if err != nil {
@@ -90,6 +94,8 @@ func (hf *HostFS) ReadFile(ctx context.Context, path string) ([]byte, error) {
 // WriteFile writes the specified data to a file within the given directory using the provided permissions.
 // If the provided permissions are zero, it defaults to standardPermissions. Returns an error if the operation fails.
 func (hf *HostFS) WriteFile(ctx context.Context, path string, data []byte, perm os.FileMode) error {
+	clientID := getClientIDFromContext(ctx)
+	hclog.Default().Debug("Placeholder Pseudo Cap Check...", "clientID", clientID, "path", path)
 	if perm&permissionsMask == 0 {
 		perm = standardPermissions
 	}
@@ -108,6 +114,69 @@ func (hf *HostFS) WriteFile(ctx context.Context, path string, data []byte, perm 
 	return nil
 }
 
+func (hf *HostFS) Mkdir(ctx context.Context, rootDir string, name string, perm os.FileMode) error {
+	clientID := getClientIDFromContext(ctx)
+	hclog.Default().Debug("Placeholder Pseudo Cap Check...", "clientID", clientID, "path", filepath.Join(rootDir, name))
+	if perm&permissionsMask == 0 {
+		perm = standardPermissions
+	}
+	r, err := getRoot(rootDir)
+	if err != nil {
+		hclog.Default().Error("Failed to open root", "path", rootDir, "err", err)
+		return err
+	}
+	defer closeRoot(r)
+	err = r.Mkdir(name, perm)
+	if err != nil {
+		hclog.Default().Error("Failed to create directory", "path", filepath.Join(rootDir, name), "err", err)
+		return err
+	}
+	return nil
+}
+
+func (hf *HostFS) MkdirAll(ctx context.Context, rootDir string, path string, perm os.FileMode) error {
+	clientID := getClientIDFromContext(ctx)
+	hclog.Default().Debug("Placeholder Pseudo Cap Check...", "clientID", clientID, "path", filepath.Join(rootDir, path))
+	if perm&permissionsMask == 0 {
+		perm = standardPermissions
+	}
+	r, err := getRoot(rootDir)
+	if err != nil {
+		hclog.Default().Error("Failed to open root", "path", rootDir, "err", err)
+		return err
+	}
+	defer closeRoot(r)
+	err = r.MkdirAll(path, perm)
+	if err != nil {
+		hclog.Default().Error("Failed to create directory", "path", filepath.Join(rootDir, path), "err", err)
+		return err
+	}
+	return nil
+}
+
+func (hf *HostFS) FileCreate(ctx context.Context, path string) (FileHandle, error) {
+	clientID := getClientIDFromContext(ctx)
+	d, f := filepath.Split(path)
+	r, err := getRoot(d)
+	if err != nil {
+		hclog.Default().Error("Failed to open root", "path", d, "err", err)
+		return "", err
+	}
+	defer closeRoot(r)
+	file, err := r.Create(f)
+	if err != nil {
+		hclog.Default().Error("Failed to create file", "path", path, "err", err)
+		return "", err
+	}
+	fh := newFileHandle()
+	err = hf.openFiles.AddFile(clientID, fh, file)
+	if err != nil {
+		return "", err
+	}
+	return fh, nil
+}
+
+// FileOpen opens a file at the specified path with the given flags and permissions, returning a FileHandle and file size.
 func (hf *HostFS) FileOpen(ctx context.Context, path string, flag int, perm os.FileMode) (FileHandle, uint64, error) {
 	clientID := getClientIDFromContext(ctx)
 	d, f := filepath.Split(path)
@@ -134,6 +203,8 @@ func (hf *HostFS) FileOpen(ctx context.Context, path string, flag int, perm os.F
 	return fh, uint64(info.Size()), nil
 }
 
+// FileClose closes an open file associated with the given file handle for a specific client and removes its reference.
+// Returns an error if the handle does not exist, the file cannot be closed, or the file reference cannot be removed.
 func (hf *HostFS) FileClose(ctx context.Context, handle FileHandle) error {
 	clientID := getClientIDFromContext(ctx)
 	files, err := hf.GetOpenFiles().GetFilesByClient(clientID)

@@ -26,6 +26,15 @@ type IHostFS interface {
 	// WriteFile writes data to the specified file within the given directory, applying the provided file permissions.
 	WriteFile(ctx context.Context, path string, data []byte, perm os.FileMode) error
 
+	// Mkdir creates a new directory within the specified root directory with the given name and permissions.
+	Mkdir(ctx context.Context, rootDir string, name string, perm os.FileMode) error
+
+	// MkdirAll creates a directory specified by the path, including all necessary parent directories, with the given permissions.
+	MkdirAll(ctx context.Context, rootDir string, path string, perm os.FileMode) error
+
+	// FileCreate creates a new file at the specified path and returns a FileHandle for the file or an error if it fails.
+	FileCreate(ctx context.Context, path string) (FileHandle, error)
+
 	// FileOpen opens a file at the specified path with the given flags and permissions,
 	// returning a handle, file size, and error.
 	FileOpen(ctx context.Context, path string, flag int, perm os.FileMode) (FileHandle, uint64, error)

@@ -75,6 +75,67 @@ func (c *HostServiceGRPCClient) WriteFile(ctx context.Context, path string, data
 	return nil
 }
 
+func (c *HostServiceGRPCClient) Mkdir(ctx context.Context, rootDir string, name string, perm os.FileMode) error {
+	ctx = addTracingIDsToContext(ctx, c.clientID, NewRequestID())
+	if perm == 0 {
+		perm = standardPermissions
+	}
+	resp, err := c.client.Mkdir(ctx, &hostservev1.MkdirRequest{
+		RootDir: rootDir,
+		Name:    name,
+		Perm:    uint32(perm),
+	})
+	if err != nil {
+		return &HostServiceError{Message: err.Error()}
+	}
+	if resp == nil {
+		return &HostServiceError{Message: "nil response from Mkdir"}
+	}
+	if resp.Error != nil {
+		return &HostServiceError{Message: *resp.Error}
+	}
+	return nil
+}
+
+func (c *HostServiceGRPCClient) MkdirAll(ctx context.Context, rootDir string, path string, perm os.FileMode) error {
+	ctx = addTracingIDsToContext(ctx, c.clientID, NewRequestID())
+	if perm == 0 {
+		perm = standardPermissions
+	}
+	resp, err := c.client.MkdirAll(ctx, &hostservev1.MkdirAllRequest{
+		RootDir: rootDir,
+		Path:    path,
+		Perm:    uint32(perm),
+	})
+	if err != nil {
+		return &HostServiceError{Message: err.Error()}
+	}
+	if resp == nil {
+		return &HostServiceError{Message: "nil response from MkdirAll"}
+	}
+	if resp.Error != nil {
+		return &HostServiceError{Message: *resp.Error}
+	}
+	return nil
+}
+
+func (c *HostServiceGRPCClient) FileCreate(ctx context.Context, path string) (FileHandle, error) {
+	ctx = addTracingIDsToContext(ctx, c.clientID, NewRequestID())
+	resp, err := c.client.FileCreate(ctx, &hostservev1.FileCreateRequest{
+		Path: path,
+	})
+	if err != nil {
+		return "", &HostServiceError{Message: err.Error()}
+	}
+	if resp == nil {
+		return "", &HostServiceError{Message: "nil response from FileCreate"}
+	}
+	if resp.Error != nil {
+		return "", &HostServiceError{Message: *resp.Error}
+	}
+	return FileHandle(resp.Handle), nil
+}
+
 func (c *HostServiceGRPCClient) FileOpen(ctx context.Context, path string, flag int, perm os.FileMode) (FileHandle, uint64, error) {
 	ctx = addTracingIDsToContext(ctx, c.clientID, NewRequestID())
 	resp, err := c.client.FileOpen(ctx, &hostservev1.FileOpenRequest{

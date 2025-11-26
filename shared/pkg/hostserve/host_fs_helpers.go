@@ -1,6 +1,8 @@
 package hostserve
 
 import (
+	"context"
+	"fmt"
 	"os"
 	"path/filepath"
 
@@ -89,4 +91,20 @@ func closeRoot(r *os.Root) {
 		hclog.Default().Error("Failed to close root", "path", r.Name(), "err", err)
 	}
 	// TODO remove from the map of open roots
+}
+
+// retrieveOpenFile retrieves an open file associated with a given client ID and file handle from the HostFS.
+// Returns the *os.File instance if found or an error if the file handle is invalid or the client ID is missing.
+func (hf *HostFS) retrieveOpenFile(ctx context.Context, handle FileHandle) (*os.File, error) {
+
+	clientId := getClientIDFromContext(ctx)
+	if clientId == "" {
+		return nil, fmt.Errorf("client ID not found in context")
+	}
+	file, err := hf.GetOpenFiles().GetFile(clientId, handle)
+	if err != nil {
+		return nil, err
+	}
+
+	return file, nil
 }

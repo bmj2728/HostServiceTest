@@ -162,10 +162,19 @@ func (hf *HostFS) FileReader(ctx context.Context, handle FileHandle, chunkSize u
 	if chunkSize < minChunkSize || chunkSize > maxChunkSize {
 		return nil, fmt.Errorf("chunk size must be between %d and %d bytes", minChunkSize, maxChunkSize)
 	}
-	// Extract client ID from context
-	clientId := getClientIDFromContext(ctx)
 
-	file, err := hf.GetOpenFiles().GetFile(clientId, handle)
+	file, err := hf.retrieveOpenFile(ctx, handle)
+	if err != nil {
+		return nil, err
+	}
+
+	return file, nil
+}
+
+// FileWriter returns a WriteCloser for the specified file handle, allowing write operations on the file.
+func (hf *HostFS) FileWriter(ctx context.Context, handle FileHandle) (io.WriteCloser, error) {
+
+	file, err := hf.retrieveOpenFile(ctx, handle)
 	if err != nil {
 		return nil, err
 	}

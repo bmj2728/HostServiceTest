@@ -3,6 +3,7 @@ package hostserve
 import (
 	"context"
 	"errors"
+	"fmt"
 	"io"
 	"os"
 	"path/filepath"
@@ -279,4 +280,86 @@ func (s *HostServiceGRPCServer) FileReader(request *hostservev1.FileReadRequest,
 			})
 		}
 	}
+}
+
+func (s *HostServiceGRPCServer) FileWriter(stream grpc.ClientStreamingServer[hostservev1.FileWriteRequest, hostservev1.FileWriteResponse]) error {
+	ctx := stream.Context()
+	totalBytes := uint32(0)
+
+	// Receive first message to extract metadata and get file
+	req, err := stream.Recv()
+	if err != nil {
+		return err
+	}
+
+	// Process context
+	ctx, clientID, reqID, owner, err := s.processRequestContext(ctx)
+	if err != nil {
+		return stream.SendAndClose(&hostservev1.FileWriteResponse{
+			Error: proto.String(err.Error()),
+		})
+	}
+	handle := FileHandle(req.Handle)
+
+	hclog.Default().Info("FileWriter request from client",
+		ctxClientIDKey, clientID,
+		ctxClientOwner, owner,
+		ctxHostRequestIDKey, reqID,
+		"handle", handle)
+
+	file, err := s.Impl.FileWriter(ctx, handle)
+	if err != nil {
+		return stream.SendAndClose(&hostservev1.FileWriteResponse{Error: proto.String(err.Error())})
+	}
+
+	// Write the first chunk
+	if req.Chunk != nil && len(req.Chunk.Data) > 0 {
+		n, err := file.Write(req.Chunk.Data)
+		if err != nil {
+			return stream.SendAndClose(&hostservev1.FileWriteResponse{
+				Error: proto.String(err.Error()),
+			})
+		}
+		totalBytes += uint32(n)
+	}
+
+	// Now we're grooving - loop until EOF
+	for {
+		req, err := stream.Recv()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			return stream.SendAndClose(&hostservev1.FileWriteResponse{
+				Error: proto.String(err.Error()),
+			})
+		}
+
+		// Validate handle consistency
+		if FileHandle(req.Handle) != handle {
+			return stream.SendAndClose(&hostservev1.FileWriteResponse{
+				Error: proto.String(fmt.Sprintf("handle mismatch: expected %s, got %s", handle, req.Handle)),
+			})
+		}
+
+		// Write chunk
+		if req.Chunk != nil && len(req.Chunk.Data) > 0 {
+			n, err := file.Write(req.Chunk.Data)
+			if err != nil {
+				return stream.SendAndClose(&hostservev1.FileWriteResponse{
+					Error: proto.String(err.Error()),
+				})
+			}
+			totalBytes += uint32(n)
+		}
+
+		// Check if final
+		if req.Chunk != nil && req.Chunk.IsFinal {
+			break
+		}
+	}
+
+	return stream.SendAndClose(&hostservev1.FileWriteResponse{
+		BytesWritten: totalBytes,
+	})
 }

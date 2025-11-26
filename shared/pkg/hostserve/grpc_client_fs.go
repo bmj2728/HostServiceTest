@@ -116,3 +116,12 @@ func (c *HostServiceGRPCClient) FileReader(ctx context.Context, handle FileHandl
 	}
 	return &grpcFileStreamReader{stream: stream}, nil
 }
+
+func (c *HostServiceGRPCClient) FileWriter(ctx context.Context, handle FileHandle) (io.WriteCloser, error) {
+	ctx = addTracingIDsToContext(ctx, c.clientID, NewRequestID())
+	stream, err := c.client.FileWriter(ctx)
+	if err != nil {
+		return nil, &HostServiceError{Message: err.Error()}
+	}
+	return &grpcFileStreamWriter{stream: stream, handle: handle}, nil
+}

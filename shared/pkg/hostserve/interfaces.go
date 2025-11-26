@@ -36,7 +36,7 @@ type IHostFS interface {
 	// FileReader reads data from an open file, identified by the provided FileHandle, in chunks of the specified size.
 	FileReader(ctx context.Context, handle FileHandle, chunkSize uint32) (io.Reader, error)
 
-	//FileWriter(ctx context.Context, handle FileHandle, data []bytes) (io.Writer, error)
+	FileWriter(ctx context.Context, handle FileHandle) (io.WriteCloser, error)
 }
 
 // IHostEnv defines a contract for interacting with environment variables in the host system.

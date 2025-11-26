@@ -64,19 +64,43 @@ The helper functions gracefully handle both cases. No special conditionals neede
 
 ### 4. **Easy Extensibility**
 
-Adding a new host service function is trivial:
+Adding a new host service function follows a clear pattern:
 
-1. Add one RPC method to `hostserve.proto`:
+1. **Update proto and regenerate**:
    ```protobuf
    rpc GetEnv(GetEnvRequest) returns (GetEnvResponse);
    ```
+   Then run `buf generate`
 
-2. Run `buf generate`
-
-3. Implement the method:
+2. **Update the interface** in `shared/pkg/hostserve/host_service.go`:
    ```go
-   func (h *HostServices) GetEnv(ctx context.Context, key string) string {
-       return os.Getenv(key)
+   type IHostServices interface {
+       GetEnv(ctx context.Context, key string) (string, error)
+       // ... other methods
+   }
+   ```
+
+3. **Implement the business logic** in your host service:
+   ```go
+   func (h *HostServices) GetEnv(ctx context.Context, key string) (string, error) {
+       return os.Getenv(key), nil
+   }
+   ```
+
+4. **Add gRPC client wrapper** (matches host implementation signature):
+   ```go
+   func (c *HostServiceGRPCClient) GetEnv(ctx context.Context, key string) (string, error) {
+       resp, err := c.client.GetEnv(ctx, &hostservev1.GetEnvRequest{Key: key})
+       if err != nil { return "", err }
+       return resp.Value, nil
+   }
+   ```
+
+5. **Add gRPC server wrapper** (calls host implementation):
+   ```go
+   func (s *HostServiceGRPCServer) GetEnv(ctx context.Context, req *hostservev1.GetEnvRequest) (*hostservev1.GetEnvResponse, error) {
+       value, err := s.Impl.GetEnv(ctx, req.Key)
+       return &hostservev1.GetEnvResponse{Value: value}, err
    }
    ```
 
@@ -347,9 +371,11 @@ const (
 
 ## How to Extend: Add a New Host Service Function
 
-Adding new functionality is straightforward. Here's the general process:
+Adding new functionality is straightforward. Here's the complete process:
 
-**Step 1**: Edit `shared/proto/hostserve/v1/hostserve.proto` and add your new RPC:
+**Step 1: Update proto and regenerate**
+
+Edit `shared/proto/hostserve/v1/hostserve.proto` and add your new RPC:
 ```protobuf
 service HostService {
   // ... existing methods ...
@@ -367,15 +393,60 @@ message YourResponse {
 }
 ```
 
-**Step 2**: Regenerate code:
+Then regenerate:
 ```bash
 buf generate
 ```
 
-**Step 3**: Implement the method:
-- Add the business logic to `shared/pkg/hostserve/` (e.g., in `host_fs.go` for file operations)
-- Add the gRPC server handler in `grpc_server_*.go`
-- Add the gRPC client wrapper in `grpc_client_*.go`
+**Step 2: Update the interface**
+
+Add your method to `shared/pkg/hostserve/host_service.go`:
+```go
+type IHostServices interface {
+    YourNewMethod(ctx context.Context, param1 string, param2 int32) (string, error)
+    // ... other methods
+}
+```
+
+**Step 3: Implement the business logic**
+
+Add the implementation to `shared/pkg/hostserve/` (e.g., `host_fs.go` for file operations, or create a new file):
+```go
+func (h *HostServices) YourNewMethod(ctx context.Context, param1 string, param2 int32) (string, error) {
+    // Your business logic here
+    result := fmt.Sprintf("Processed %s with %d", param1, param2)
+    return result, nil
+}
+```
+
+**Step 4: Add gRPC client wrapper**
+
+In `shared/pkg/hostserve/grpc_client_*.go`, add the client method that matches your interface signature:
+```go
+func (c *HostServiceGRPCClient) YourNewMethod(ctx context.Context, param1 string, param2 int32) (string, error) {
+    resp, err := c.client.YourNewMethod(ctx, &hostservev1.YourNewMethodRequest{
+        Param1: param1,
+        Param2: param2,
+    })
+    if err != nil {
+        return "", err
+    }
+    return resp.Result, nil
+}
+```
+
+**Step 5: Add gRPC server wrapper**
+
+In `shared/pkg/hostserve/grpc_server_*.go`, add the server method that calls your implementation:
+```go
+func (s *HostServiceGRPCServer) YourNewMethod(ctx context.Context, req *hostservev1.YourNewMethodRequest) (*hostservev1.YourNewMethodResponse, error) {
+    result, err := s.Impl.YourNewMethod(ctx, req.Param1, req.Param2)
+    if err != nil {
+        return nil, err
+    }
+    return &hostservev1.YourNewMethodResponse{Result: result}, nil
+}
+```
 
 **Done!** All plugins can now call your new method. No changes needed to:
 - The broker setup

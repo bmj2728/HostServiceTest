@@ -195,6 +195,30 @@ func (s *HostServiceGRPCServer) MkdirAll(ctx context.Context, request *hostserve
 	return &hostservev1.MkdirAllResponse{}, nil
 }
 
+func (s *HostServiceGRPCServer) MkdirTemp(ctx context.Context, request *hostservev1.MkdirTempRequest) (*hostservev1.MkdirTempResponse, error) {
+	ctx, clientID, reqID, owner, err := s.processRequestContext(ctx)
+	if err != nil {
+		return &hostservev1.MkdirTempResponse{
+			Error: proto.String(err.Error()),
+		}, nil
+	}
+
+	hclog.Default().Info("MkdirTemp request from client",
+		ctxClientIDKey, clientID,
+		ctxClientOwner, owner,
+		ctxHostRequestIDKey, reqID,
+		"rootDir", request.RootDir,
+		"pattern", request.Pattern)
+
+	dir, err := s.Impl.MkdirTemp(ctx, request.RootDir, request.Pattern)
+	if err != nil {
+		return &hostservev1.MkdirTempResponse{
+			Error: proto.String(err.Error()),
+		}, nil
+	}
+	return &hostservev1.MkdirTempResponse{Path: dir}, nil
+}
+
 func (s *HostServiceGRPCServer) FileCreate(ctx context.Context,
 	request *hostservev1.FileCreateRequest) (response *hostservev1.FileCreateResponse, err error) {
 	ctx, clientID, reqID, owner, err := s.processRequestContext(ctx)

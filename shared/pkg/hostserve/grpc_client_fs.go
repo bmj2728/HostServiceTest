@@ -186,3 +186,21 @@ func (c *HostServiceGRPCClient) FileWriter(ctx context.Context, handle FileHandl
 	}
 	return &grpcFileStreamWriter{stream: stream, handle: handle}, nil
 }
+
+func (c *HostServiceGRPCClient) MkdirTemp(ctx context.Context, rootDir string, pattern string) (string, error) {
+	ctx = addTracingIDsToContext(ctx, c.clientID, NewRequestID())
+	resp, err := c.client.MkdirTemp(ctx, &hostservev1.MkdirTempRequest{
+		RootDir: rootDir,
+		Pattern: pattern,
+	})
+	if err != nil {
+		return "", &HostServiceError{Message: err.Error()}
+	}
+	if resp == nil {
+		return "", &HostServiceError{Message: "nil response from MkdirTemp"}
+	}
+	if resp.Error != nil {
+		return "", &HostServiceError{Message: *resp.Error}
+	}
+	return resp.GetPath(), nil
+}

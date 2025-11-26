@@ -19,17 +19,19 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	HostService_ReadDir_FullMethodName    = "/hostserve.v1.HostService/ReadDir"
-	HostService_ReadFile_FullMethodName   = "/hostserve.v1.HostService/ReadFile"
-	HostService_WriteFile_FullMethodName  = "/hostserve.v1.HostService/WriteFile"
-	HostService_Mkdir_FullMethodName      = "/hostserve.v1.HostService/Mkdir"
-	HostService_MkdirAll_FullMethodName   = "/hostserve.v1.HostService/MkdirAll"
-	HostService_FileCreate_FullMethodName = "/hostserve.v1.HostService/FileCreate"
-	HostService_FileOpen_FullMethodName   = "/hostserve.v1.HostService/FileOpen"
-	HostService_FileClose_FullMethodName  = "/hostserve.v1.HostService/FileClose"
-	HostService_FileReader_FullMethodName = "/hostserve.v1.HostService/FileReader"
-	HostService_FileWriter_FullMethodName = "/hostserve.v1.HostService/FileWriter"
-	HostService_GetEnv_FullMethodName     = "/hostserve.v1.HostService/GetEnv"
+	HostService_ReadDir_FullMethodName        = "/hostserve.v1.HostService/ReadDir"
+	HostService_ReadFile_FullMethodName       = "/hostserve.v1.HostService/ReadFile"
+	HostService_WriteFile_FullMethodName      = "/hostserve.v1.HostService/WriteFile"
+	HostService_Mkdir_FullMethodName          = "/hostserve.v1.HostService/Mkdir"
+	HostService_MkdirAll_FullMethodName       = "/hostserve.v1.HostService/MkdirAll"
+	HostService_MkdirTemp_FullMethodName      = "/hostserve.v1.HostService/MkdirTemp"
+	HostService_FileCreate_FullMethodName     = "/hostserve.v1.HostService/FileCreate"
+	HostService_FileCreateTemp_FullMethodName = "/hostserve.v1.HostService/FileCreateTemp"
+	HostService_FileOpen_FullMethodName       = "/hostserve.v1.HostService/FileOpen"
+	HostService_FileClose_FullMethodName      = "/hostserve.v1.HostService/FileClose"
+	HostService_FileReader_FullMethodName     = "/hostserve.v1.HostService/FileReader"
+	HostService_FileWriter_FullMethodName     = "/hostserve.v1.HostService/FileWriter"
+	HostService_GetEnv_FullMethodName         = "/hostserve.v1.HostService/GetEnv"
 )
 
 // HostServiceClient is the client API for HostService service.
@@ -45,8 +47,10 @@ type HostServiceClient interface {
 	WriteFile(ctx context.Context, in *WriteFileRequest, opts ...grpc.CallOption) (*WriteFileResponse, error)
 	Mkdir(ctx context.Context, in *MkdirRequest, opts ...grpc.CallOption) (*MkdirResponse, error)
 	MkdirAll(ctx context.Context, in *MkdirAllRequest, opts ...grpc.CallOption) (*MkdirAllResponse, error)
+	MkdirTemp(ctx context.Context, in *MkdirTempRequest, opts ...grpc.CallOption) (*MkdirTempResponse, error)
 	// FS - File Handle Endpoints
 	FileCreate(ctx context.Context, in *FileCreateRequest, opts ...grpc.CallOption) (*FileCreateResponse, error)
+	FileCreateTemp(ctx context.Context, in *FileCreateTempRequest, opts ...grpc.CallOption) (*FileCreateTempResponse, error)
 	FileOpen(ctx context.Context, in *FileOpenRequest, opts ...grpc.CallOption) (*FileOpenResponse, error)
 	FileClose(ctx context.Context, in *FileCloseRequest, opts ...grpc.CallOption) (*FileCloseResponse, error)
 	FileReader(ctx context.Context, in *FileReadRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[FileReadResponse], error)
@@ -113,10 +117,30 @@ func (c *hostServiceClient) MkdirAll(ctx context.Context, in *MkdirAllRequest, o
 	return out, nil
 }
 
+func (c *hostServiceClient) MkdirTemp(ctx context.Context, in *MkdirTempRequest, opts ...grpc.CallOption) (*MkdirTempResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(MkdirTempResponse)
+	err := c.cc.Invoke(ctx, HostService_MkdirTemp_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *hostServiceClient) FileCreate(ctx context.Context, in *FileCreateRequest, opts ...grpc.CallOption) (*FileCreateResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(FileCreateResponse)
 	err := c.cc.Invoke(ctx, HostService_FileCreate_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *hostServiceClient) FileCreateTemp(ctx context.Context, in *FileCreateTempRequest, opts ...grpc.CallOption) (*FileCreateTempResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(FileCreateTempResponse)
+	err := c.cc.Invoke(ctx, HostService_FileCreateTemp_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -198,8 +222,10 @@ type HostServiceServer interface {
 	WriteFile(context.Context, *WriteFileRequest) (*WriteFileResponse, error)
 	Mkdir(context.Context, *MkdirRequest) (*MkdirResponse, error)
 	MkdirAll(context.Context, *MkdirAllRequest) (*MkdirAllResponse, error)
+	MkdirTemp(context.Context, *MkdirTempRequest) (*MkdirTempResponse, error)
 	// FS - File Handle Endpoints
 	FileCreate(context.Context, *FileCreateRequest) (*FileCreateResponse, error)
+	FileCreateTemp(context.Context, *FileCreateTempRequest) (*FileCreateTempResponse, error)
 	FileOpen(context.Context, *FileOpenRequest) (*FileOpenResponse, error)
 	FileClose(context.Context, *FileCloseRequest) (*FileCloseResponse, error)
 	FileReader(*FileReadRequest, grpc.ServerStreamingServer[FileReadResponse]) error
@@ -231,8 +257,14 @@ func (UnimplementedHostServiceServer) Mkdir(context.Context, *MkdirRequest) (*Mk
 func (UnimplementedHostServiceServer) MkdirAll(context.Context, *MkdirAllRequest) (*MkdirAllResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method MkdirAll not implemented")
 }
+func (UnimplementedHostServiceServer) MkdirTemp(context.Context, *MkdirTempRequest) (*MkdirTempResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method MkdirTemp not implemented")
+}
 func (UnimplementedHostServiceServer) FileCreate(context.Context, *FileCreateRequest) (*FileCreateResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method FileCreate not implemented")
+}
+func (UnimplementedHostServiceServer) FileCreateTemp(context.Context, *FileCreateTempRequest) (*FileCreateTempResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method FileCreateTemp not implemented")
 }
 func (UnimplementedHostServiceServer) FileOpen(context.Context, *FileOpenRequest) (*FileOpenResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method FileOpen not implemented")
@@ -360,6 +392,24 @@ func _HostService_MkdirAll_Handler(srv interface{}, ctx context.Context, dec fun
 	return interceptor(ctx, in, info, handler)
 }
 
+func _HostService_MkdirTemp_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MkdirTempRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(HostServiceServer).MkdirTemp(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: HostService_MkdirTemp_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(HostServiceServer).MkdirTemp(ctx, req.(*MkdirTempRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _HostService_FileCreate_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(FileCreateRequest)
 	if err := dec(in); err != nil {
@@ -374,6 +424,24 @@ func _HostService_FileCreate_Handler(srv interface{}, ctx context.Context, dec f
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(HostServiceServer).FileCreate(ctx, req.(*FileCreateRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _HostService_FileCreateTemp_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(FileCreateTempRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(HostServiceServer).FileCreateTemp(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: HostService_FileCreateTemp_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(HostServiceServer).FileCreateTemp(ctx, req.(*FileCreateTempRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -478,8 +546,16 @@ var HostService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _HostService_MkdirAll_Handler,
 		},
 		{
+			MethodName: "MkdirTemp",
+			Handler:    _HostService_MkdirTemp_Handler,
+		},
+		{
 			MethodName: "FileCreate",
 			Handler:    _HostService_FileCreate_Handler,
+		},
+		{
+			MethodName: "FileCreateTemp",
+			Handler:    _HostService_FileCreateTemp_Handler,
 		},
 		{
 			MethodName: "FileOpen",

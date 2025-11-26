@@ -252,3 +252,14 @@ func (hf *HostFS) FileWriter(ctx context.Context, handle FileHandle) (io.WriteCl
 
 	return file, nil
 }
+
+func (hf *HostFS) MkdirTemp(ctx context.Context, rootDir string, pattern string) (string, error) {
+	//We'd check for access to the root directory here
+	clientID := getClientIDFromContext(ctx)
+	if rootDir == "" {
+		rootDir = os.TempDir()
+	}
+	hclog.Default().Debug("Placeholder Pseudo Cap Check...", "clientID", clientID, "path", filepath.Join(rootDir, pattern))
+	// We could mirror the logic of os.MkdirTemp here, but use Mkdir in a Root for enhanced security
+	return os.MkdirTemp(rootDir, pattern)
+}

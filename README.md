@@ -4,7 +4,7 @@
 
 ## Why This Exists
 
-Most go-plugin examples show simple unidirectional communication: host calls plugin. Done. But real-world plugin systems need more:
+Most go-plugin examples show simple unidirectional communication: host calls plugin. Done. But real-world plugin systems need more (surprise!):
 
 - **Plugins need to call back to the host** for controlled resource access
 - **Security matters**: plugins shouldn't have direct filesystem/network access
@@ -115,7 +115,7 @@ func (h *HostServices) ReadDir(ctx context.Context, path string) ([]fs.DirEntry,
 - **Dynamic permissions**: Grant/revoke capabilities at runtime
 - **Zero-trust plugins**: Plugins never touch the filesystem directly
 
-**Real-world scenario**: A plugin marketplace where users install third-party plugins. Each plugin declares "I need to read config files" and the host enforces that it can ONLY read config files, not secrets or system files.
+**Real-world scenario**: A plugin marketplace where users install third-party plugins. Each plugin declares "I need to read config files" and the host enforces that it can ONLY read config files, not secrets or system files. No sneaky business allowed.
 
 This is the foundation for building plugin systems users can trust.
 
@@ -123,8 +123,8 @@ This is the foundation for building plugin systems users can trust.
 
 **Latest improvements to the architecture:**
 
-- **Streaming file operations**: Fully implemented streaming for large files via `FileRead` (server streaming) and `FileWrite` (client streaming) to handle large files efficiently without loading everything into memory
-- **Chunk size constraints**: `FileRead` enforces chunk sizes between 8KB (minimum for performance) and ~3.81MB (maximum due to gRPC 4MB message limits)
+- **Streaming file operations**: Fully implemented streaming for large files via `FileReader` (server streaming) and `FileWriter` (client streaming) to handle large files efficiently without loading everything into memory
+- **Chunk size constraints**: `FileReader` enforces chunk sizes between 8KB (minimum for performance) and ~3.81MB (maximum due to gRPC 4MB message limits)
 - **File handle management**: Introduced `FileOpen`/`FileClose` endpoints with handle-based operations, enabling better resource management and explicit lifecycle control
 - **Simplified architecture**: Removed `OpenRoots` complexity in favor of cleaner internal path confinement
 - **Consistent naming**: Standardized method names (`FileOpen`, `FileClose`) for better API clarity
@@ -208,10 +208,10 @@ This demo includes:
 *File Handle Operations (for larger files and streaming):*
 - `FileOpen(path, mode, perm)`: Open file and return handle
 - `FileClose(handle)`: Close file handle
-- `FileRead(handle, chunk_size)`: Read file in chunks via server streaming (fully implemented)
+- `FileReader(handle, chunk_size)`: Read file in chunks via server streaming (fully implemented)
   - Requires `chunk_size` between 8KB and ~3.81MB
   - Returns an `io.Reader` for progressive file reading
-- `FileWrite(handle, chunks)`: Write file in chunks (client streaming)
+- `FileWriter(handle, chunks)`: Write file in chunks via client streaming (fully implemented)
 
 **Infrastructure:**
 - `hostconn` package: Reusable connection management for any plugin type
@@ -241,7 +241,7 @@ handle, size, err := hostServiceClient.FileOpen(ctx, "/path/to/file", READ_ONLY,
 // Read in chunks via streaming
 // chunk_size must be between 8KB (8192) and ~3.81MB (4000000)
 chunkSize := uint32(64 * 1024) // 64KB is a good default
-stream, err := hostServiceClient.FileRead(ctx, handle, chunkSize)
+stream, err := hostServiceClient.FileReader(ctx, handle, chunkSize)
 
 // Stream implements io.Reader, so you can use it directly
 buffer := make([]byte, 1024)
@@ -263,6 +263,40 @@ for {
 err = hostServiceClient.FileClose(ctx, handle)
 ```
 
+**Writing files with streaming (FileWriter):**
+
+```go
+// Open file for writing
+handle, _, err := hostServiceClient.FileOpen(ctx, "/path/to/file", WRITE_ONLY, 0644)
+
+// Write data in chunks via client streaming
+data := []byte("large amount of data to write...")
+chunkSize := 64 * 1024 // 64KB chunks - the Goldilocks size (not too small, not too large)
+
+writer, err := hostServiceClient.FileWriter(ctx, handle)
+
+// Write chunks
+for i := 0; i < len(data); i += chunkSize {
+    end := i + chunkSize
+    if end > len(data) {
+        end = len(data)
+    }
+
+    chunk := data[i:end]
+    n, err := writer.Write(chunk)
+    if err != nil {
+        // Handle error
+        break
+    }
+}
+
+// Finish writing (flush any buffered data)
+err = writer.Close()
+
+// Close file handle
+err = hostServiceClient.FileClose(ctx, handle)
+```
+
 The file handle pattern enables:
 - **Streaming large files** without loading everything into memory
 - **Progressive processing** of file contents
@@ -271,7 +305,7 @@ The file handle pattern enables:
 
 **Chunk Size Guidelines:**
 
-The `FileRead` operation requires a chunk size parameter with the following constraints:
+The `FileReader` operation requires a chunk size parameter with the following constraints:
 
 - **Minimum: 8KB (8,192 bytes)** - Enforced to avoid excessive overhead and align with common buffer/block sizes
 - **Maximum: ~3.81MB (4,000,000 bytes)** - gRPC enforces a 4MB message limit; this leaves room for message overhead
@@ -288,7 +322,7 @@ const (
 )
 ```
 
-**Note:** See `plugins/filelister/filelister.go` for a complete working example of file handle operations with `FileRead` streaming.
+**Note:** See `plugins/filelister/filelister.go` for a complete working example of file handle operations with `FileReader` streaming.
 
 ## Project Structure
 
@@ -499,7 +533,7 @@ h.auditLog.Log(AuditEntry{
 
 ## Technical Deep Dives
 
-### The Broker: How Multiplexing Works
+### The Broker: How Multiplexing Works (The Secret Sauce)
 
 Each plugin gets its own broker instance. When you call:
 ```go
@@ -653,7 +687,7 @@ When modifying service definitions:
 3. Implement new methods in corresponding Go files
 4. **Never manually edit files in `shared/protogen/`**
 
-The buf configuration ensures consistent code generation with proper Go module paths.
+The buf configuration ensures consistent code generation with proper Go module paths. (And yes, you really should never edit the generated files. We know it's tempting. Don't.)
 
 ## Learning Resources
 
@@ -670,16 +704,16 @@ A: This is a demonstration/teaching project. The patterns are production-ready, 
 A: Yes, especially the `hostconn` package which is designed to be reusable. Treat this as a reference implementation.
 
 **Q: Why not just give plugins direct filesystem access?**
-A: Security and control. Plugins become sandboxed, auditable, and can't accidentally or maliciously access resources they shouldn't.
+A: Security and control. Plugins become sandboxed, auditable, and can't accidentally or maliciously access resources they shouldn't. Think of it as a velvet rope for your filesystem - plugins can look, but only touch what they're allowed to.
 
 **Q: How does this handle plugin crashes?**
 A: go-plugin provides process isolation. If a plugin crashes, the host continues running. You'd need to add recovery/restart logic.
 
 **Q: Can plugins talk to each other?**
-A: Not directly in this model. They'd need to go through host services. You could add a "message bus" host service for inter-plugin communication.
+A: Not directly in this model - they're like kids at separate lunch tables. They'd need to go through host services. You could add a "message bus" host service for inter-plugin communication if you want them to pass notes.
 
 **Q: What about performance?**
-A: gRPC is efficient. For high-frequency calls, you'd want connection pooling (examples in comments). The broker overhead is minimal.
+A: gRPC is efficient - basically, it's fast. For high-frequency calls, you'd want connection pooling (examples in comments). The broker overhead is minimal. You're more likely to be bottlenecked by your business logic than the infrastructure.
 
 ## Contributing
 

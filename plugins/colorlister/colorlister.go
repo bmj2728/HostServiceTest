@@ -30,7 +30,7 @@ type ColorLister struct {
 
 func (f *ColorLister) ListFiles(dir string) ([]string, error) {
 	ctx := context.Background()
-	ctx = context.WithValue(ctx, "client", "cl-plugin")
+
 	//uses host to read dir vs. using os.ReadDir(dir) or fs.ReadDir(fs, dir)
 	dirEntries, err := f.hostServiceClient.ReadDir(ctx, dir)
 	if err != nil {
@@ -52,6 +52,30 @@ func (f *ColorLister) ListFiles(dir string) ([]string, error) {
 			entries = append(entries, fileFormat.Wrap(entry.Name(), true)+fmt.Sprintf(" Size: %d bytes", contents))
 		}
 	}
+
+	err = f.hostServiceClient.Mkdir(ctx, dir, "created_dir", 0755)
+	if err != nil {
+		hclog.Default().Error("Failed to create directory via host service", "dir", dir, "err", err)
+		return nil, err
+	}
+
+	err = f.hostServiceClient.MkdirAll(ctx, dir, "nested/dir", 0755)
+	if err != nil {
+		hclog.Default().Error("Failed to create directory via host service", "dir", filepath.Join(dir, "nested/dir"), "err", err)
+		return nil, err
+	}
+
+	fh, err := f.hostServiceClient.FileCreate(ctx, filepath.Join(dir, "nested/dir", "created_file.txt"))
+	if err != nil {
+		hclog.Default().Error("Failed to create file via host service", "dir", dir, "err", err)
+		return nil, err
+	}
+	defer func(hostServiceClient hostserve.IHostServices, ctx context.Context, handle hostserve.FileHandle) {
+		err := hostServiceClient.FileClose(ctx, handle)
+		if err != nil {
+			hclog.Default().Error("Failed to close file handle", "err", err)
+		}
+	}(f.hostServiceClient, ctx, fh)
 
 	return entries, nil
 }

@@ -300,17 +300,21 @@ func (s *HostServiceGRPCServer) FileWriter(stream grpc.ClientStreamingServer[hos
 		})
 	}
 	handle := FileHandle(req.Handle)
+	file, err := s.Impl.FileWriter(ctx, handle)
+	if err != nil {
+		return stream.SendAndClose(&hostservev1.FileWriteResponse{Error: proto.String(err.Error())})
+	}
+	info, err := file.(*os.File).Stat()
+	if err != nil {
+		return stream.SendAndClose(&hostservev1.FileWriteResponse{Error: proto.String(err.Error())})
+	}
 
 	hclog.Default().Info("FileWriter request from client",
 		ctxClientIDKey, clientID,
 		ctxClientOwner, owner,
 		ctxHostRequestIDKey, reqID,
-		"handle", handle)
-
-	file, err := s.Impl.FileWriter(ctx, handle)
-	if err != nil {
-		return stream.SendAndClose(&hostservev1.FileWriteResponse{Error: proto.String(err.Error())})
-	}
+		"handle", handle,
+		"file", info.Name())
 
 	// Write the first chunk
 	if req.Chunk != nil && len(req.Chunk.Data) > 0 {
@@ -320,6 +324,7 @@ func (s *HostServiceGRPCServer) FileWriter(stream grpc.ClientStreamingServer[hos
 				Error: proto.String(err.Error()),
 			})
 		}
+		hclog.Default().Info("Wrote chunk", "bytes", n, "handle", handle)
 		totalBytes += uint32(n)
 	}
 
@@ -350,6 +355,7 @@ func (s *HostServiceGRPCServer) FileWriter(stream grpc.ClientStreamingServer[hos
 					Error: proto.String(err.Error()),
 				})
 			}
+			hclog.Default().Info("Wrote chunk", "bytes", n, "handle", handle)
 			totalBytes += uint32(n)
 		}
 
@@ -358,7 +364,12 @@ func (s *HostServiceGRPCServer) FileWriter(stream grpc.ClientStreamingServer[hos
 			break
 		}
 	}
-
+	err = file.(*os.File).Sync()
+	if err != nil {
+		return stream.SendAndClose(&hostservev1.FileWriteResponse{
+			Error: proto.String(fmt.Sprintf("failed to sync file: %v", err)),
+		})
+	}
 	return stream.SendAndClose(&hostservev1.FileWriteResponse{
 		BytesWritten: totalBytes,
 	})

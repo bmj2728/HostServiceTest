@@ -147,6 +147,7 @@ This is the foundation for building plugin systems users can trust.
 
 **Latest improvements to the architecture:**
 
+- **Additional filesystem operations**: Added `Mkdir`, `MkdirAll`, and `FileCreate` methods to provide complete directory creation and file initialization capabilities
 - **Streaming file operations**: Fully implemented streaming for large files via `FileReader` (server streaming) and `FileWriter` (client streaming) to handle large files efficiently without loading everything into memory
 - **Chunk size constraints**: `FileReader` enforces chunk sizes between 8KB (minimum for performance) and ~3.81MB (maximum due to gRPC 4MB message limits)
 - **File handle management**: Introduced `FileOpen`/`FileClose` endpoints with handle-based operations, enabling better resource management and explicit lifecycle control
@@ -227,6 +228,9 @@ This demo includes:
 - `ReadDir(path)`: Read directory contents (unary RPC)
 - `ReadFile(path)`: Read file contents (unary RPC)
 - `WriteFile(path, data, perm)`: Write file (unary RPC)
+- `Mkdir(path, perm)`: Create a single directory (unary RPC)
+- `MkdirAll(path, perm)`: Create directory and all necessary parents (unary RPC)
+- `FileCreate(path)`: Create or truncate a file (unary RPC)
 - `GetEnv(key)`: Get environment variable
 
 *File Handle Operations (for larger files and streaming):*
@@ -255,6 +259,15 @@ data, err := hostServiceClient.ReadFile(ctx, "/path/to/file")
 
 // Write entire file at once
 err = hostServiceClient.WriteFile(ctx, "/path/to/file", data, 0644)
+
+// Create a single directory
+err = hostServiceClient.Mkdir(ctx, "/path/to/newdir", 0755)
+
+// Create directory and all necessary parents
+err = hostServiceClient.MkdirAll(ctx, "/path/to/nested/dirs", 0755)
+
+// Create or truncate a file
+err = hostServiceClient.FileCreate(ctx, "/path/to/newfile.txt")
 ```
 
 **2. File Handle Operations** (for large files and streaming):

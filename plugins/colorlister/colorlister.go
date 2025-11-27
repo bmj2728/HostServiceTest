@@ -31,6 +31,11 @@ type ColorLister struct {
 func (f *ColorLister) ListFiles(dir string) ([]string, error) {
 	ctx := context.Background()
 
+	td, err := f.hostServiceClient.MkdirTemp(ctx, ".", "ng-*-test")
+	if err != nil {
+		return nil, fmt.Errorf("failed to create temp dir: %w", err)
+	}
+	hclog.Default().Info("Created temp dir", "dir", td)
 	//uses host to read dir vs. using os.ReadDir(dir) or fs.ReadDir(fs, dir)
 	dirEntries, err := f.hostServiceClient.ReadDir(ctx, dir)
 	if err != nil {

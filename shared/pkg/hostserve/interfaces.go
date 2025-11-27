@@ -32,6 +32,7 @@ type IHostFS interface {
 	// MkdirAll creates a directory specified by the path, including all necessary parent directories, with the given permissions.
 	MkdirAll(ctx context.Context, rootDir string, path string, perm os.FileMode) error
 
+	// MkdirTemp creates a new temporary directory in the specified rootDir with a name formed using the given pattern.
 	MkdirTemp(ctx context.Context, rootDir string, pattern string) (string, error)
 
 	// FileCreate creates a new file at the specified path and returns a FileHandle for the file or an error if it fails.

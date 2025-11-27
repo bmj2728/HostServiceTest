@@ -33,20 +33,32 @@ var (
 func (hf *HostFS) Cleanup() {
 	hclog.Default().Info("Cleaning up HostFS resources")
 	hf.GetOpenFiles().CloseAll()
+	hf.GetTempPaths().CleanupAll()
 }
 
 // HostFS is a file system abstraction that provides methods to interact with a host's file system.
 type HostFS struct {
 	openFiles *OpenFiles
+	tempPaths *TempPaths
 }
 
 // NewHostFS creates and returns a new instance of HostFS.
 func NewHostFS() *HostFS {
 	return &HostFS{
 		openFiles: newOpenFiles(),
+		tempPaths: newTempPaths(),
 	}
 }
 
+// GetTempPaths returns a pointer to the TempPaths object, creating a new one if it has not been initialized.
+func (hf *HostFS) GetTempPaths() *TempPaths {
+	if hf.tempPaths == nil {
+		hf.tempPaths = newTempPaths()
+	}
+	return hf.tempPaths
+}
+
+// GetOpenFiles returns a reference to the open files manager, initializing it if not already created.
 func (hf *HostFS) GetOpenFiles() *OpenFiles {
 	if hf.openFiles == nil {
 		hf.openFiles = newOpenFiles()
@@ -261,5 +273,10 @@ func (hf *HostFS) MkdirTemp(ctx context.Context, rootDir string, pattern string)
 	}
 	hclog.Default().Debug("Placeholder Pseudo Cap Check...", "clientID", clientID, "path", filepath.Join(rootDir, pattern))
 	// We could mirror the logic of os.MkdirTemp here, but use Mkdir in a Root for enhanced security
-	return os.MkdirTemp(rootDir, pattern)
+	dir, err := os.MkdirTemp(rootDir, pattern)
+	if err != nil {
+		return "", err
+	}
+	hf.GetTempPaths().AddPath(clientID, dir)
+	return dir, nil
 }

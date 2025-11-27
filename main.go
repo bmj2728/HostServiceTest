@@ -178,5 +178,15 @@ func main() {
 	hfs.Cleanup()
 	hostServices.ActiveClients().Clear()
 
+	err = os.RemoveAll("./created_dir")
+	if err != nil {
+		hclog.Default().Error("Failed to remove temp dir", "err", err)
+	}
+
+	err = os.RemoveAll("./nested")
+	if err != nil {
+		hclog.Default().Error("Failed to remove temp dir", "err", err)
+	}
+
 	os.Exit(0)
 }

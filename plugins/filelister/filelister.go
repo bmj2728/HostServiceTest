@@ -149,7 +149,7 @@ func (f *FileLister) ListFiles(dir string) ([]string, error) {
 	}
 	hclog.Default().Info("Wrote to file", "bytes", b)
 
-	//// just closing the file handle
+	// oops we missed closing the file handle -- this showcases the cleanup server-side
 	//err = f.hostServiceClient.FileClose(ctx, retrieved)
 	//if err != nil {
 	//	hclog.Default().Error("Failed to close file handle", "err", err)

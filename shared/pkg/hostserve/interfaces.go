@@ -38,7 +38,7 @@ type IHostFS interface {
 	// FileCreate creates a new file at the specified path and returns a FileHandle for the file or an error if it fails.
 	FileCreate(ctx context.Context, path string) (FileHandle, error)
 
-	//FileCreateTemp(ctx context.Context, rootDir string, pattern string) (FileHandle, error)
+	FileCreateTemp(ctx context.Context, rootDir string, pattern string) (FileHandle, error)
 
 	// FileOpen opens a file at the specified path with the given flags and permissions,
 	// returning a handle, file size, and error.

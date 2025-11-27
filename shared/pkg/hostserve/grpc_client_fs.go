@@ -204,3 +204,21 @@ func (c *HostServiceGRPCClient) MkdirTemp(ctx context.Context, rootDir string, p
 	}
 	return resp.GetPath(), nil
 }
+
+func (c *HostServiceGRPCClient) FileCreateTemp(ctx context.Context, rootDir string, pattern string) (FileHandle, error) {
+	ctx = addTracingIDsToContext(ctx, c.clientID, NewRequestID())
+	resp, err := c.client.FileCreateTemp(ctx, &hostservev1.FileCreateTempRequest{
+		RootDir: rootDir,
+		Pattern: pattern,
+	})
+	if err != nil {
+		return "", &HostServiceError{Message: err.Error()}
+	}
+	if resp == nil {
+		return "", &HostServiceError{Message: "nil response from FileCreateTemp"}
+	}
+	if resp.Error != nil {
+		return "", &HostServiceError{Message: *resp.Error}
+	}
+	return FileHandle(resp.Handle), nil
+}

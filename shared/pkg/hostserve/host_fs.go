@@ -280,3 +280,41 @@ func (hf *HostFS) MkdirTemp(ctx context.Context, rootDir string, pattern string)
 	hf.GetTempPaths().AddPath(clientID, dir)
 	return dir, nil
 }
+
+func (hf *HostFS) FileCreateTemp(ctx context.Context, rootDir string, pattern string) (FileHandle, error) {
+	//We'd check for access to the root directory here
+	clientID := getClientIDFromContext(ctx)
+	if rootDir == "" {
+		rootDir = os.TempDir()
+	}
+	hclog.Default().Debug("Placeholder Pseudo Cap Check...", "clientID", clientID, "path", filepath.Join(rootDir, pattern))
+
+	// We could mirror the logic of os.CreateTemp here but use Create in a Root for enhanced security
+	// make the file
+	file, err := os.CreateTemp(rootDir, pattern)
+	if err != nil {
+		return "", err
+	}
+
+	// add it to temp tracking
+	fp, err := filepath.Abs(file.Name())
+	if err != nil {
+		fp = file.Name()
+	}
+	hf.GetTempPaths().AddPath(clientID, fp)
+
+	// make a handle
+	fh := newFileHandle()
+
+	// add the file to the open file map
+	err = hf.openFiles.AddFile(clientID, fh, file)
+	if err != nil {
+		// if this fails - close the file
+		err := file.Close()
+		if err != nil {
+			return "", err
+		}
+	}
+	// return the handle
+	return fh, nil
+}

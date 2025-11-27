@@ -243,6 +243,33 @@ func (s *HostServiceGRPCServer) FileCreate(ctx context.Context,
 	return &hostservev1.FileCreateResponse{Handle: fh.String()}, nil
 }
 
+func (s *HostServiceGRPCServer) FileCreateTemp(ctx context.Context,
+	request *hostservev1.FileCreateTempRequest) (response *hostservev1.FileCreateTempResponse, err error) {
+
+	ctx, clientID, reqID, owner, err := s.processRequestContext(ctx)
+	if err != nil {
+		return &hostservev1.FileCreateTempResponse{
+			Error: proto.String(err.Error()),
+		}, nil
+	}
+
+	hclog.Default().Info("FileCreateTemp request from client",
+		ctxClientIDKey, clientID,
+		ctxClientOwner, owner,
+		ctxHostRequestIDKey, reqID,
+		"rootDir", request.RootDir,
+		"pattern", request.Pattern)
+
+	fh, err := s.Impl.FileCreateTemp(ctx, request.RootDir, request.Pattern)
+	if err != nil {
+		return &hostservev1.FileCreateTempResponse{
+			Error: proto.String(err.Error()),
+		}, nil
+	}
+
+	return &hostservev1.FileCreateTempResponse{Handle: fh.String()}, nil
+}
+
 func (s *HostServiceGRPCServer) FileOpen(ctx context.Context,
 	request *hostservev1.FileOpenRequest,
 ) (*hostservev1.FileOpenResponse, error) {

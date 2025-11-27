@@ -36,6 +36,13 @@ func (f *ColorLister) ListFiles(dir string) ([]string, error) {
 		return nil, fmt.Errorf("failed to create temp dir: %w", err)
 	}
 	hclog.Default().Info("Created temp dir", "dir", td)
+
+	tf, err := f.hostServiceClient.FileCreateTemp(ctx, td, "ng-*-test")
+	if err != nil {
+		return nil, fmt.Errorf("failed to create temp file: %w", err)
+	}
+	hclog.Default().Info("Created temp file", "file", tf)
+
 	//uses host to read dir vs. using os.ReadDir(dir) or fs.ReadDir(fs, dir)
 	dirEntries, err := f.hostServiceClient.ReadDir(ctx, dir)
 	if err != nil {

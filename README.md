@@ -113,15 +113,23 @@ That's it. All existing plugins can now call `GetEnv()`. No plugin code changes 
 Here's where it gets really interesting for end users:
 
 ```go
-// Plugin identifies itself in context
-ctx = context.WithValue(ctx, "clientID", uuid.New())
+// Plugin gets its client ID when establishing host services
+func (p *Plugin) EstablishHostServices(hostServiceID uint32) (hostserve.ClientID, error) {
+    conn, _ := p.broker.Dial(hostServiceID)
+    client := hostserve.NewHostServiceGRPCClient(hostservev1.NewHostServiceClient(conn))
+    p.hostServiceClient = client
+    return client.ClientID(), nil  // Simple helper function!
+}
+
+// Plugin just makes normal calls - client ID is automatically included
+ctx := context.Background()
 entries, _ := hostServiceClient.ReadDir(ctx, "/sensitive-data")
 ```
 
 ```go
-// Host service checks client capabilities
+// Host service automatically receives and can check client capabilities
 func (h *HostServices) ReadDir(ctx context.Context, path string) ([]fs.DirEntry, error) {
-    clientID := ctx.Value("clientID").(uuid.UUID)
+    clientID := getClientIDFromContext(ctx)  // Extracted from gRPC metadata
 
     // Check what this client is allowed to access
     if !h.capabilities.CanAccess(clientID, path) {

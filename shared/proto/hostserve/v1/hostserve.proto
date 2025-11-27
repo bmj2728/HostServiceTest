@@ -2,6 +2,8 @@ syntax = "proto3";
 package hostserve.v1;
 option go_package = "github.com/bmj2728/HostServiceTest/shared/protogen/hostserve/v1;hostservev1";
 
+import "google/protobuf/timestamp.proto";
+
 //////////////////////////////////////ENUMs////////////////////////////////////////////////////////////////////////////
 
 enum OpenFileMode {
@@ -43,6 +45,7 @@ service HostService {
   rpc FileCreate(FileCreateRequest) returns (FileCreateResponse);
   rpc FileCreateTemp(FileCreateTempRequest) returns (FileCreateTempResponse);
   rpc FileOpen(FileOpenRequest) returns (FileOpenResponse);
+  rpc FileStat(FileStatRequest) returns (FileStatResponse);
   rpc FileSeek(FileSeekRequest) returns (FileSeekResponse);
   rpc FileClose(FileCloseRequest) returns (FileCloseResponse);
 
@@ -72,6 +75,14 @@ message FileChunk {
   bytes data = 1;
   uint64 offset = 2;
   bool is_final = 3;
+}
+
+message FileInfo {
+  string name = 1;
+  int64 size = 2;
+  uint32 mode = 3;
+  google.protobuf.Timestamp mod_time = 4;
+  bool is_dir =5;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -165,6 +176,15 @@ message FileOpenResponse {
   string handle = 1;
   uint64 size = 2;
   optional string error = 3;
+}
+
+message FileStatRequest {
+  string handle = 1;
+}
+
+message FileStatResponse {
+  FileInfo info = 1;
+  optional string error =2;
 }
 
 message FileSeekRequest {

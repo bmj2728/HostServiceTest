@@ -39,6 +39,12 @@ func (s *HostServiceGRPCServer) ReadDir(ctx context.Context,
 
 	ctx, clientID, reqID, owner, err := s.processRequestContext(ctx)
 	if err != nil {
+		hclog.Default().Info("ReadDir bad request from client",
+			ctxClientIDKey, clientID,
+			ctxClientOwner, owner,
+			ctxHostRequestIDKey, reqID,
+			"error", err,
+		)
 		return &hostservev1.ReadDirResponse{
 			Entries: nil,
 			Error:   proto.String(err.Error()),
@@ -86,6 +92,12 @@ func (s *HostServiceGRPCServer) ReadFile(ctx context.Context,
 
 	ctx, clientID, reqID, owner, err := s.processRequestContext(ctx)
 	if err != nil {
+		hclog.Default().Info("ReadFile bad request from client",
+			ctxClientIDKey, clientID,
+			ctxClientOwner, owner,
+			ctxHostRequestIDKey, reqID,
+			"error", err,
+		)
 		return &hostservev1.ReadFileResponse{
 			Contents: nil,
 			Error:    proto.String(err.Error()),
@@ -120,6 +132,12 @@ func (s *HostServiceGRPCServer) WriteFile(ctx context.Context,
 
 	ctx, clientID, reqID, owner, err := s.processRequestContext(ctx)
 	if err != nil {
+		hclog.Default().Info("WriteFile bad request from client",
+			ctxClientIDKey, clientID,
+			ctxClientOwner, owner,
+			ctxHostRequestIDKey, reqID,
+			"error", err,
+		)
 		return &hostservev1.WriteFileResponse{
 			Error: proto.String(err.Error()),
 		}, nil
@@ -148,6 +166,12 @@ func (s *HostServiceGRPCServer) Mkdir(ctx context.Context,
 
 	ctx, clientID, reqID, owner, err := s.processRequestContext(ctx)
 	if err != nil {
+		hclog.Default().Info("Mkdir bad request from client",
+			ctxClientIDKey, clientID,
+			ctxClientOwner, owner,
+			ctxHostRequestIDKey, reqID,
+			"error", err,
+		)
 		return &hostservev1.MkdirResponse{
 			Error: proto.String(err.Error()),
 		}, nil
@@ -173,6 +197,12 @@ func (s *HostServiceGRPCServer) Mkdir(ctx context.Context,
 func (s *HostServiceGRPCServer) MkdirAll(ctx context.Context, request *hostservev1.MkdirAllRequest) (*hostservev1.MkdirAllResponse, error) {
 	ctx, clientID, reqID, owner, err := s.processRequestContext(ctx)
 	if err != nil {
+		hclog.Default().Info("MkdirAll bad request from client",
+			ctxClientIDKey, clientID,
+			ctxClientOwner, owner,
+			ctxHostRequestIDKey, reqID,
+			"error", err,
+		)
 		return &hostservev1.MkdirAllResponse{
 			Error: proto.String(err.Error()),
 		}, nil
@@ -198,6 +228,12 @@ func (s *HostServiceGRPCServer) MkdirAll(ctx context.Context, request *hostserve
 func (s *HostServiceGRPCServer) MkdirTemp(ctx context.Context, request *hostservev1.MkdirTempRequest) (*hostservev1.MkdirTempResponse, error) {
 	ctx, clientID, reqID, owner, err := s.processRequestContext(ctx)
 	if err != nil {
+		hclog.Default().Info("MkdirTemp bad request from client",
+			ctxClientIDKey, clientID,
+			ctxClientOwner, owner,
+			ctxHostRequestIDKey, reqID,
+			"error", err,
+		)
 		return &hostservev1.MkdirTempResponse{
 			Error: proto.String(err.Error()),
 		}, nil
@@ -223,6 +259,12 @@ func (s *HostServiceGRPCServer) FileCreate(ctx context.Context,
 	request *hostservev1.FileCreateRequest) (response *hostservev1.FileCreateResponse, err error) {
 	ctx, clientID, reqID, owner, err := s.processRequestContext(ctx)
 	if err != nil {
+		hclog.Default().Info("FileCreate bad request from client",
+			ctxClientIDKey, clientID,
+			ctxClientOwner, owner,
+			ctxHostRequestIDKey, reqID,
+			"error", err,
+		)
 		return &hostservev1.FileCreateResponse{
 			Error: proto.String(err.Error()),
 		}, nil
@@ -248,6 +290,12 @@ func (s *HostServiceGRPCServer) FileCreateTemp(ctx context.Context,
 
 	ctx, clientID, reqID, owner, err := s.processRequestContext(ctx)
 	if err != nil {
+		hclog.Default().Info("FileCreateTemp bad request from client",
+			ctxClientIDKey, clientID,
+			ctxClientOwner, owner,
+			ctxHostRequestIDKey, reqID,
+			"error", err,
+		)
 		return &hostservev1.FileCreateTempResponse{
 			Error: proto.String(err.Error()),
 		}, nil
@@ -276,6 +324,12 @@ func (s *HostServiceGRPCServer) FileOpen(ctx context.Context,
 
 	ctx, clientID, reqID, owner, err := s.processRequestContext(ctx)
 	if err != nil {
+		hclog.Default().Info("FileOpen bad request from client",
+			ctxClientIDKey, clientID,
+			ctxClientOwner, owner,
+			ctxHostRequestIDKey, reqID,
+			"error", err,
+		)
 		return &hostservev1.FileOpenResponse{
 			Error: proto.String(err.Error()),
 		}, nil
@@ -311,6 +365,12 @@ func (s *HostServiceGRPCServer) FileSeek(ctx context.Context, request *hostserve
 
 	ctx, clientID, reqID, owner, err := s.processRequestContext(ctx)
 	if err != nil {
+		hclog.Default().Info("FileSeek bad request from client",
+			ctxClientIDKey, clientID,
+			ctxClientOwner, owner,
+			ctxHostRequestIDKey, reqID,
+			"error", err,
+		)
 		return &hostservev1.FileSeekResponse{
 			Error: proto.String(err.Error()),
 		}, nil
@@ -343,6 +403,12 @@ func (s *HostServiceGRPCServer) FileClose(ctx context.Context,
 
 	ctx, clientID, reqID, owner, err := s.processRequestContext(ctx)
 	if err != nil {
+		hclog.Default().Info("FileClose bad request from client",
+			ctxClientIDKey, clientID,
+			ctxClientOwner, owner,
+			ctxHostRequestIDKey, reqID,
+			"error", err,
+		)
 		return &hostservev1.FileCloseResponse{
 			Error: proto.String(err.Error()),
 		}, nil
@@ -454,6 +520,12 @@ func (s *HostServiceGRPCServer) FileWriter(stream grpc.ClientStreamingServer[hos
 	// Process context
 	ctx, clientID, reqID, owner, err := s.processRequestContext(ctx)
 	if err != nil {
+		hclog.Default().Info("FileWriter bad request from client",
+			ctxClientIDKey, clientID,
+			ctxClientOwner, owner,
+			ctxHostRequestIDKey, reqID,
+			"error", err,
+		)
 		return stream.SendAndClose(&hostservev1.FileWriteResponse{
 			Error: proto.String(err.Error()),
 		})

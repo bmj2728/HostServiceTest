@@ -24,3 +24,18 @@ func (c *HostServiceGRPCClient) GetEnv(ctx context.Context, key string) (string,
 	}
 	return resp.Val, nil
 }
+
+func (c *HostServiceGRPCClient) TempDir(ctx context.Context) (string, error) {
+	ctx = addTracingIDsToContext(ctx, c.clientID, NewRequestID())
+	resp, err := c.client.TempDir(ctx, &hostservev1.TempDirRequest{})
+	if err != nil {
+		return "", err
+	}
+	if resp == nil {
+		return "", &HostServiceError{Message: "nil response from TempDir"}
+	}
+	if resp.GetError() != "" {
+		return "", &HostServiceError{Message: resp.GetError()}
+	}
+	return resp.Dir, nil
+}

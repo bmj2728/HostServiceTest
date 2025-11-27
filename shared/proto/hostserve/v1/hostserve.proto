@@ -52,6 +52,7 @@ service HostService {
 
   // Env Endpoints
   rpc GetEnv(GetEnvRequest) returns (GetEnvResponse);
+  rpc TempDir(TempDirRequest) returns (TempDirResponse);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -213,4 +214,13 @@ message GetEnvRequest {
 message GetEnvResponse {
   string val = 1;
   optional string error =2;
+}
+
+message TempDirRequest {
+
+}
+
+message TempDirResponse {
+  string dir = 1;
+  optional string error = 2;
 }

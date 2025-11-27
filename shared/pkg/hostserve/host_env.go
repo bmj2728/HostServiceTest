@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 	"os"
+
+	"github.com/hashicorp/go-hclog"
 )
 
 // HostEnv represents the environment configuration or context for a host system.
@@ -20,20 +22,24 @@ func NewHostEnv() *HostEnv {
 // GetEnv retrieves the environment variable value associated with the provided key.
 func (he *HostEnv) GetEnv(ctx context.Context, key string) (string, error) {
 
-	// Future State - Capability Check - we may need to update service to return an error
-	// get the owner from the context
-	// owner := getClientOwnerFromContext(ctx)
-	// if owner == "" {
-	// 	return ""
-	// }
-	// canRead := capabilities.CapabilityCheck(owner, []string{capabilities.CAP_ENV_READ})
-	// if !canRead {
-	// 	return ""
-	//	//return errors.New("insufficient permissions to read environment variables")}
+	clientID := getClientIDFromContext(ctx)
+	hclog.Default().Debug("Pseudocode cap check - GET_ENV", "clientID", clientID)
+	if clientID == "" {
+		return "", fmt.Errorf("client ID not found in context")
+	}
 
 	val := os.Getenv(key)
 	if val == "" {
 		return val, fmt.Errorf("environment variable %s not found", key)
 	}
 	return val, nil
+}
+
+func (he *HostEnv) TempDir(ctx context.Context) (string, error) {
+	clientID := getClientIDFromContext(ctx)
+	hclog.Default().Debug("Pseudocode cap check - TEMP_DIR", "clientID", clientID)
+	if clientID == "" {
+		return "", fmt.Errorf("client ID not found in context")
+	}
+	return os.TempDir(), nil
 }

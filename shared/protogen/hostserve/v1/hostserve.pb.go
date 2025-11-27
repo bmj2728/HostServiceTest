@@ -1636,6 +1636,94 @@ func (x *GetEnvResponse) GetError() string {
 	return ""
 }
 
+type TempDirRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *TempDirRequest) Reset() {
+	*x = TempDirRequest{}
+	mi := &file_hostserve_v1_hostserve_proto_msgTypes[30]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *TempDirRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*TempDirRequest) ProtoMessage() {}
+
+func (x *TempDirRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_hostserve_v1_hostserve_proto_msgTypes[30]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use TempDirRequest.ProtoReflect.Descriptor instead.
+func (*TempDirRequest) Descriptor() ([]byte, []int) {
+	return file_hostserve_v1_hostserve_proto_rawDescGZIP(), []int{30}
+}
+
+type TempDirResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Dir           string                 `protobuf:"bytes,1,opt,name=dir,proto3" json:"dir,omitempty"`
+	Error         *string                `protobuf:"bytes,2,opt,name=error,proto3,oneof" json:"error,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *TempDirResponse) Reset() {
+	*x = TempDirResponse{}
+	mi := &file_hostserve_v1_hostserve_proto_msgTypes[31]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *TempDirResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*TempDirResponse) ProtoMessage() {}
+
+func (x *TempDirResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_hostserve_v1_hostserve_proto_msgTypes[31]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use TempDirResponse.ProtoReflect.Descriptor instead.
+func (*TempDirResponse) Descriptor() ([]byte, []int) {
+	return file_hostserve_v1_hostserve_proto_rawDescGZIP(), []int{31}
+}
+
+func (x *TempDirResponse) GetDir() string {
+	if x != nil {
+		return x.Dir
+	}
+	return ""
+}
+
+func (x *TempDirResponse) GetError() string {
+	if x != nil && x.Error != nil {
+		return *x.Error
+	}
+	return ""
+}
+
 var File_hostserve_v1_hostserve_proto protoreflect.FileDescriptor
 
 const file_hostserve_v1_hostserve_proto_rawDesc = "" +
@@ -1744,6 +1832,11 @@ const file_hostserve_v1_hostserve_proto_rawDesc = "" +
 	"\x0eGetEnvResponse\x12\x10\n" +
 	"\x03val\x18\x01 \x01(\tR\x03val\x12\x19\n" +
 	"\x05error\x18\x02 \x01(\tH\x00R\x05error\x88\x01\x01B\b\n" +
+	"\x06_error\"\x10\n" +
+	"\x0eTempDirRequest\"H\n" +
+	"\x0fTempDirResponse\x12\x10\n" +
+	"\x03dir\x18\x01 \x01(\tR\x03dir\x12\x19\n" +
+	"\x05error\x18\x02 \x01(\tH\x00R\x05error\x88\x01\x01B\b\n" +
 	"\x06_error*\xcf\x01\n" +
 	"\fOpenFileMode\x12\x1e\n" +
 	"\x1aOPEN_FILE_MODE_UNSPECIFIED\x10\x00\x12\r\n" +
@@ -1755,7 +1848,7 @@ const file_hostserve_v1_hostserve_proto_rawDesc = "" +
 	"READ_WRITE\x10\x05\x12\x15\n" +
 	"\x11READ_WRITE_CREATE\x10\x06\x12\x17\n" +
 	"\x13READ_WRITE_TRUNCATE\x10\a\x12\x15\n" +
-	"\x11READ_WRITE_APPEND\x10\b2\xc0\b\n" +
+	"\x11READ_WRITE_APPEND\x10\b2\x88\t\n" +
 	"\vHostService\x12F\n" +
 	"\aReadDir\x12\x1c.hostserve.v1.ReadDirRequest\x1a\x1d.hostserve.v1.ReadDirResponse\x12I\n" +
 	"\bReadFile\x12\x1d.hostserve.v1.ReadFileRequest\x1a\x1e.hostserve.v1.ReadFileResponse\x12L\n" +
@@ -1773,7 +1866,8 @@ const file_hostserve_v1_hostserve_proto_rawDesc = "" +
 	"FileReader\x12\x1d.hostserve.v1.FileReadRequest\x1a\x1e.hostserve.v1.FileReadResponse0\x01\x12O\n" +
 	"\n" +
 	"FileWriter\x12\x1e.hostserve.v1.FileWriteRequest\x1a\x1f.hostserve.v1.FileWriteResponse(\x01\x12C\n" +
-	"\x06GetEnv\x12\x1b.hostserve.v1.GetEnvRequest\x1a\x1c.hostserve.v1.GetEnvResponseB\xc0\x01\n" +
+	"\x06GetEnv\x12\x1b.hostserve.v1.GetEnvRequest\x1a\x1c.hostserve.v1.GetEnvResponse\x12F\n" +
+	"\aTempDir\x12\x1c.hostserve.v1.TempDirRequest\x1a\x1d.hostserve.v1.TempDirResponseB\xc0\x01\n" +
 	"\x10com.hostserve.v1B\x0eHostserveProtoP\x01ZKgithub.com/bmj2728/HostServiceTest/shared/protogen/hostserve/v1;hostservev1\xa2\x02\x03HXX\xaa\x02\fHostserve.V1\xca\x02\fHostserve\\V1\xe2\x02\x18Hostserve\\V1\\GPBMetadata\xea\x02\rHostserve::V1b\x06proto3"
 
 var (
@@ -1789,7 +1883,7 @@ func file_hostserve_v1_hostserve_proto_rawDescGZIP() []byte {
 }
 
 var file_hostserve_v1_hostserve_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_hostserve_v1_hostserve_proto_msgTypes = make([]protoimpl.MessageInfo, 30)
+var file_hostserve_v1_hostserve_proto_msgTypes = make([]protoimpl.MessageInfo, 32)
 var file_hostserve_v1_hostserve_proto_goTypes = []any{
 	(OpenFileMode)(0),              // 0: hostserve.v1.OpenFileMode
 	(*DirEntry)(nil),               // 1: hostserve.v1.DirEntry
@@ -1822,6 +1916,8 @@ var file_hostserve_v1_hostserve_proto_goTypes = []any{
 	(*FileWriteResponse)(nil),      // 28: hostserve.v1.FileWriteResponse
 	(*GetEnvRequest)(nil),          // 29: hostserve.v1.GetEnvRequest
 	(*GetEnvResponse)(nil),         // 30: hostserve.v1.GetEnvResponse
+	(*TempDirRequest)(nil),         // 31: hostserve.v1.TempDirRequest
+	(*TempDirResponse)(nil),        // 32: hostserve.v1.TempDirResponse
 }
 var file_hostserve_v1_hostserve_proto_depIdxs = []int32{
 	1,  // 0: hostserve.v1.ReadDirResponse.entries:type_name -> hostserve.v1.DirEntry
@@ -1842,22 +1938,24 @@ var file_hostserve_v1_hostserve_proto_depIdxs = []int32{
 	25, // 15: hostserve.v1.HostService.FileReader:input_type -> hostserve.v1.FileReadRequest
 	27, // 16: hostserve.v1.HostService.FileWriter:input_type -> hostserve.v1.FileWriteRequest
 	29, // 17: hostserve.v1.HostService.GetEnv:input_type -> hostserve.v1.GetEnvRequest
-	4,  // 18: hostserve.v1.HostService.ReadDir:output_type -> hostserve.v1.ReadDirResponse
-	6,  // 19: hostserve.v1.HostService.ReadFile:output_type -> hostserve.v1.ReadFileResponse
-	8,  // 20: hostserve.v1.HostService.WriteFile:output_type -> hostserve.v1.WriteFileResponse
-	10, // 21: hostserve.v1.HostService.Mkdir:output_type -> hostserve.v1.MkdirResponse
-	12, // 22: hostserve.v1.HostService.MkdirAll:output_type -> hostserve.v1.MkdirAllResponse
-	14, // 23: hostserve.v1.HostService.MkdirTemp:output_type -> hostserve.v1.MkdirTempResponse
-	16, // 24: hostserve.v1.HostService.FileCreate:output_type -> hostserve.v1.FileCreateResponse
-	18, // 25: hostserve.v1.HostService.FileCreateTemp:output_type -> hostserve.v1.FileCreateTempResponse
-	20, // 26: hostserve.v1.HostService.FileOpen:output_type -> hostserve.v1.FileOpenResponse
-	22, // 27: hostserve.v1.HostService.FileSeek:output_type -> hostserve.v1.FileSeekResponse
-	24, // 28: hostserve.v1.HostService.FileClose:output_type -> hostserve.v1.FileCloseResponse
-	26, // 29: hostserve.v1.HostService.FileReader:output_type -> hostserve.v1.FileReadResponse
-	28, // 30: hostserve.v1.HostService.FileWriter:output_type -> hostserve.v1.FileWriteResponse
-	30, // 31: hostserve.v1.HostService.GetEnv:output_type -> hostserve.v1.GetEnvResponse
-	18, // [18:32] is the sub-list for method output_type
-	4,  // [4:18] is the sub-list for method input_type
+	31, // 18: hostserve.v1.HostService.TempDir:input_type -> hostserve.v1.TempDirRequest
+	4,  // 19: hostserve.v1.HostService.ReadDir:output_type -> hostserve.v1.ReadDirResponse
+	6,  // 20: hostserve.v1.HostService.ReadFile:output_type -> hostserve.v1.ReadFileResponse
+	8,  // 21: hostserve.v1.HostService.WriteFile:output_type -> hostserve.v1.WriteFileResponse
+	10, // 22: hostserve.v1.HostService.Mkdir:output_type -> hostserve.v1.MkdirResponse
+	12, // 23: hostserve.v1.HostService.MkdirAll:output_type -> hostserve.v1.MkdirAllResponse
+	14, // 24: hostserve.v1.HostService.MkdirTemp:output_type -> hostserve.v1.MkdirTempResponse
+	16, // 25: hostserve.v1.HostService.FileCreate:output_type -> hostserve.v1.FileCreateResponse
+	18, // 26: hostserve.v1.HostService.FileCreateTemp:output_type -> hostserve.v1.FileCreateTempResponse
+	20, // 27: hostserve.v1.HostService.FileOpen:output_type -> hostserve.v1.FileOpenResponse
+	22, // 28: hostserve.v1.HostService.FileSeek:output_type -> hostserve.v1.FileSeekResponse
+	24, // 29: hostserve.v1.HostService.FileClose:output_type -> hostserve.v1.FileCloseResponse
+	26, // 30: hostserve.v1.HostService.FileReader:output_type -> hostserve.v1.FileReadResponse
+	28, // 31: hostserve.v1.HostService.FileWriter:output_type -> hostserve.v1.FileWriteResponse
+	30, // 32: hostserve.v1.HostService.GetEnv:output_type -> hostserve.v1.GetEnvResponse
+	32, // 33: hostserve.v1.HostService.TempDir:output_type -> hostserve.v1.TempDirResponse
+	19, // [19:34] is the sub-list for method output_type
+	4,  // [4:19] is the sub-list for method input_type
 	4,  // [4:4] is the sub-list for extension type_name
 	4,  // [4:4] is the sub-list for extension extendee
 	0,  // [0:4] is the sub-list for field type_name
@@ -1882,13 +1980,14 @@ func file_hostserve_v1_hostserve_proto_init() {
 	file_hostserve_v1_hostserve_proto_msgTypes[25].OneofWrappers = []any{}
 	file_hostserve_v1_hostserve_proto_msgTypes[27].OneofWrappers = []any{}
 	file_hostserve_v1_hostserve_proto_msgTypes[29].OneofWrappers = []any{}
+	file_hostserve_v1_hostserve_proto_msgTypes[31].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_hostserve_v1_hostserve_proto_rawDesc), len(file_hostserve_v1_hostserve_proto_rawDesc)),
 			NumEnums:      1,
-			NumMessages:   30,
+			NumMessages:   32,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

@@ -33,6 +33,7 @@ const (
 	HostService_FileReader_FullMethodName     = "/hostserve.v1.HostService/FileReader"
 	HostService_FileWriter_FullMethodName     = "/hostserve.v1.HostService/FileWriter"
 	HostService_GetEnv_FullMethodName         = "/hostserve.v1.HostService/GetEnv"
+	HostService_TempDir_FullMethodName        = "/hostserve.v1.HostService/TempDir"
 )
 
 // HostServiceClient is the client API for HostService service.
@@ -60,6 +61,7 @@ type HostServiceClient interface {
 	FileWriter(ctx context.Context, opts ...grpc.CallOption) (grpc.ClientStreamingClient[FileWriteRequest, FileWriteResponse], error)
 	// Env Endpoints
 	GetEnv(ctx context.Context, in *GetEnvRequest, opts ...grpc.CallOption) (*GetEnvResponse, error)
+	TempDir(ctx context.Context, in *TempDirRequest, opts ...grpc.CallOption) (*TempDirResponse, error)
 }
 
 type hostServiceClient struct {
@@ -222,6 +224,16 @@ func (c *hostServiceClient) GetEnv(ctx context.Context, in *GetEnvRequest, opts 
 	return out, nil
 }
 
+func (c *hostServiceClient) TempDir(ctx context.Context, in *TempDirRequest, opts ...grpc.CallOption) (*TempDirResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(TempDirResponse)
+	err := c.cc.Invoke(ctx, HostService_TempDir_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // HostServiceServer is the server API for HostService service.
 // All implementations must embed UnimplementedHostServiceServer
 // for forward compatibility.
@@ -247,6 +259,7 @@ type HostServiceServer interface {
 	FileWriter(grpc.ClientStreamingServer[FileWriteRequest, FileWriteResponse]) error
 	// Env Endpoints
 	GetEnv(context.Context, *GetEnvRequest) (*GetEnvResponse, error)
+	TempDir(context.Context, *TempDirRequest) (*TempDirResponse, error)
 	mustEmbedUnimplementedHostServiceServer()
 }
 
@@ -298,6 +311,9 @@ func (UnimplementedHostServiceServer) FileWriter(grpc.ClientStreamingServer[File
 }
 func (UnimplementedHostServiceServer) GetEnv(context.Context, *GetEnvRequest) (*GetEnvResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetEnv not implemented")
+}
+func (UnimplementedHostServiceServer) TempDir(context.Context, *TempDirRequest) (*TempDirResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method TempDir not implemented")
 }
 func (UnimplementedHostServiceServer) mustEmbedUnimplementedHostServiceServer() {}
 func (UnimplementedHostServiceServer) testEmbeddedByValue()                     {}
@@ -554,6 +570,24 @@ func _HostService_GetEnv_Handler(srv interface{}, ctx context.Context, dec func(
 	return interceptor(ctx, in, info, handler)
 }
 
+func _HostService_TempDir_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(TempDirRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(HostServiceServer).TempDir(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: HostService_TempDir_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(HostServiceServer).TempDir(ctx, req.(*TempDirRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // HostService_ServiceDesc is the grpc.ServiceDesc for HostService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -608,6 +642,10 @@ var HostService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetEnv",
 			Handler:    _HostService_GetEnv_Handler,
+		},
+		{
+			MethodName: "TempDir",
+			Handler:    _HostService_TempDir_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{

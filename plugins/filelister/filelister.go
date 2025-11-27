@@ -36,6 +36,12 @@ func (f *FileLister) ListFiles(dir string) ([]string, error) {
 		hclog.Default().Error("Failed to get env variable", "err", err)
 	}
 
+	tempDir, err := f.hostServiceClient.TempDir(ctx)
+	if err != nil {
+		hclog.Default().Error("Failed to get temp dir", "err", err)
+	}
+	hclog.Default().Info("Temp dir retrieved", "dir", tempDir)
+
 	// Read Dir
 	dirEntries, err := f.hostServiceClient.ReadDir(ctx, dir)
 	if err != nil {

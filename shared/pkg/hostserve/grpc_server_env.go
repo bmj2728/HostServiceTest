@@ -14,6 +14,12 @@ func (s *HostServiceGRPCServer) GetEnv(ctx context.Context,
 
 	ctx, clientID, reqID, owner, err := s.processRequestContext(ctx)
 	if err != nil {
+		hclog.Default().Info("GetEnv bad request from client",
+			ctxClientIDKey, clientID,
+			ctxClientOwner, owner,
+			ctxHostRequestIDKey, reqID,
+			"error", err,
+		)
 		return &hostservev1.GetEnvResponse{
 			Val:   "",
 			Error: proto.String(err.Error()),
@@ -36,5 +42,37 @@ func (s *HostServiceGRPCServer) GetEnv(ctx context.Context,
 	}
 	return &hostservev1.GetEnvResponse{
 		Val: val,
+	}, nil
+}
+
+func (s *HostServiceGRPCServer) TempDir(ctx context.Context, _ *hostservev1.TempDirRequest) (*hostservev1.TempDirResponse, error) {
+
+	ctx, clientID, reqID, owner, err := s.processRequestContext(ctx)
+	if err != nil {
+		hclog.Default().Info("TempDir bad request from client",
+			ctxClientIDKey, clientID,
+			ctxClientOwner, owner,
+			ctxHostRequestIDKey, reqID,
+			"error", err,
+		)
+		return &hostservev1.TempDirResponse{
+			Error: proto.String(err.Error()),
+		}, nil
+	}
+
+	hclog.Default().Info("TempDir request from client",
+		ctxClientIDKey, clientID,
+		ctxClientOwner, owner,
+		ctxHostRequestIDKey, reqID,
+	)
+
+	dir, err := s.Impl.TempDir(ctx)
+	if err != nil {
+		return &hostservev1.TempDirResponse{
+			Error: proto.String(err.Error()),
+		}, nil
+	}
+	return &hostservev1.TempDirResponse{
+		Dir: dir,
 	}, nil
 }

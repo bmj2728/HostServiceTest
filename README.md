@@ -147,6 +147,9 @@ This is the foundation for building plugin systems users can trust.
 
 **Latest improvements to the architecture:**
 
+- **Truly temporary files with automated cleanup**: Added `MkdirTemp` and `FileCreateTemp` methods that create temporary directories and files with server-side lifecycle tracking for guaranteed cleanup when connections close - unlike stdlib temps that persist until manual deletion
+- **File positioning**: Implemented `FileSeek` method for standard file seeking operations (similar to `os.File.Seek`)
+- **Temp directory access**: Added `TempDir` method to retrieve the system temporary directory path
 - **Additional filesystem operations**: Added `Mkdir`, `MkdirAll`, and `FileCreate` methods to provide complete directory creation and file initialization capabilities
 - **Streaming file operations**: Fully implemented streaming for large files via `FileReader` (server streaming) and `FileWriter` (client streaming) to handle large files efficiently without loading everything into memory
 - **Chunk size constraints**: `FileReader` enforces chunk sizes between 8KB (minimum for performance) and ~3.81MB (maximum due to gRPC 4MB message limits)
@@ -230,11 +233,15 @@ This demo includes:
 - `WriteFile(path, data, perm)`: Write file (unary RPC)
 - `Mkdir(path, perm)`: Create a single directory (unary RPC)
 - `MkdirAll(path, perm)`: Create directory and all necessary parents (unary RPC)
+- `MkdirTemp(root_dir, pattern)`: Create temporary directory with server-side tracking for automatic cleanup (unary RPC)
 - `FileCreate(path)`: Create or truncate a file (unary RPC)
 - `GetEnv(key)`: Get environment variable
+- `TempDir()`: Get system temporary directory path
 
 *File Handle Operations (for larger files and streaming):*
 - `FileOpen(path, mode, perm)`: Open file and return handle
+- `FileCreateTemp(root_dir, pattern)`: Create temporary file with server-side tracking for automatic cleanup, returns handle
+- `FileSeek(handle, offset, whence)`: Seek to position in file (similar to `os.File.Seek`)
 - `FileClose(handle)`: Close file handle
 - `FileReader(handle, chunk_size)`: Read file in chunks via server streaming (fully implemented)
   - Requires `chunk_size` between 8KB and ~3.81MB
@@ -247,6 +254,74 @@ This demo includes:
 - Proper connection lifecycle (setup → use → teardown)
 - Thread-safe broker multiplexing
 - File handle management for streaming operations
+
+### Temporary Files and Directories with Automated Cleanup
+
+Unlike standard library temporary files that persist until manually deleted, this project implements **truly temporary** files and directories with server-side lifecycle management. When a plugin connection closes, all temporary resources created by that plugin are automatically cleaned up.
+
+**Creating Temporary Directories:**
+
+```go
+// Create a temporary directory with a pattern
+// The pattern works like os.MkdirTemp - "*" is replaced with random string
+tempDir, err := hostServiceClient.MkdirTemp(ctx, "", "myapp-*")
+if err != nil {
+    log.Fatal(err)
+}
+
+// Use the temporary directory
+log.Printf("Created temp dir: %s", tempDir)
+
+// No cleanup needed! When the plugin disconnects, the directory and its
+// contents are automatically removed by the host
+```
+
+**Creating Temporary Files:**
+
+```go
+// Create a temporary file and get a handle
+// Pattern works like os.CreateTemp - "*" is replaced with random string
+handle, err := hostServiceClient.FileCreateTemp(ctx, "", "data-*.json")
+if err != nil {
+    log.Fatal(err)
+}
+
+// Write to the temporary file
+writer, err := hostServiceClient.FileWriter(ctx, handle)
+if err != nil {
+    log.Fatal(err)
+}
+
+data := []byte(`{"status": "processing"}`)
+_, err = writer.Write(data)
+writer.Close()
+
+// Close the file handle
+err = hostServiceClient.FileClose(ctx, handle)
+
+// Automatic cleanup when plugin disconnects - no manual deletion needed!
+```
+
+**Getting the System Temp Directory:**
+
+```go
+// Get the system temporary directory path
+tempDir, err := hostServiceClient.TempDir(ctx)
+if err != nil {
+    log.Fatal(err)
+}
+
+log.Printf("System temp directory: %s", tempDir)
+```
+
+**Why This Matters:**
+
+- **No resource leaks**: Plugins that crash or disconnect abnormally won't leave temporary files behind
+- **Simplified plugin code**: No need to track and clean up temporary resources manually
+- **Secure isolation**: Each plugin's temporary files are tracked separately and cleaned up independently
+- **Better testing**: Test runs won't pollute the temp directory with leftover files
+
+This is particularly valuable for long-running plugin systems where plugins may be loaded, unloaded, and reloaded multiple times throughout the host's lifetime.
 
 ### Dual File Access Patterns
 
@@ -295,6 +370,14 @@ for {
         break
     }
 }
+
+// Seek to a specific position in the file
+// whence: 0 = from start, 1 = from current position, 2 = from end
+newOffset, err := hostServiceClient.FileSeek(ctx, handle, 1024, 0)
+if err != nil {
+    log.Fatal(err)
+}
+log.Printf("New file position: %d", newOffset)
 
 // Close when done
 err = hostServiceClient.FileClose(ctx, handle)

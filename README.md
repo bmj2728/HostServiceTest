@@ -118,7 +118,7 @@ func (p *Plugin) EstablishHostServices(hostServiceID uint32) (hostserve.ClientID
     conn, _ := p.broker.Dial(hostServiceID)
     client := hostserve.NewHostServiceGRPCClient(hostservev1.NewHostServiceClient(conn))
     p.hostServiceClient = client
-    return client.ClientID(), nil  // Simple helper function!
+    return client.ClientID(), nil  
 }
 
 // Plugin just makes normal calls - client ID is automatically included

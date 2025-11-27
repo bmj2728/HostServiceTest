@@ -237,6 +237,9 @@ This demo includes:
 - `FileCreate(path)`: Create or truncate a file (unary RPC)
 - `GetEnv(key)`: Get environment variable
 - `TempDir()`: Get system temporary directory path
+- `UserCacheDir()`: Get user-specific cache directory (mirrors `os.UserCacheDir`)
+- `UserConfigDir()`: Get user-specific configuration directory (mirrors `os.UserConfigDir`)
+- `UserHomeDir()`: Get user's home directory (mirrors `os.UserHomeDir`)
 
 *File Handle Operations (for larger files and streaming):*
 - `FileOpen(path, mode, perm)`: Open file and return handle
@@ -313,6 +316,33 @@ if err != nil {
 
 log.Printf("System temp directory: %s", tempDir)
 ```
+
+**Accessing User-Specific Directories:**
+
+```go
+// Get user cache directory (e.g., ~/.cache on Linux, ~/Library/Caches on macOS)
+cacheDir, err := hostServiceClient.UserCacheDir(ctx)
+if err != nil {
+    log.Fatal(err)
+}
+log.Printf("User cache directory: %s", cacheDir)
+
+// Get user config directory (e.g., ~/.config on Linux, ~/Library/Application Support on macOS)
+configDir, err := hostServiceClient.UserConfigDir(ctx)
+if err != nil {
+    log.Fatal(err)
+}
+log.Printf("User config directory: %s", configDir)
+
+// Get user home directory
+homeDir, err := hostServiceClient.UserHomeDir(ctx)
+if err != nil {
+    log.Fatal(err)
+}
+log.Printf("User home directory: %s", homeDir)
+```
+
+These methods mirror Go's stdlib functions (`os.UserCacheDir`, `os.UserConfigDir`, `os.UserHomeDir`) and return platform-specific paths following OS conventions.
 
 **Why This Matters:**
 

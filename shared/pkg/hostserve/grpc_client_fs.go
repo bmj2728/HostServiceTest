@@ -52,6 +52,10 @@ func (c *HostServiceGRPCClient) ReadFile(ctx context.Context, path string) ([]by
 	return resp.Contents, nil
 }
 
+// WriteFile writes data to the specified file path on the server with the given permissions.
+// The context is used for tracing and request cancellation.
+// If permissions are set to 0, standardPermissions will be applied as the default.
+// Returns an error if the operation fails or in case of a nil response from the server.
 func (c *HostServiceGRPCClient) WriteFile(ctx context.Context, path string, data []byte, perm os.FileMode) error {
 	ctx = addTracingIDsToContext(ctx, c.clientID, NewRequestID())
 	if perm == 0 {
@@ -75,6 +79,7 @@ func (c *HostServiceGRPCClient) WriteFile(ctx context.Context, path string, data
 	return nil
 }
 
+// Mkdir creates a new directory with the specified name and permissions under the given root directory.
 func (c *HostServiceGRPCClient) Mkdir(ctx context.Context, rootDir string, name string, perm os.FileMode) error {
 	ctx = addTracingIDsToContext(ctx, c.clientID, NewRequestID())
 	if perm == 0 {
@@ -97,6 +102,8 @@ func (c *HostServiceGRPCClient) Mkdir(ctx context.Context, rootDir string, name 
 	return nil
 }
 
+// MkdirAll creates all necessary directories along the specified path with the provided permissions.
+// It operates relative to the given rootDir and uses the optional context for tracing and logging.
 func (c *HostServiceGRPCClient) MkdirAll(ctx context.Context, rootDir string, path string, perm os.FileMode) error {
 	ctx = addTracingIDsToContext(ctx, c.clientID, NewRequestID())
 	if perm == 0 {
@@ -119,6 +126,7 @@ func (c *HostServiceGRPCClient) MkdirAll(ctx context.Context, rootDir string, pa
 	return nil
 }
 
+// FileCreate creates a new file at the specified path and returns a handle for the created file or an error if any occurs.
 func (c *HostServiceGRPCClient) FileCreate(ctx context.Context, path string) (FileHandle, error) {
 	ctx = addTracingIDsToContext(ctx, c.clientID, NewRequestID())
 	resp, err := c.client.FileCreate(ctx, &hostservev1.FileCreateRequest{
@@ -136,6 +144,7 @@ func (c *HostServiceGRPCClient) FileCreate(ctx context.Context, path string) (Fi
 	return FileHandle(resp.Handle), nil
 }
 
+// FileOpen opens a file on the host, given the path, flag, and permissions, and returns a file handle, size, and error if any.
 func (c *HostServiceGRPCClient) FileOpen(ctx context.Context, path string, flag int, perm os.FileMode) (FileHandle, uint64, error) {
 	ctx = addTracingIDsToContext(ctx, c.clientID, NewRequestID())
 	resp, err := c.client.FileOpen(ctx, &hostservev1.FileOpenRequest{
@@ -155,6 +164,8 @@ func (c *HostServiceGRPCClient) FileOpen(ctx context.Context, path string, flag 
 	return FileHandle(resp.Handle), resp.Size, nil
 }
 
+// FileSeek adjusts the file offset for a file identified by handle, based on the specified offset and whence parameters.
+// Returns the new file offset or an error if the operation fails.
 func (c *HostServiceGRPCClient) FileSeek(ctx context.Context, handle FileHandle, offset int64, whence int) (int64, error) {
 	ctx = addTracingIDsToContext(ctx, c.clientID, NewRequestID())
 	resp, err := c.client.FileSeek(ctx, &hostservev1.FileSeekRequest{
@@ -174,6 +185,7 @@ func (c *HostServiceGRPCClient) FileSeek(ctx context.Context, handle FileHandle,
 	return int64(resp.NewOffset), nil
 }
 
+// FileClose closes a file associated with the provided handle and releases any resources tied to it.
 func (c *HostServiceGRPCClient) FileClose(ctx context.Context, handle FileHandle) error {
 	ctx = addTracingIDsToContext(ctx, c.clientID, NewRequestID())
 	_, err := c.client.FileClose(ctx, &hostservev1.FileCloseRequest{
@@ -185,6 +197,7 @@ func (c *HostServiceGRPCClient) FileClose(ctx context.Context, handle FileHandle
 	return nil
 }
 
+// FileReader provides a gRPC client-side implementation to read files in chunks via a streaming connection.
 func (c *HostServiceGRPCClient) FileReader(ctx context.Context, handle FileHandle, chunkSize uint32) (io.Reader, error) {
 	ctx = addTracingIDsToContext(ctx, c.clientID, NewRequestID())
 	stream, err := c.client.FileReader(ctx, &hostservev1.FileReadRequest{
@@ -197,6 +210,9 @@ func (c *HostServiceGRPCClient) FileReader(ctx context.Context, handle FileHandl
 	return &grpcFileStreamReader{stream: stream}, nil
 }
 
+// FileWriter opens a stream to write file data to a remote host, returning an io.WriteCloser for handling the stream.
+// It accepts a context for request lifecycle management and a file handle for identifying the target file.
+// Returns an io.WriteCloser on success or an error if the stream initialization fails.
 func (c *HostServiceGRPCClient) FileWriter(ctx context.Context, handle FileHandle) (io.WriteCloser, error) {
 	ctx = addTracingIDsToContext(ctx, c.clientID, NewRequestID())
 	stream, err := c.client.FileWriter(ctx)
@@ -206,6 +222,8 @@ func (c *HostServiceGRPCClient) FileWriter(ctx context.Context, handle FileHandl
 	return &grpcFileStreamWriter{stream: stream, handle: handle}, nil
 }
 
+// MkdirTemp creates a new temporary directory in the specified root directory with a given pattern and returns its path.
+// Returns an error if the operation fails or if there is an issue with the response from the server.
 func (c *HostServiceGRPCClient) MkdirTemp(ctx context.Context, rootDir string, pattern string) (string, error) {
 	ctx = addTracingIDsToContext(ctx, c.clientID, NewRequestID())
 	resp, err := c.client.MkdirTemp(ctx, &hostservev1.MkdirTempRequest{
@@ -224,6 +242,8 @@ func (c *HostServiceGRPCClient) MkdirTemp(ctx context.Context, rootDir string, p
 	return resp.GetPath(), nil
 }
 
+// FileCreateTemp creates a temporary file with the specified root directory and pattern using the gRPC client.
+// Returns a FileHandle for the created file or an error if the operation fails.
 func (c *HostServiceGRPCClient) FileCreateTemp(ctx context.Context, rootDir string, pattern string) (FileHandle, error) {
 	ctx = addTracingIDsToContext(ctx, c.clientID, NewRequestID())
 	resp, err := c.client.FileCreateTemp(ctx, &hostservev1.FileCreateTempRequest{

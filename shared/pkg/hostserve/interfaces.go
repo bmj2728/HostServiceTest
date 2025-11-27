@@ -38,6 +38,7 @@ type IHostFS interface {
 	// FileCreate creates a new file at the specified path and returns a FileHandle for the file or an error if it fails.
 	FileCreate(ctx context.Context, path string) (FileHandle, error)
 
+	// FileCreateTemp creates a new temporary file in the specified root directory using the given pattern.
 	FileCreateTemp(ctx context.Context, rootDir string, pattern string) (FileHandle, error)
 
 	// FileOpen opens a file at the specified path with the given flags and permissions,
@@ -56,6 +57,7 @@ type IHostFS interface {
 	// FileReader reads data from an open file, identified by the provided FileHandle, in chunks of the specified size.
 	FileReader(ctx context.Context, handle FileHandle, chunkSize uint32) (io.Reader, error)
 
+	// FileWriter returns an io.WriteCloser for writing to the specified FileHandle.
 	FileWriter(ctx context.Context, handle FileHandle) (io.WriteCloser, error)
 }
 
@@ -65,11 +67,15 @@ type IHostEnv interface {
 	// GetEnv fetches the value of an environment variable by its key and returns it as a string.
 	GetEnv(ctx context.Context, key string) (string, error)
 
+	// TempDir retrieves the path to the temporary directory for the current user or system.
 	TempDir(ctx context.Context) (string, error)
 
+	// UserCacheDir retrieves the path to the user-specific cache directory on the host system.
 	UserCacheDir(ctx context.Context) (string, error)
 
+	// UserConfigDir retrieves the path to the user's configuration directory as a string within the current system context.
 	UserConfigDir(ctx context.Context) (string, error)
 
+	// UserHomeDir retrieves the current user's home directory from the host environment.
 	UserHomeDir(ctx context.Context) (string, error)
 }

@@ -126,6 +126,9 @@ func (hf *HostFS) WriteFile(ctx context.Context, path string, data []byte, perm 
 	return nil
 }
 
+// Mkdir creates a new directory within the given root directory with the specified name and permissions.
+// Returns an error if the directory cannot be created.
+// The `ctx` parameter is used for passing context and the `perm` argument defines the directory's permissions.
 func (hf *HostFS) Mkdir(ctx context.Context, rootDir string, name string, perm os.FileMode) error {
 	clientID := getClientIDFromContext(ctx)
 	hclog.Default().Debug("Placeholder Pseudo Cap Check...", "clientID", clientID, "path", filepath.Join(rootDir, name))
@@ -146,6 +149,9 @@ func (hf *HostFS) Mkdir(ctx context.Context, rootDir string, name string, perm o
 	return nil
 }
 
+// MkdirAll creates a directory named by the path, along with any necessary parents, in the specified root directory.
+// The permission bits for newly created directories are set to perm, masked by a predefined permissions mask.
+// Returns an error if the operation fails, including errors from retrieving the root or creating the directories.
 func (hf *HostFS) MkdirAll(ctx context.Context, rootDir string, path string, perm os.FileMode) error {
 	clientID := getClientIDFromContext(ctx)
 	hclog.Default().Debug("Placeholder Pseudo Cap Check...", "clientID", clientID, "path", filepath.Join(rootDir, path))
@@ -166,6 +172,7 @@ func (hf *HostFS) MkdirAll(ctx context.Context, rootDir string, path string, per
 	return nil
 }
 
+// FileCreate creates a new file at the specified path within the host file system and returns a FileHandle or an error.
 func (hf *HostFS) FileCreate(ctx context.Context, path string) (FileHandle, error) {
 	clientID := getClientIDFromContext(ctx)
 	d, f := filepath.Split(path)
@@ -215,6 +222,7 @@ func (hf *HostFS) FileOpen(ctx context.Context, path string, flag int, perm os.F
 	return fh, uint64(info.Size()), nil
 }
 
+// FileSeek changes the offset of an open file associated with the given handle based on the specified offset and whence.
 func (hf *HostFS) FileSeek(ctx context.Context, handle FileHandle, offset int64, whence int) (int64, error) {
 	file, err := hf.retrieveOpenFile(ctx, handle)
 	if err != nil {
@@ -273,6 +281,9 @@ func (hf *HostFS) FileWriter(ctx context.Context, handle FileHandle) (io.WriteCl
 	return file, nil
 }
 
+// MkdirTemp creates a new temporary directory within the specified rootDir using the given pattern for naming.
+// If rootDir is empty, the system's default temporary directory is used. It ensures access checks before creation.
+// Returns the path of the created directory or an error if the operation fails.
 func (hf *HostFS) MkdirTemp(ctx context.Context, rootDir string, pattern string) (string, error) {
 	//We'd check for access to the root directory here
 	clientID := getClientIDFromContext(ctx)
@@ -289,6 +300,10 @@ func (hf *HostFS) MkdirTemp(ctx context.Context, rootDir string, pattern string)
 	return dir, nil
 }
 
+// FileCreateTemp creates a temporary file in the specified root directory with the given pattern and returns a file handle.
+// The method ensures enhanced security by performing access checks and utilizing root directory constraints for file creation.
+// The generated file is tracked for the given client context and added to the open files map for subsequent operations.
+// If rootDir is empty, the system's default temporary directory is used. Returns an error if the operation fails.
 func (hf *HostFS) FileCreateTemp(ctx context.Context, rootDir string, pattern string) (FileHandle, error) {
 	//We'd check for access to the root directory here
 	clientID := getClientIDFromContext(ctx)

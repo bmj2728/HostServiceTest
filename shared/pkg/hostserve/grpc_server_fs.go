@@ -126,6 +126,14 @@ func (s *HostServiceGRPCServer) ReadFile(ctx context.Context,
 	}, nil
 }
 
+// WriteFile handles a client request to write data to a file at a specified path with given permissions.
+//
+// Parameters:
+// - ctx: The context for managing request deadlines and cancellations.
+// - request: Contains the file path, data to be written, and file permissions.
+//
+// Returns:
+// - A WriteFileResponse containing an error message if the operation fails, or an empty response on success.
 func (s *HostServiceGRPCServer) WriteFile(ctx context.Context,
 	request *hostservev1.WriteFileRequest,
 ) (*hostservev1.WriteFileResponse, error) {
@@ -160,6 +168,7 @@ func (s *HostServiceGRPCServer) WriteFile(ctx context.Context,
 	return &hostservev1.WriteFileResponse{}, nil
 }
 
+// Mkdir handles a gRPC request to create a new directory at the specified root directory with the given name and permissions.
 func (s *HostServiceGRPCServer) Mkdir(ctx context.Context,
 	request *hostservev1.MkdirRequest,
 ) (*hostservev1.MkdirResponse, error) {
@@ -194,6 +203,7 @@ func (s *HostServiceGRPCServer) Mkdir(ctx context.Context,
 	return &hostservev1.MkdirResponse{}, nil
 }
 
+// MkdirAll handles a request to create a directory hierarchy at the specified path with the given permissions.
 func (s *HostServiceGRPCServer) MkdirAll(ctx context.Context, request *hostservev1.MkdirAllRequest) (*hostservev1.MkdirAllResponse, error) {
 	ctx, clientID, reqID, owner, err := s.processRequestContext(ctx)
 	if err != nil {
@@ -225,6 +235,7 @@ func (s *HostServiceGRPCServer) MkdirAll(ctx context.Context, request *hostserve
 	return &hostservev1.MkdirAllResponse{}, nil
 }
 
+// MkdirTemp creates a temporary directory using the provided root directory and pattern, returning its path or an error.
 func (s *HostServiceGRPCServer) MkdirTemp(ctx context.Context, request *hostservev1.MkdirTempRequest) (*hostservev1.MkdirTempResponse, error) {
 	ctx, clientID, reqID, owner, err := s.processRequestContext(ctx)
 	if err != nil {
@@ -255,6 +266,7 @@ func (s *HostServiceGRPCServer) MkdirTemp(ctx context.Context, request *hostserv
 	return &hostservev1.MkdirTempResponse{Path: dir}, nil
 }
 
+// FileCreate is a method that processes a request to create a new file with the specified path and returns its handle.
 func (s *HostServiceGRPCServer) FileCreate(ctx context.Context,
 	request *hostservev1.FileCreateRequest) (response *hostservev1.FileCreateResponse, err error) {
 	ctx, clientID, reqID, owner, err := s.processRequestContext(ctx)
@@ -285,6 +297,9 @@ func (s *HostServiceGRPCServer) FileCreate(ctx context.Context,
 	return &hostservev1.FileCreateResponse{Handle: fh.String()}, nil
 }
 
+// FileCreateTemp creates a temporary file in the specified root directory with the given pattern.
+// Returns a file handle on success or an error message on failure.
+// Logs request details and errors for monitoring and debugging purposes.
 func (s *HostServiceGRPCServer) FileCreateTemp(ctx context.Context,
 	request *hostservev1.FileCreateTempRequest) (response *hostservev1.FileCreateTempResponse, err error) {
 
@@ -318,6 +333,8 @@ func (s *HostServiceGRPCServer) FileCreateTemp(ctx context.Context,
 	return &hostservev1.FileCreateTempResponse{Handle: fh.String()}, nil
 }
 
+// FileOpen handles a request to open a file on the server with specified path, mode, and permissions.
+// It returns a file handle and size upon success or an error if the operation fails.
 func (s *HostServiceGRPCServer) FileOpen(ctx context.Context,
 	request *hostservev1.FileOpenRequest,
 ) (*hostservev1.FileOpenResponse, error) {
@@ -361,6 +378,7 @@ func (s *HostServiceGRPCServer) FileOpen(ctx context.Context,
 	return &hostservev1.FileOpenResponse{Handle: fh.String(), Size: size}, nil
 }
 
+// FileSeek handles a file seek operation by delegating the request to the implementation and returns the new offset.
 func (s *HostServiceGRPCServer) FileSeek(ctx context.Context, request *hostservev1.FileSeekRequest) (*hostservev1.FileSeekResponse, error) {
 
 	ctx, clientID, reqID, owner, err := s.processRequestContext(ctx)
@@ -397,6 +415,9 @@ func (s *HostServiceGRPCServer) FileSeek(ctx context.Context, request *hostserve
 	return &hostservev1.FileSeekResponse{NewOffset: uint64(newOffset)}, nil
 }
 
+// FileClose handles the request to close a file identified by its handle sent by the client over gRPC.
+// It verifies the request context, extracts relevant metadata, and invokes the implementation's FileClose method.
+// Returns a FileCloseResponse containing an error message if the operation fails or an empty response on success.
 func (s *HostServiceGRPCServer) FileClose(ctx context.Context,
 	request *hostservev1.FileCloseRequest,
 ) (*hostservev1.FileCloseResponse, error) {
@@ -427,6 +448,9 @@ func (s *HostServiceGRPCServer) FileClose(ctx context.Context,
 	return &hostservev1.FileCloseResponse{}, nil
 }
 
+// FileReader streams chunks of a file to the client based on the given file handle and chunk size in the request.
+// The method validates client metadata, fetches the file, reads it in chunks, and streams the data until EOF or error.
+// It sends an error response back to the client if any issues occur during validation, reading, or streaming.
 func (s *HostServiceGRPCServer) FileReader(request *hostservev1.FileReadRequest,
 	stream grpc.ServerStreamingServer[hostservev1.FileReadResponse],
 ) error {
@@ -507,6 +531,7 @@ func (s *HostServiceGRPCServer) FileReader(request *hostservev1.FileReadRequest,
 	}
 }
 
+// FileWriter handles client stream requests to write a file, validating chunks and writing data incrementally to storage.
 func (s *HostServiceGRPCServer) FileWriter(stream grpc.ClientStreamingServer[hostservev1.FileWriteRequest, hostservev1.FileWriteResponse]) error {
 	ctx := stream.Context()
 	totalBytes := uint32(0)

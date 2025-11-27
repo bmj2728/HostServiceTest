@@ -37,7 +37,7 @@ func (f *ColorLister) ListFiles(dir string) ([]string, error) {
 	}
 	hclog.Default().Info("Created temp dir", "dir", td)
 
-	tf, err := f.hostServiceClient.FileCreateTemp(ctx, td, "ng-*-test")
+	tf, err := f.hostServiceClient.FileCreateTemp(ctx, td, "ng-*-test.txt")
 	if err != nil {
 		return nil, fmt.Errorf("failed to create temp file: %w", err)
 	}

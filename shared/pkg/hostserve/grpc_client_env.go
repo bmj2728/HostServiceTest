@@ -39,3 +39,48 @@ func (c *HostServiceGRPCClient) TempDir(ctx context.Context) (string, error) {
 	}
 	return resp.Dir, nil
 }
+
+func (c *HostServiceGRPCClient) UserCacheDir(ctx context.Context) (string, error) {
+	ctx = addTracingIDsToContext(ctx, c.clientID, NewRequestID())
+	resp, err := c.client.UserCacheDir(ctx, &hostservev1.UserCacheDirRequest{})
+	if err != nil {
+		return "", err
+	}
+	if resp == nil {
+		return "", &HostServiceError{Message: "nil response from UserCacheDir"}
+	}
+	if resp.GetError() != "" {
+		return "", &HostServiceError{Message: resp.GetError()}
+	}
+	return resp.Dir, nil
+}
+
+func (c *HostServiceGRPCClient) UserConfigDir(ctx context.Context) (string, error) {
+	ctx = addTracingIDsToContext(ctx, c.clientID, NewRequestID())
+	resp, err := c.client.UserConfigDir(ctx, &hostservev1.UserConfigDirRequest{})
+	if err != nil {
+		return "", err
+	}
+	if resp == nil {
+		return "", &HostServiceError{Message: "nil response from UserConfigDir"}
+	}
+	if resp.GetError() != "" {
+		return "", &HostServiceError{Message: resp.GetError()}
+	}
+	return resp.Dir, nil
+}
+
+func (c *HostServiceGRPCClient) UserHomeDir(ctx context.Context) (string, error) {
+	ctx = addTracingIDsToContext(ctx, c.clientID, NewRequestID())
+	resp, err := c.client.UserHomeDir(ctx, &hostservev1.UserHomeDirRequest{})
+	if err != nil {
+		return "", err
+	}
+	if resp == nil {
+		return "", &HostServiceError{Message: "nil response from UserHomeDir"}
+	}
+	if resp.GetError() != "" {
+		return "", &HostServiceError{Message: resp.GetError()}
+	}
+	return resp.Dir, nil
+}

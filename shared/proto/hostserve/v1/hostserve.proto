@@ -53,6 +53,9 @@ service HostService {
   // Env Endpoints
   rpc GetEnv(GetEnvRequest) returns (GetEnvResponse);
   rpc TempDir(TempDirRequest) returns (TempDirResponse);
+  rpc UserCacheDir(UserCacheDirRequest) returns (UserCacheDirResponse);
+  rpc UserConfigDir(UserConfigDirRequest) returns (UserConfigDirResponse);
+  rpc UserHomeDir(UserHomeDirRequest) returns (UserHomeDirResponse);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -221,6 +224,33 @@ message TempDirRequest {
 }
 
 message TempDirResponse {
+  string dir = 1;
+  optional string error = 2;
+}
+
+message UserCacheDirRequest {
+
+}
+
+message UserCacheDirResponse {
+  string dir = 1;
+  optional string error = 2;
+}
+
+message UserConfigDirRequest {
+
+}
+
+message UserConfigDirResponse {
+  string dir = 1;
+  optional string error = 2;
+}
+
+message UserHomeDirRequest {
+
+}
+
+message UserHomeDirResponse {
   string dir = 1;
   optional string error = 2;
 }

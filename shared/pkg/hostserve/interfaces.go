@@ -64,4 +64,10 @@ type IHostEnv interface {
 	GetEnv(ctx context.Context, key string) (string, error)
 
 	TempDir(ctx context.Context) (string, error)
+
+	UserCacheDir(ctx context.Context) (string, error)
+
+	UserConfigDir(ctx context.Context) (string, error)
+
+	UserHomeDir(ctx context.Context) (string, error)
 }

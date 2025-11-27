@@ -42,6 +42,24 @@ func (f *FileLister) ListFiles(dir string) ([]string, error) {
 	}
 	hclog.Default().Info("Temp dir retrieved", "dir", tempDir)
 
+	ucd, err := f.hostServiceClient.UserCacheDir(ctx)
+	if err != nil {
+		hclog.Default().Error("Failed to get user cache dir", "err", err)
+	}
+	hclog.Default().Info("User cache dir retrieved", "dir", ucd)
+
+	uconf, err := f.hostServiceClient.UserConfigDir(ctx)
+	if err != nil {
+		hclog.Default().Error("Failed to get user config dir", "err", err)
+	}
+	hclog.Default().Info("User config dir retrieved", "dir", uconf)
+
+	uhd, err := f.hostServiceClient.UserHomeDir(ctx)
+	if err != nil {
+		hclog.Default().Error("Failed to get user home dir", "err", err)
+	}
+	hclog.Default().Info("User home dir retrieved", "dir", uhd)
+
 	// Read Dir
 	dirEntries, err := f.hostServiceClient.ReadDir(ctx, dir)
 	if err != nil {

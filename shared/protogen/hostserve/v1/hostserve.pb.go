@@ -1724,6 +1724,270 @@ func (x *TempDirResponse) GetError() string {
 	return ""
 }
 
+type UserCacheDirRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UserCacheDirRequest) Reset() {
+	*x = UserCacheDirRequest{}
+	mi := &file_hostserve_v1_hostserve_proto_msgTypes[32]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UserCacheDirRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UserCacheDirRequest) ProtoMessage() {}
+
+func (x *UserCacheDirRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_hostserve_v1_hostserve_proto_msgTypes[32]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UserCacheDirRequest.ProtoReflect.Descriptor instead.
+func (*UserCacheDirRequest) Descriptor() ([]byte, []int) {
+	return file_hostserve_v1_hostserve_proto_rawDescGZIP(), []int{32}
+}
+
+type UserCacheDirResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Dir           string                 `protobuf:"bytes,1,opt,name=dir,proto3" json:"dir,omitempty"`
+	Error         *string                `protobuf:"bytes,2,opt,name=error,proto3,oneof" json:"error,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UserCacheDirResponse) Reset() {
+	*x = UserCacheDirResponse{}
+	mi := &file_hostserve_v1_hostserve_proto_msgTypes[33]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UserCacheDirResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UserCacheDirResponse) ProtoMessage() {}
+
+func (x *UserCacheDirResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_hostserve_v1_hostserve_proto_msgTypes[33]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UserCacheDirResponse.ProtoReflect.Descriptor instead.
+func (*UserCacheDirResponse) Descriptor() ([]byte, []int) {
+	return file_hostserve_v1_hostserve_proto_rawDescGZIP(), []int{33}
+}
+
+func (x *UserCacheDirResponse) GetDir() string {
+	if x != nil {
+		return x.Dir
+	}
+	return ""
+}
+
+func (x *UserCacheDirResponse) GetError() string {
+	if x != nil && x.Error != nil {
+		return *x.Error
+	}
+	return ""
+}
+
+type UserConfigDirRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UserConfigDirRequest) Reset() {
+	*x = UserConfigDirRequest{}
+	mi := &file_hostserve_v1_hostserve_proto_msgTypes[34]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UserConfigDirRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UserConfigDirRequest) ProtoMessage() {}
+
+func (x *UserConfigDirRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_hostserve_v1_hostserve_proto_msgTypes[34]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UserConfigDirRequest.ProtoReflect.Descriptor instead.
+func (*UserConfigDirRequest) Descriptor() ([]byte, []int) {
+	return file_hostserve_v1_hostserve_proto_rawDescGZIP(), []int{34}
+}
+
+type UserConfigDirResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Dir           string                 `protobuf:"bytes,1,opt,name=dir,proto3" json:"dir,omitempty"`
+	Error         *string                `protobuf:"bytes,2,opt,name=error,proto3,oneof" json:"error,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UserConfigDirResponse) Reset() {
+	*x = UserConfigDirResponse{}
+	mi := &file_hostserve_v1_hostserve_proto_msgTypes[35]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UserConfigDirResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UserConfigDirResponse) ProtoMessage() {}
+
+func (x *UserConfigDirResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_hostserve_v1_hostserve_proto_msgTypes[35]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UserConfigDirResponse.ProtoReflect.Descriptor instead.
+func (*UserConfigDirResponse) Descriptor() ([]byte, []int) {
+	return file_hostserve_v1_hostserve_proto_rawDescGZIP(), []int{35}
+}
+
+func (x *UserConfigDirResponse) GetDir() string {
+	if x != nil {
+		return x.Dir
+	}
+	return ""
+}
+
+func (x *UserConfigDirResponse) GetError() string {
+	if x != nil && x.Error != nil {
+		return *x.Error
+	}
+	return ""
+}
+
+type UserHomeDirRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UserHomeDirRequest) Reset() {
+	*x = UserHomeDirRequest{}
+	mi := &file_hostserve_v1_hostserve_proto_msgTypes[36]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UserHomeDirRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UserHomeDirRequest) ProtoMessage() {}
+
+func (x *UserHomeDirRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_hostserve_v1_hostserve_proto_msgTypes[36]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UserHomeDirRequest.ProtoReflect.Descriptor instead.
+func (*UserHomeDirRequest) Descriptor() ([]byte, []int) {
+	return file_hostserve_v1_hostserve_proto_rawDescGZIP(), []int{36}
+}
+
+type UserHomeDirResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Dir           string                 `protobuf:"bytes,1,opt,name=dir,proto3" json:"dir,omitempty"`
+	Error         *string                `protobuf:"bytes,2,opt,name=error,proto3,oneof" json:"error,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UserHomeDirResponse) Reset() {
+	*x = UserHomeDirResponse{}
+	mi := &file_hostserve_v1_hostserve_proto_msgTypes[37]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UserHomeDirResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UserHomeDirResponse) ProtoMessage() {}
+
+func (x *UserHomeDirResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_hostserve_v1_hostserve_proto_msgTypes[37]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UserHomeDirResponse.ProtoReflect.Descriptor instead.
+func (*UserHomeDirResponse) Descriptor() ([]byte, []int) {
+	return file_hostserve_v1_hostserve_proto_rawDescGZIP(), []int{37}
+}
+
+func (x *UserHomeDirResponse) GetDir() string {
+	if x != nil {
+		return x.Dir
+	}
+	return ""
+}
+
+func (x *UserHomeDirResponse) GetError() string {
+	if x != nil && x.Error != nil {
+		return *x.Error
+	}
+	return ""
+}
+
 var File_hostserve_v1_hostserve_proto protoreflect.FileDescriptor
 
 const file_hostserve_v1_hostserve_proto_rawDesc = "" +
@@ -1837,6 +2101,21 @@ const file_hostserve_v1_hostserve_proto_rawDesc = "" +
 	"\x0fTempDirResponse\x12\x10\n" +
 	"\x03dir\x18\x01 \x01(\tR\x03dir\x12\x19\n" +
 	"\x05error\x18\x02 \x01(\tH\x00R\x05error\x88\x01\x01B\b\n" +
+	"\x06_error\"\x15\n" +
+	"\x13UserCacheDirRequest\"M\n" +
+	"\x14UserCacheDirResponse\x12\x10\n" +
+	"\x03dir\x18\x01 \x01(\tR\x03dir\x12\x19\n" +
+	"\x05error\x18\x02 \x01(\tH\x00R\x05error\x88\x01\x01B\b\n" +
+	"\x06_error\"\x16\n" +
+	"\x14UserConfigDirRequest\"N\n" +
+	"\x15UserConfigDirResponse\x12\x10\n" +
+	"\x03dir\x18\x01 \x01(\tR\x03dir\x12\x19\n" +
+	"\x05error\x18\x02 \x01(\tH\x00R\x05error\x88\x01\x01B\b\n" +
+	"\x06_error\"\x14\n" +
+	"\x12UserHomeDirRequest\"L\n" +
+	"\x13UserHomeDirResponse\x12\x10\n" +
+	"\x03dir\x18\x01 \x01(\tR\x03dir\x12\x19\n" +
+	"\x05error\x18\x02 \x01(\tH\x00R\x05error\x88\x01\x01B\b\n" +
 	"\x06_error*\xcf\x01\n" +
 	"\fOpenFileMode\x12\x1e\n" +
 	"\x1aOPEN_FILE_MODE_UNSPECIFIED\x10\x00\x12\r\n" +
@@ -1848,7 +2127,7 @@ const file_hostserve_v1_hostserve_proto_rawDesc = "" +
 	"READ_WRITE\x10\x05\x12\x15\n" +
 	"\x11READ_WRITE_CREATE\x10\x06\x12\x17\n" +
 	"\x13READ_WRITE_TRUNCATE\x10\a\x12\x15\n" +
-	"\x11READ_WRITE_APPEND\x10\b2\x88\t\n" +
+	"\x11READ_WRITE_APPEND\x10\b2\x8d\v\n" +
 	"\vHostService\x12F\n" +
 	"\aReadDir\x12\x1c.hostserve.v1.ReadDirRequest\x1a\x1d.hostserve.v1.ReadDirResponse\x12I\n" +
 	"\bReadFile\x12\x1d.hostserve.v1.ReadFileRequest\x1a\x1e.hostserve.v1.ReadFileResponse\x12L\n" +
@@ -1867,7 +2146,10 @@ const file_hostserve_v1_hostserve_proto_rawDesc = "" +
 	"\n" +
 	"FileWriter\x12\x1e.hostserve.v1.FileWriteRequest\x1a\x1f.hostserve.v1.FileWriteResponse(\x01\x12C\n" +
 	"\x06GetEnv\x12\x1b.hostserve.v1.GetEnvRequest\x1a\x1c.hostserve.v1.GetEnvResponse\x12F\n" +
-	"\aTempDir\x12\x1c.hostserve.v1.TempDirRequest\x1a\x1d.hostserve.v1.TempDirResponseB\xc0\x01\n" +
+	"\aTempDir\x12\x1c.hostserve.v1.TempDirRequest\x1a\x1d.hostserve.v1.TempDirResponse\x12U\n" +
+	"\fUserCacheDir\x12!.hostserve.v1.UserCacheDirRequest\x1a\".hostserve.v1.UserCacheDirResponse\x12X\n" +
+	"\rUserConfigDir\x12\".hostserve.v1.UserConfigDirRequest\x1a#.hostserve.v1.UserConfigDirResponse\x12R\n" +
+	"\vUserHomeDir\x12 .hostserve.v1.UserHomeDirRequest\x1a!.hostserve.v1.UserHomeDirResponseB\xc0\x01\n" +
 	"\x10com.hostserve.v1B\x0eHostserveProtoP\x01ZKgithub.com/bmj2728/HostServiceTest/shared/protogen/hostserve/v1;hostservev1\xa2\x02\x03HXX\xaa\x02\fHostserve.V1\xca\x02\fHostserve\\V1\xe2\x02\x18Hostserve\\V1\\GPBMetadata\xea\x02\rHostserve::V1b\x06proto3"
 
 var (
@@ -1883,7 +2165,7 @@ func file_hostserve_v1_hostserve_proto_rawDescGZIP() []byte {
 }
 
 var file_hostserve_v1_hostserve_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_hostserve_v1_hostserve_proto_msgTypes = make([]protoimpl.MessageInfo, 32)
+var file_hostserve_v1_hostserve_proto_msgTypes = make([]protoimpl.MessageInfo, 38)
 var file_hostserve_v1_hostserve_proto_goTypes = []any{
 	(OpenFileMode)(0),              // 0: hostserve.v1.OpenFileMode
 	(*DirEntry)(nil),               // 1: hostserve.v1.DirEntry
@@ -1918,6 +2200,12 @@ var file_hostserve_v1_hostserve_proto_goTypes = []any{
 	(*GetEnvResponse)(nil),         // 30: hostserve.v1.GetEnvResponse
 	(*TempDirRequest)(nil),         // 31: hostserve.v1.TempDirRequest
 	(*TempDirResponse)(nil),        // 32: hostserve.v1.TempDirResponse
+	(*UserCacheDirRequest)(nil),    // 33: hostserve.v1.UserCacheDirRequest
+	(*UserCacheDirResponse)(nil),   // 34: hostserve.v1.UserCacheDirResponse
+	(*UserConfigDirRequest)(nil),   // 35: hostserve.v1.UserConfigDirRequest
+	(*UserConfigDirResponse)(nil),  // 36: hostserve.v1.UserConfigDirResponse
+	(*UserHomeDirRequest)(nil),     // 37: hostserve.v1.UserHomeDirRequest
+	(*UserHomeDirResponse)(nil),    // 38: hostserve.v1.UserHomeDirResponse
 }
 var file_hostserve_v1_hostserve_proto_depIdxs = []int32{
 	1,  // 0: hostserve.v1.ReadDirResponse.entries:type_name -> hostserve.v1.DirEntry
@@ -1939,23 +2227,29 @@ var file_hostserve_v1_hostserve_proto_depIdxs = []int32{
 	27, // 16: hostserve.v1.HostService.FileWriter:input_type -> hostserve.v1.FileWriteRequest
 	29, // 17: hostserve.v1.HostService.GetEnv:input_type -> hostserve.v1.GetEnvRequest
 	31, // 18: hostserve.v1.HostService.TempDir:input_type -> hostserve.v1.TempDirRequest
-	4,  // 19: hostserve.v1.HostService.ReadDir:output_type -> hostserve.v1.ReadDirResponse
-	6,  // 20: hostserve.v1.HostService.ReadFile:output_type -> hostserve.v1.ReadFileResponse
-	8,  // 21: hostserve.v1.HostService.WriteFile:output_type -> hostserve.v1.WriteFileResponse
-	10, // 22: hostserve.v1.HostService.Mkdir:output_type -> hostserve.v1.MkdirResponse
-	12, // 23: hostserve.v1.HostService.MkdirAll:output_type -> hostserve.v1.MkdirAllResponse
-	14, // 24: hostserve.v1.HostService.MkdirTemp:output_type -> hostserve.v1.MkdirTempResponse
-	16, // 25: hostserve.v1.HostService.FileCreate:output_type -> hostserve.v1.FileCreateResponse
-	18, // 26: hostserve.v1.HostService.FileCreateTemp:output_type -> hostserve.v1.FileCreateTempResponse
-	20, // 27: hostserve.v1.HostService.FileOpen:output_type -> hostserve.v1.FileOpenResponse
-	22, // 28: hostserve.v1.HostService.FileSeek:output_type -> hostserve.v1.FileSeekResponse
-	24, // 29: hostserve.v1.HostService.FileClose:output_type -> hostserve.v1.FileCloseResponse
-	26, // 30: hostserve.v1.HostService.FileReader:output_type -> hostserve.v1.FileReadResponse
-	28, // 31: hostserve.v1.HostService.FileWriter:output_type -> hostserve.v1.FileWriteResponse
-	30, // 32: hostserve.v1.HostService.GetEnv:output_type -> hostserve.v1.GetEnvResponse
-	32, // 33: hostserve.v1.HostService.TempDir:output_type -> hostserve.v1.TempDirResponse
-	19, // [19:34] is the sub-list for method output_type
-	4,  // [4:19] is the sub-list for method input_type
+	33, // 19: hostserve.v1.HostService.UserCacheDir:input_type -> hostserve.v1.UserCacheDirRequest
+	35, // 20: hostserve.v1.HostService.UserConfigDir:input_type -> hostserve.v1.UserConfigDirRequest
+	37, // 21: hostserve.v1.HostService.UserHomeDir:input_type -> hostserve.v1.UserHomeDirRequest
+	4,  // 22: hostserve.v1.HostService.ReadDir:output_type -> hostserve.v1.ReadDirResponse
+	6,  // 23: hostserve.v1.HostService.ReadFile:output_type -> hostserve.v1.ReadFileResponse
+	8,  // 24: hostserve.v1.HostService.WriteFile:output_type -> hostserve.v1.WriteFileResponse
+	10, // 25: hostserve.v1.HostService.Mkdir:output_type -> hostserve.v1.MkdirResponse
+	12, // 26: hostserve.v1.HostService.MkdirAll:output_type -> hostserve.v1.MkdirAllResponse
+	14, // 27: hostserve.v1.HostService.MkdirTemp:output_type -> hostserve.v1.MkdirTempResponse
+	16, // 28: hostserve.v1.HostService.FileCreate:output_type -> hostserve.v1.FileCreateResponse
+	18, // 29: hostserve.v1.HostService.FileCreateTemp:output_type -> hostserve.v1.FileCreateTempResponse
+	20, // 30: hostserve.v1.HostService.FileOpen:output_type -> hostserve.v1.FileOpenResponse
+	22, // 31: hostserve.v1.HostService.FileSeek:output_type -> hostserve.v1.FileSeekResponse
+	24, // 32: hostserve.v1.HostService.FileClose:output_type -> hostserve.v1.FileCloseResponse
+	26, // 33: hostserve.v1.HostService.FileReader:output_type -> hostserve.v1.FileReadResponse
+	28, // 34: hostserve.v1.HostService.FileWriter:output_type -> hostserve.v1.FileWriteResponse
+	30, // 35: hostserve.v1.HostService.GetEnv:output_type -> hostserve.v1.GetEnvResponse
+	32, // 36: hostserve.v1.HostService.TempDir:output_type -> hostserve.v1.TempDirResponse
+	34, // 37: hostserve.v1.HostService.UserCacheDir:output_type -> hostserve.v1.UserCacheDirResponse
+	36, // 38: hostserve.v1.HostService.UserConfigDir:output_type -> hostserve.v1.UserConfigDirResponse
+	38, // 39: hostserve.v1.HostService.UserHomeDir:output_type -> hostserve.v1.UserHomeDirResponse
+	22, // [22:40] is the sub-list for method output_type
+	4,  // [4:22] is the sub-list for method input_type
 	4,  // [4:4] is the sub-list for extension type_name
 	4,  // [4:4] is the sub-list for extension extendee
 	0,  // [0:4] is the sub-list for field type_name
@@ -1981,13 +2275,16 @@ func file_hostserve_v1_hostserve_proto_init() {
 	file_hostserve_v1_hostserve_proto_msgTypes[27].OneofWrappers = []any{}
 	file_hostserve_v1_hostserve_proto_msgTypes[29].OneofWrappers = []any{}
 	file_hostserve_v1_hostserve_proto_msgTypes[31].OneofWrappers = []any{}
+	file_hostserve_v1_hostserve_proto_msgTypes[33].OneofWrappers = []any{}
+	file_hostserve_v1_hostserve_proto_msgTypes[35].OneofWrappers = []any{}
+	file_hostserve_v1_hostserve_proto_msgTypes[37].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_hostserve_v1_hostserve_proto_rawDesc), len(file_hostserve_v1_hostserve_proto_rawDesc)),
 			NumEnums:      1,
-			NumMessages:   32,
+			NumMessages:   38,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

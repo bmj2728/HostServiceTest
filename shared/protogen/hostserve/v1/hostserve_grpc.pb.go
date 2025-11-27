@@ -34,6 +34,9 @@ const (
 	HostService_FileWriter_FullMethodName     = "/hostserve.v1.HostService/FileWriter"
 	HostService_GetEnv_FullMethodName         = "/hostserve.v1.HostService/GetEnv"
 	HostService_TempDir_FullMethodName        = "/hostserve.v1.HostService/TempDir"
+	HostService_UserCacheDir_FullMethodName   = "/hostserve.v1.HostService/UserCacheDir"
+	HostService_UserConfigDir_FullMethodName  = "/hostserve.v1.HostService/UserConfigDir"
+	HostService_UserHomeDir_FullMethodName    = "/hostserve.v1.HostService/UserHomeDir"
 )
 
 // HostServiceClient is the client API for HostService service.
@@ -62,6 +65,9 @@ type HostServiceClient interface {
 	// Env Endpoints
 	GetEnv(ctx context.Context, in *GetEnvRequest, opts ...grpc.CallOption) (*GetEnvResponse, error)
 	TempDir(ctx context.Context, in *TempDirRequest, opts ...grpc.CallOption) (*TempDirResponse, error)
+	UserCacheDir(ctx context.Context, in *UserCacheDirRequest, opts ...grpc.CallOption) (*UserCacheDirResponse, error)
+	UserConfigDir(ctx context.Context, in *UserConfigDirRequest, opts ...grpc.CallOption) (*UserConfigDirResponse, error)
+	UserHomeDir(ctx context.Context, in *UserHomeDirRequest, opts ...grpc.CallOption) (*UserHomeDirResponse, error)
 }
 
 type hostServiceClient struct {
@@ -234,6 +240,36 @@ func (c *hostServiceClient) TempDir(ctx context.Context, in *TempDirRequest, opt
 	return out, nil
 }
 
+func (c *hostServiceClient) UserCacheDir(ctx context.Context, in *UserCacheDirRequest, opts ...grpc.CallOption) (*UserCacheDirResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(UserCacheDirResponse)
+	err := c.cc.Invoke(ctx, HostService_UserCacheDir_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *hostServiceClient) UserConfigDir(ctx context.Context, in *UserConfigDirRequest, opts ...grpc.CallOption) (*UserConfigDirResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(UserConfigDirResponse)
+	err := c.cc.Invoke(ctx, HostService_UserConfigDir_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *hostServiceClient) UserHomeDir(ctx context.Context, in *UserHomeDirRequest, opts ...grpc.CallOption) (*UserHomeDirResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(UserHomeDirResponse)
+	err := c.cc.Invoke(ctx, HostService_UserHomeDir_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // HostServiceServer is the server API for HostService service.
 // All implementations must embed UnimplementedHostServiceServer
 // for forward compatibility.
@@ -260,6 +296,9 @@ type HostServiceServer interface {
 	// Env Endpoints
 	GetEnv(context.Context, *GetEnvRequest) (*GetEnvResponse, error)
 	TempDir(context.Context, *TempDirRequest) (*TempDirResponse, error)
+	UserCacheDir(context.Context, *UserCacheDirRequest) (*UserCacheDirResponse, error)
+	UserConfigDir(context.Context, *UserConfigDirRequest) (*UserConfigDirResponse, error)
+	UserHomeDir(context.Context, *UserHomeDirRequest) (*UserHomeDirResponse, error)
 	mustEmbedUnimplementedHostServiceServer()
 }
 
@@ -314,6 +353,15 @@ func (UnimplementedHostServiceServer) GetEnv(context.Context, *GetEnvRequest) (*
 }
 func (UnimplementedHostServiceServer) TempDir(context.Context, *TempDirRequest) (*TempDirResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method TempDir not implemented")
+}
+func (UnimplementedHostServiceServer) UserCacheDir(context.Context, *UserCacheDirRequest) (*UserCacheDirResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UserCacheDir not implemented")
+}
+func (UnimplementedHostServiceServer) UserConfigDir(context.Context, *UserConfigDirRequest) (*UserConfigDirResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UserConfigDir not implemented")
+}
+func (UnimplementedHostServiceServer) UserHomeDir(context.Context, *UserHomeDirRequest) (*UserHomeDirResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UserHomeDir not implemented")
 }
 func (UnimplementedHostServiceServer) mustEmbedUnimplementedHostServiceServer() {}
 func (UnimplementedHostServiceServer) testEmbeddedByValue()                     {}
@@ -588,6 +636,60 @@ func _HostService_TempDir_Handler(srv interface{}, ctx context.Context, dec func
 	return interceptor(ctx, in, info, handler)
 }
 
+func _HostService_UserCacheDir_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UserCacheDirRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(HostServiceServer).UserCacheDir(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: HostService_UserCacheDir_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(HostServiceServer).UserCacheDir(ctx, req.(*UserCacheDirRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _HostService_UserConfigDir_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UserConfigDirRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(HostServiceServer).UserConfigDir(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: HostService_UserConfigDir_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(HostServiceServer).UserConfigDir(ctx, req.(*UserConfigDirRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _HostService_UserHomeDir_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UserHomeDirRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(HostServiceServer).UserHomeDir(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: HostService_UserHomeDir_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(HostServiceServer).UserHomeDir(ctx, req.(*UserHomeDirRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // HostService_ServiceDesc is the grpc.ServiceDesc for HostService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -646,6 +748,18 @@ var HostService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "TempDir",
 			Handler:    _HostService_TempDir_Handler,
+		},
+		{
+			MethodName: "UserCacheDir",
+			Handler:    _HostService_UserCacheDir_Handler,
+		},
+		{
+			MethodName: "UserConfigDir",
+			Handler:    _HostService_UserConfigDir_Handler,
+		},
+		{
+			MethodName: "UserHomeDir",
+			Handler:    _HostService_UserHomeDir_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{

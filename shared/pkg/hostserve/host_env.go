@@ -43,3 +43,42 @@ func (he *HostEnv) TempDir(ctx context.Context) (string, error) {
 	}
 	return os.TempDir(), nil
 }
+
+func (he *HostEnv) UserCacheDir(ctx context.Context) (string, error) {
+	clientID := getClientIDFromContext(ctx)
+	hclog.Default().Debug("Pseudocode cap check - USER_CACHE_DIR", "clientID", clientID)
+	if clientID == "" {
+		return "", fmt.Errorf("client ID not found in context")
+	}
+	dir, err := os.UserCacheDir()
+	if err != nil {
+		return "", fmt.Errorf("failed to get user cache dir: %v", err)
+	}
+	return dir, nil
+}
+
+func (he *HostEnv) UserConfigDir(ctx context.Context) (string, error) {
+	clientID := getClientIDFromContext(ctx)
+	hclog.Default().Debug("Pseudocode cap check - USER_CONFIG_DIR", "clientID", clientID)
+	if clientID == "" {
+		return "", fmt.Errorf("client ID not found in context")
+	}
+	dir, err := os.UserConfigDir()
+	if err != nil {
+		return "", fmt.Errorf("failed to get user config dir: %v", err)
+	}
+	return dir, nil
+}
+
+func (he *HostEnv) UserHomeDir(ctx context.Context) (string, error) {
+	clientID := getClientIDFromContext(ctx)
+	hclog.Default().Debug("Pseudocode cap check - USER_HOME_DIR", "clientID", clientID)
+	if clientID == "" {
+		return "", fmt.Errorf("client ID not found in context")
+	}
+	dir, err := os.UserHomeDir()
+	if err != nil {
+		return "", fmt.Errorf("failed to get user home dir: %v", err)
+	}
+	return dir, nil
+}

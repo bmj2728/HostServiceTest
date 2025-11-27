@@ -76,3 +76,99 @@ func (s *HostServiceGRPCServer) TempDir(ctx context.Context, _ *hostservev1.Temp
 		Dir: dir,
 	}, nil
 }
+
+func (s *HostServiceGRPCServer) UserCacheDir(ctx context.Context, _ *hostservev1.UserCacheDirRequest) (*hostservev1.UserCacheDirResponse, error) {
+
+	ctx, clientID, reqID, owner, err := s.processRequestContext(ctx)
+	if err != nil {
+		hclog.Default().Info("UserCacheDir bad request from client",
+			ctxClientIDKey, clientID,
+			ctxClientOwner, owner,
+			ctxHostRequestIDKey, reqID,
+			"error", err,
+		)
+		return &hostservev1.UserCacheDirResponse{
+			Error: proto.String(err.Error()),
+		}, nil
+	}
+
+	hclog.Default().Info("UserCacheDir request from client",
+		ctxClientIDKey, clientID,
+		ctxClientOwner, owner,
+		ctxHostRequestIDKey, reqID,
+	)
+
+	dir, err := s.Impl.UserCacheDir(ctx)
+	if err != nil {
+		return &hostservev1.UserCacheDirResponse{
+			Error: proto.String(err.Error()),
+		}, nil
+	}
+	return &hostservev1.UserCacheDirResponse{
+		Dir: dir,
+	}, nil
+}
+
+func (s *HostServiceGRPCServer) UserConfigDir(ctx context.Context, _ *hostservev1.UserConfigDirRequest) (*hostservev1.UserConfigDirResponse, error) {
+
+	ctx, clientID, reqID, owner, err := s.processRequestContext(ctx)
+	if err != nil {
+		hclog.Default().Info("UserConfigDir bad request from client",
+			ctxClientIDKey, clientID,
+			ctxClientOwner, owner,
+			ctxHostRequestIDKey, reqID,
+			"error", err,
+		)
+		return &hostservev1.UserConfigDirResponse{
+			Error: proto.String(err.Error()),
+		}, nil
+	}
+
+	hclog.Default().Info("UserConfigDir request from client",
+		ctxClientIDKey, clientID,
+		ctxClientOwner, owner,
+		ctxHostRequestIDKey, reqID,
+	)
+
+	dir, err := s.Impl.UserConfigDir(ctx)
+	if err != nil {
+		return &hostservev1.UserConfigDirResponse{
+			Error: proto.String(err.Error()),
+		}, nil
+	}
+	return &hostservev1.UserConfigDirResponse{
+		Dir: dir,
+	}, nil
+}
+
+func (s *HostServiceGRPCServer) UserHomeDir(ctx context.Context, _ *hostservev1.UserHomeDirRequest) (*hostservev1.UserHomeDirResponse, error) {
+
+	ctx, clientID, reqID, owner, err := s.processRequestContext(ctx)
+	if err != nil {
+		hclog.Default().Info("UserHomeDir bad request from client",
+			ctxClientIDKey, clientID,
+			ctxClientOwner, owner,
+			ctxHostRequestIDKey, reqID,
+			"error", err,
+		)
+		return &hostservev1.UserHomeDirResponse{
+			Error: proto.String(err.Error()),
+		}, nil
+	}
+
+	hclog.Default().Info("UserHomeDir request from client",
+		ctxClientIDKey, clientID,
+		ctxClientOwner, owner,
+		ctxHostRequestIDKey, reqID,
+	)
+
+	dir, err := s.Impl.UserHomeDir(ctx)
+	if err != nil {
+		return &hostservev1.UserHomeDirResponse{
+			Error: proto.String(err.Error()),
+		}, nil
+	}
+	return &hostservev1.UserHomeDirResponse{
+		Dir: dir,
+	}, nil
+}

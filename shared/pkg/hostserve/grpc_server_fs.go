@@ -378,6 +378,38 @@ func (s *HostServiceGRPCServer) FileOpen(ctx context.Context,
 	return &hostservev1.FileOpenResponse{Handle: fh.String(), Size: size}, nil
 }
 
+func (s *HostServiceGRPCServer) FileStat(ctx context.Context, request *hostservev1.FileStatRequest) (*hostservev1.FileStatResponse, error) {
+	ctx, clientID, reqID, owner, err := s.processRequestContext(ctx)
+	if err != nil {
+		hclog.Default().Info("FileSeek bad request from client",
+			ctxClientIDKey, clientID,
+			ctxClientOwner, owner,
+			ctxHostRequestIDKey, reqID,
+			"error", err,
+		)
+		return &hostservev1.FileStatResponse{
+			Error: proto.String(err.Error()),
+		}, nil
+	}
+
+	fh := FileHandle(request.Handle)
+
+	hclog.Default().Info("FileSeek request from client",
+		ctxClientIDKey, clientID,
+		ctxClientOwner, owner,
+		ctxHostRequestIDKey, reqID,
+		"handle", fh,
+	)
+
+	info, err := s.Impl.FileStat(ctx, fh)
+	if err != nil {
+		return &hostservev1.FileStatResponse{Error: proto.String(err.Error())}, nil
+	}
+
+	return &hostservev1.FileStatResponse{Info: fileInfoToProtoFileInfo(info)}, nil
+
+}
+
 // FileSeek handles a file seek operation by delegating the request to the implementation and returns the new offset.
 func (s *HostServiceGRPCServer) FileSeek(ctx context.Context, request *hostservev1.FileSeekRequest) (*hostservev1.FileSeekResponse, error) {
 

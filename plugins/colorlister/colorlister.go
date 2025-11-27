@@ -97,6 +97,13 @@ func (f *ColorLister) ListFiles(dir string) ([]string, error) {
 	}
 	hclog.Default().Info("File seeked", "offset", newOff)
 
+	rfi, err := f.hostServiceClient.FileStat(ctx, fh)
+	if err != nil {
+		hclog.Default().Error("Failed to stat file via host service", "dir", dir, "err", err)
+		return nil, err
+	}
+	hclog.Default().Info("File stat", "file", rfi.Name(), "size", rfi.Size(), "mode", rfi.Mode(), "modTime", rfi.ModTime(), "isDir", rfi.IsDir())
+
 	return entries, nil
 }
 

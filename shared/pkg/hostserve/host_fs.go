@@ -222,8 +222,21 @@ func (hf *HostFS) FileOpen(ctx context.Context, path string, flag int, perm os.F
 	return fh, uint64(info.Size()), nil
 }
 
+// FileStat retrieves the file information for a given FileHandle within a specific context.
+func (hf *HostFS) FileStat(ctx context.Context, handle FileHandle) (fs.FileInfo, error) {
+	clientID := getClientIDFromContext(ctx)
+	hclog.Default().Debug("Placeholder Pseudo Cap Check...", "clientID", clientID, "handle", handle)
+	file, err := hf.retrieveOpenFile(ctx, handle)
+	if err != nil {
+		return nil, err
+	}
+	return file.Stat()
+}
+
 // FileSeek changes the offset of an open file associated with the given handle based on the specified offset and whence.
 func (hf *HostFS) FileSeek(ctx context.Context, handle FileHandle, offset int64, whence int) (int64, error) {
+	clientID := getClientIDFromContext(ctx)
+	hclog.Default().Debug("Placeholder Pseudo Cap Check...", "clientID", clientID, "handle", handle)
 	file, err := hf.retrieveOpenFile(ctx, handle)
 	if err != nil {
 		return 0, err

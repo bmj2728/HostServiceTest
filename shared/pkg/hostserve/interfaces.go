@@ -45,7 +45,7 @@ type IHostFS interface {
 	// returning a handle, file size, and error.
 	FileOpen(ctx context.Context, path string, flag int, perm os.FileMode) (FileHandle, uint64, error)
 
-	//FileStat(ctx context.Context, handle FileHandle) (fs.FileInfo, error)
+	FileStat(ctx context.Context, handle FileHandle) (fs.FileInfo, error)
 
 	// FileSeek moves the file cursor to a new position as specified by offset and whence for the provided file handle.
 	// Returns the new cursor offset from the start of the file or an error if the operation fails.

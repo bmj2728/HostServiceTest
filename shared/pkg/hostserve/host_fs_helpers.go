@@ -3,11 +3,13 @@ package hostserve
 import (
 	"context"
 	"fmt"
+	"io/fs"
 	"os"
 	"path/filepath"
 
 	"github.com/bmj2728/hst/shared/protogen/hostserve/v1"
 	"github.com/hashicorp/go-hclog"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 // openFileModeToFlags converts the OpenFileMode enum to appropriate file flags for use with os package operations.
@@ -107,4 +109,35 @@ func (hf *HostFS) retrieveOpenFile(ctx context.Context, handle FileHandle) (*os.
 	}
 
 	return file, nil
+}
+
+// protoFileInfoToRemoteFileInfo converts a hostservev1.FileInfo to a RemoteFileInfo instance.
+// Returns nil if the input is nil. Transfers basic file information such as name, size, mode, modTime, and isDir.
+func protoFileInfoToRemoteFileInfo(pi *hostservev1.FileInfo) *RemoteFileInfo {
+	if pi == nil {
+		return nil
+	}
+	rfi := &RemoteFileInfo{
+		name:    pi.Name,
+		size:    pi.Size,
+		mode:    os.FileMode(pi.Mode),
+		modTime: pi.ModTime.AsTime(),
+		isDir:   pi.IsDir,
+	}
+	return rfi
+}
+
+// fileInfoToProtoFileInfo converts an fs.FileInfo object to a hostservev1.FileInfo protobuf message.
+// Returns nil if the input fs.FileInfo is nil.
+func fileInfoToProtoFileInfo(fi fs.FileInfo) *hostservev1.FileInfo {
+	if fi == nil {
+		return nil
+	}
+	return &hostservev1.FileInfo{
+		Name:    fi.Name(),
+		Size:    fi.Size(),
+		Mode:    uint32(fi.Mode()),
+		ModTime: timestamppb.New(fi.ModTime()),
+		IsDir:   fi.IsDir(),
+	}
 }

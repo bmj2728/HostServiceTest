@@ -164,6 +164,24 @@ func (c *HostServiceGRPCClient) FileOpen(ctx context.Context, path string, flag 
 	return FileHandle(resp.Handle), resp.Size, nil
 }
 
+func (c *HostServiceGRPCClient) FileStat(ctx context.Context, handle FileHandle) (fs.FileInfo, error) {
+	ctx = addTracingIDsToContext(ctx, c.clientID, NewRequestID())
+	resp, err := c.client.FileStat(ctx, &hostservev1.FileStatRequest{
+		Handle: string(handle),
+	})
+	if err != nil {
+		return nil, &HostServiceError{Message: err.Error()}
+	}
+	if resp == nil {
+		return nil, &HostServiceError{Message: "nil response from FileStat"}
+	}
+	if resp.Error != nil {
+		return nil, &HostServiceError{Message: *resp.Error}
+	}
+
+	return protoFileInfoToRemoteFileInfo(resp.Info), nil
+}
+
 // FileSeek adjusts the file offset for a file identified by handle, based on the specified offset and whence parameters.
 // Returns the new file offset or an error if the operation fails.
 func (c *HostServiceGRPCClient) FileSeek(ctx context.Context, handle FileHandle, offset int64, whence int) (int64, error) {

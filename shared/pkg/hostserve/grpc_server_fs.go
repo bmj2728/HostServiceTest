@@ -307,6 +307,36 @@ func (s *HostServiceGRPCServer) FileOpen(ctx context.Context,
 	return &hostservev1.FileOpenResponse{Handle: fh.String(), Size: size}, nil
 }
 
+func (s *HostServiceGRPCServer) FileSeek(ctx context.Context, request *hostservev1.FileSeekRequest) (*hostservev1.FileSeekResponse, error) {
+
+	ctx, clientID, reqID, owner, err := s.processRequestContext(ctx)
+	if err != nil {
+		return &hostservev1.FileSeekResponse{
+			Error: proto.String(err.Error()),
+		}, nil
+	}
+
+	fh := FileHandle(request.Handle)
+
+	hclog.Default().Info("FileSeek request from client",
+		ctxClientIDKey, clientID,
+		ctxClientOwner, owner,
+		ctxHostRequestIDKey, reqID,
+		"handle", fh,
+		"offset", request.Offset,
+		"whence", request.Whence,
+	)
+
+	newOffset, err := s.Impl.FileSeek(ctx, fh, int64(request.Offset), int(request.Whence))
+	if err != nil {
+		return &hostservev1.FileSeekResponse{
+			Error: proto.String(err.Error()),
+		}, nil
+	}
+
+	return &hostservev1.FileSeekResponse{NewOffset: uint64(newOffset)}, nil
+}
+
 func (s *HostServiceGRPCServer) FileClose(ctx context.Context,
 	request *hostservev1.FileCloseRequest,
 ) (*hostservev1.FileCloseResponse, error) {

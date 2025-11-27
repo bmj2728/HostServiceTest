@@ -215,6 +215,14 @@ func (hf *HostFS) FileOpen(ctx context.Context, path string, flag int, perm os.F
 	return fh, uint64(info.Size()), nil
 }
 
+func (hf *HostFS) FileSeek(ctx context.Context, handle FileHandle, offset int64, whence int) (int64, error) {
+	file, err := hf.retrieveOpenFile(ctx, handle)
+	if err != nil {
+		return 0, err
+	}
+	return file.Seek(offset, whence)
+}
+
 // FileClose closes an open file associated with the given file handle for a specific client and removes its reference.
 // Returns an error if the handle does not exist, the file cannot be closed, or the file reference cannot be removed.
 func (hf *HostFS) FileClose(ctx context.Context, handle FileHandle) error {

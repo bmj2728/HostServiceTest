@@ -43,7 +43,10 @@ service HostService {
   rpc FileCreate(FileCreateRequest) returns (FileCreateResponse);
   rpc FileCreateTemp(FileCreateTempRequest) returns (FileCreateTempResponse);
   rpc FileOpen(FileOpenRequest) returns (FileOpenResponse);
+  rpc FileSeek(FileSeekRequest) returns (FileSeekResponse);
   rpc FileClose(FileCloseRequest) returns (FileCloseResponse);
+
+  // FS - Streaming File Ops
   rpc FileReader(FileReadRequest) returns (stream FileReadResponse);
   rpc FileWriter(stream FileWriteRequest) returns (FileWriteResponse);
 
@@ -158,6 +161,17 @@ message FileOpenResponse {
   string handle = 1;
   uint64 size = 2;
   optional string error = 3;
+}
+
+message FileSeekRequest {
+  string handle = 1;
+  uint64 offset = 2;
+  uint32 whence = 3;
+}
+
+message FileSeekResponse {
+  uint64 new_offset = 1;
+  optional string error = 2;
 }
 
 message FileCloseRequest {

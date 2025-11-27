@@ -155,6 +155,25 @@ func (c *HostServiceGRPCClient) FileOpen(ctx context.Context, path string, flag 
 	return FileHandle(resp.Handle), resp.Size, nil
 }
 
+func (c *HostServiceGRPCClient) FileSeek(ctx context.Context, handle FileHandle, offset int64, whence int) (int64, error) {
+	ctx = addTracingIDsToContext(ctx, c.clientID, NewRequestID())
+	resp, err := c.client.FileSeek(ctx, &hostservev1.FileSeekRequest{
+		Handle: string(handle),
+		Offset: uint64(offset),
+		Whence: uint32(whence),
+	})
+	if err != nil {
+		return 0, &HostServiceError{Message: err.Error()}
+	}
+	if resp == nil {
+		return 0, &HostServiceError{Message: "nil response from FileSeek"}
+	}
+	if resp.Error != nil {
+		return 0, &HostServiceError{Message: *resp.Error}
+	}
+	return int64(resp.NewOffset), nil
+}
+
 func (c *HostServiceGRPCClient) FileClose(ctx context.Context, handle FileHandle) error {
 	ctx = addTracingIDsToContext(ctx, c.clientID, NewRequestID())
 	_, err := c.client.FileClose(ctx, &hostservev1.FileCloseRequest{

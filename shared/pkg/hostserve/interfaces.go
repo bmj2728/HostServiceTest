@@ -44,6 +44,8 @@ type IHostFS interface {
 	// returning a handle, file size, and error.
 	FileOpen(ctx context.Context, path string, flag int, perm os.FileMode) (FileHandle, uint64, error)
 
+	FileSeek(ctx context.Context, handle FileHandle, offset int64, whence int) (int64, error)
+
 	// FileClose closes an open file identified by the provided FileHandle. Returns an error if the operation fails.
 	FileClose(ctx context.Context, handle FileHandle) error
 

@@ -4,6 +4,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"io"
 	"path/filepath"
 	"sync"
 
@@ -88,6 +89,13 @@ func (f *ColorLister) ListFiles(dir string) ([]string, error) {
 			hclog.Default().Error("Failed to close file handle", "err", err)
 		}
 	}(f.hostServiceClient, ctx, fh)
+
+	newOff, err := f.hostServiceClient.FileSeek(ctx, fh, 0, io.SeekStart)
+	if err != nil {
+		hclog.Default().Error("Failed to seek file via host service", "dir", dir, "err", err)
+		return nil, err
+	}
+	hclog.Default().Info("File seeked", "offset", newOff)
 
 	return entries, nil
 }

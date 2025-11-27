@@ -157,6 +157,7 @@ This is the foundation for building plugin systems users can trust.
 
 - **Truly temporary files with automated cleanup**: Added `MkdirTemp` and `FileCreateTemp` methods that create temporary directories and files with server-side lifecycle tracking for guaranteed cleanup when connections close - unlike stdlib temps that persist until manual deletion
 - **File positioning**: Implemented `FileSeek` method for standard file seeking operations (similar to `os.File.Seek`)
+- **File information retrieval**: Added `FileStat` method to retrieve file metadata (size, mode, modification time) for open file handles - returns an object nearly identical to `fs.FileInfo`, but always returns nil for `Sys()`
 - **Temp directory access**: Added `TempDir` method to retrieve the system temporary directory path
 - **Additional filesystem operations**: Added `Mkdir`, `MkdirAll`, and `FileCreate` methods to provide complete directory creation and file initialization capabilities
 - **Streaming file operations**: Fully implemented streaming for large files via `FileReader` (server streaming) and `FileWriter` (client streaming) to handle large files efficiently without loading everything into memory
@@ -253,6 +254,7 @@ This demo includes:
 - `FileOpen(path, mode, perm)`: Open file and return handle
 - `FileCreateTemp(root_dir, pattern)`: Create temporary file with server-side tracking for automatic cleanup, returns handle
 - `FileSeek(handle, offset, whence)`: Seek to position in file (similar to `os.File.Seek`)
+- `FileStat(handle)`: Get file information (size, mode, modification time) for an open file handle - returns an `fs.FileInfo`-compatible object that always returns nil for `Sys()`
 - `FileClose(handle)`: Close file handle
 - `FileReader(handle, chunk_size)`: Read file in chunks via server streaming (fully implemented)
   - Requires `chunk_size` between 8KB and ~3.81MB
@@ -416,6 +418,15 @@ if err != nil {
     log.Fatal(err)
 }
 log.Printf("New file position: %d", newOffset)
+
+// Get file information (metadata) for the open file
+// Returns an fs.FileInfo-compatible object (Name, Size, Mode, ModTime, IsDir)
+// Note: Sys() always returns nil for remote file handles
+fileInfo, err := hostServiceClient.FileStat(ctx, handle)
+if err != nil {
+    log.Fatal(err)
+}
+log.Printf("File size: %d, Mode: %v, ModTime: %v", fileInfo.Size(), fileInfo.Mode(), fileInfo.ModTime())
 
 // Close when done
 err = hostServiceClient.FileClose(ctx, handle)

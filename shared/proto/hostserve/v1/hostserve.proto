@@ -37,6 +37,8 @@ service HostService {
   rpc ReadFile(ReadFileRequest) returns (ReadFileResponse);
   rpc WriteFile(WriteFileRequest) returns (WriteFileResponse);
 
+  rpc Stat(StatRequest) returns (StatResponse); // convenience for open->stat->close
+
   rpc Mkdir(MkdirRequest) returns (MkdirResponse);
   rpc MkdirAll(MkdirAllRequest) returns (MkdirAllResponse);
   rpc MkdirTemp(MkdirTempRequest) returns (MkdirTempResponse);
@@ -115,6 +117,15 @@ message WriteFileRequest {
 
 message WriteFileResponse {
   optional string error = 1;
+}
+
+message StatRequest {
+  string path = 1;
+}
+
+message StatResponse {
+  FileInfo info = 1;
+  optional string error =2;
 }
 
 message MkdirRequest {

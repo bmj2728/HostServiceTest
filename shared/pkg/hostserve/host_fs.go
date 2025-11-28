@@ -126,6 +126,28 @@ func (hf *HostFS) WriteFile(ctx context.Context, path string, data []byte, perm 
 	return nil
 }
 
+// Stat retrieves the FileInfo for the given path within the HostFS, returning an error if the operation fails.
+func (hf *HostFS) Stat(ctx context.Context, path string) (fs.FileInfo, error) {
+	clientID := getClientIDFromContext(ctx)
+	hclog.Default().Debug("Placeholder Pseudo Cap Check...", "clientID", clientID, "path", path)
+
+	abs, err := filepath.Abs(path)
+	d, f := filepath.Split(abs)
+
+	file, err := os.OpenInRoot(d, f)
+	if err != nil {
+		fmt.Println(err)
+	}
+	defer func(file *os.File) {
+		err := file.Close()
+		if err != nil {
+			fmt.Println(err)
+		}
+	}(file)
+
+	return file.Stat()
+}
+
 // Mkdir creates a new directory within the given root directory with the specified name and permissions.
 // Returns an error if the directory cannot be created.
 // The `ctx` parameter is used for passing context and the `perm` argument defines the directory's permissions.

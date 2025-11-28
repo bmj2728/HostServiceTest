@@ -168,6 +168,34 @@ func (s *HostServiceGRPCServer) WriteFile(ctx context.Context,
 	return &hostservev1.WriteFileResponse{}, nil
 }
 
+func (s *HostServiceGRPCServer) Stat(ctx context.Context, request *hostservev1.StatRequest) (*hostservev1.StatResponse, error) {
+
+	ctx, clientID, reqID, owner, err := s.processRequestContext(ctx)
+	if err != nil {
+		hclog.Default().Info("Stat bad request from client",
+			ctxClientIDKey, clientID,
+			ctxClientOwner, owner,
+			ctxHostRequestIDKey, reqID,
+			"error", err,
+		)
+		return &hostservev1.StatResponse{
+			Error: proto.String(err.Error()),
+		}, nil
+	}
+
+	hclog.Default().Info("Stat request from client",
+		ctxClientIDKey, clientID,
+		ctxClientOwner, owner,
+		ctxHostRequestIDKey, reqID,
+		"path", request.Path)
+
+	info, err := s.Impl.Stat(ctx, request.Path)
+	if err != nil {
+		return &hostservev1.StatResponse{Error: proto.String(err.Error())}, nil
+	}
+	return &hostservev1.StatResponse{Info: fileInfoToProtoFileInfo(info)}, nil
+}
+
 // Mkdir handles a gRPC request to create a new directory at the specified root directory with the given name and permissions.
 func (s *HostServiceGRPCServer) Mkdir(ctx context.Context,
 	request *hostservev1.MkdirRequest,

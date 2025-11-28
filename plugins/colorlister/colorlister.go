@@ -104,6 +104,12 @@ func (f *ColorLister) ListFiles(dir string) ([]string, error) {
 	}
 	hclog.Default().Info("File stat", "file", rfi.Name(), "size", rfi.Size(), "mode", rfi.Mode(), "modTime", rfi.ModTime(), "isDir", rfi.IsDir())
 
+	convRFI, err := f.hostServiceClient.Stat(ctx, "README.md")
+	if err != nil {
+		hclog.Default().Error("Failed to stat file via host service", "dir", dir, "err", err)
+	}
+	hclog.Default().Info("File stat", "file", convRFI.Name(), "size", convRFI.Size(), "mode", convRFI.Mode(), "modTime", convRFI.ModTime(), "isDir", convRFI.IsDir())
+
 	return entries, nil
 }
 

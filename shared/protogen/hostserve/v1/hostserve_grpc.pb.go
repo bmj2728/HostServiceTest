@@ -22,6 +22,7 @@ const (
 	HostService_ReadDir_FullMethodName        = "/hostserve.v1.HostService/ReadDir"
 	HostService_ReadFile_FullMethodName       = "/hostserve.v1.HostService/ReadFile"
 	HostService_WriteFile_FullMethodName      = "/hostserve.v1.HostService/WriteFile"
+	HostService_Stat_FullMethodName           = "/hostserve.v1.HostService/Stat"
 	HostService_Mkdir_FullMethodName          = "/hostserve.v1.HostService/Mkdir"
 	HostService_MkdirAll_FullMethodName       = "/hostserve.v1.HostService/MkdirAll"
 	HostService_MkdirTemp_FullMethodName      = "/hostserve.v1.HostService/MkdirTemp"
@@ -51,6 +52,7 @@ type HostServiceClient interface {
 	ReadDir(ctx context.Context, in *ReadDirRequest, opts ...grpc.CallOption) (*ReadDirResponse, error)
 	ReadFile(ctx context.Context, in *ReadFileRequest, opts ...grpc.CallOption) (*ReadFileResponse, error)
 	WriteFile(ctx context.Context, in *WriteFileRequest, opts ...grpc.CallOption) (*WriteFileResponse, error)
+	Stat(ctx context.Context, in *StatRequest, opts ...grpc.CallOption) (*StatResponse, error)
 	Mkdir(ctx context.Context, in *MkdirRequest, opts ...grpc.CallOption) (*MkdirResponse, error)
 	MkdirAll(ctx context.Context, in *MkdirAllRequest, opts ...grpc.CallOption) (*MkdirAllResponse, error)
 	MkdirTemp(ctx context.Context, in *MkdirTempRequest, opts ...grpc.CallOption) (*MkdirTempResponse, error)
@@ -104,6 +106,16 @@ func (c *hostServiceClient) WriteFile(ctx context.Context, in *WriteFileRequest,
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(WriteFileResponse)
 	err := c.cc.Invoke(ctx, HostService_WriteFile_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *hostServiceClient) Stat(ctx context.Context, in *StatRequest, opts ...grpc.CallOption) (*StatResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(StatResponse)
+	err := c.cc.Invoke(ctx, HostService_Stat_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -293,6 +305,7 @@ type HostServiceServer interface {
 	ReadDir(context.Context, *ReadDirRequest) (*ReadDirResponse, error)
 	ReadFile(context.Context, *ReadFileRequest) (*ReadFileResponse, error)
 	WriteFile(context.Context, *WriteFileRequest) (*WriteFileResponse, error)
+	Stat(context.Context, *StatRequest) (*StatResponse, error)
 	Mkdir(context.Context, *MkdirRequest) (*MkdirResponse, error)
 	MkdirAll(context.Context, *MkdirAllRequest) (*MkdirAllResponse, error)
 	MkdirTemp(context.Context, *MkdirTempRequest) (*MkdirTempResponse, error)
@@ -330,6 +343,9 @@ func (UnimplementedHostServiceServer) ReadFile(context.Context, *ReadFileRequest
 }
 func (UnimplementedHostServiceServer) WriteFile(context.Context, *WriteFileRequest) (*WriteFileResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method WriteFile not implemented")
+}
+func (UnimplementedHostServiceServer) Stat(context.Context, *StatRequest) (*StatResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Stat not implemented")
 }
 func (UnimplementedHostServiceServer) Mkdir(context.Context, *MkdirRequest) (*MkdirResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Mkdir not implemented")
@@ -450,6 +466,24 @@ func _HostService_WriteFile_Handler(srv interface{}, ctx context.Context, dec fu
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(HostServiceServer).WriteFile(ctx, req.(*WriteFileRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _HostService_Stat_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(StatRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(HostServiceServer).Stat(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: HostService_Stat_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(HostServiceServer).Stat(ctx, req.(*StatRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -742,6 +776,10 @@ var HostService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "WriteFile",
 			Handler:    _HostService_WriteFile_Handler,
+		},
+		{
+			MethodName: "Stat",
+			Handler:    _HostService_Stat_Handler,
 		},
 		{
 			MethodName: "Mkdir",

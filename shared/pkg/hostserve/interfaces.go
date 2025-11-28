@@ -26,6 +26,9 @@ type IHostFS interface {
 	// WriteFile writes data to the specified file within the given directory, applying the provided file permissions.
 	WriteFile(ctx context.Context, path string, data []byte, perm os.FileMode) error
 
+	// Stat retrieves the file information for the specified path in the host file system.
+	Stat(ctx context.Context, path string) (fs.FileInfo, error)
+
 	// Mkdir creates a new directory within the specified root directory with the given name and permissions.
 	Mkdir(ctx context.Context, rootDir string, name string, perm os.FileMode) error
 
@@ -45,6 +48,7 @@ type IHostFS interface {
 	// returning a handle, file size, and error.
 	FileOpen(ctx context.Context, path string, flag int, perm os.FileMode) (FileHandle, uint64, error)
 
+	// FileStat retrieves metadata about a file represented by the provided FileHandle. It returns file information or an error.
 	FileStat(ctx context.Context, handle FileHandle) (fs.FileInfo, error)
 
 	// FileSeek moves the file cursor to a new position as specified by offset and whence for the provided file handle.

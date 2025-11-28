@@ -259,6 +259,25 @@ func (c *HostServiceGRPCClient) FileClose(ctx context.Context, handle FileHandle
 	return nil
 }
 
+// FileTruncate truncates a remote file identified by the provided FileHandle to the specified size in bytes.
+func (c *HostServiceGRPCClient) FileTruncate(ctx context.Context, handle FileHandle, size int64) error {
+	ctx = addTracingIDsToContext(ctx, c.clientID, NewRequestID())
+	resp, err := c.client.FileTruncate(ctx, &hostservev1.FileTruncateRequest{
+		Handle: string(handle),
+		Size:   size,
+	})
+	if err != nil {
+		return &HostServiceError{Message: err.Error()}
+	}
+	if resp == nil {
+		return &HostServiceError{Message: "nil response from FileTruncate"}
+	}
+	if resp.Error != nil {
+		return &HostServiceError{Message: *resp.Error}
+	}
+	return nil
+}
+
 // FileReader provides a gRPC client-side implementation to read files in chunks via a streaming connection.
 func (c *HostServiceGRPCClient) FileReader(ctx context.Context, handle FileHandle, chunkSize uint32) (io.Reader, error) {
 	ctx = addTracingIDsToContext(ctx, c.clientID, NewRequestID())

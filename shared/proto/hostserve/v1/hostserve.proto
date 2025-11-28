@@ -51,6 +51,7 @@ service HostService {
   rpc FileSeek(FileSeekRequest) returns (FileSeekResponse);
   rpc FileSync(FileSyncRequest) returns (FileSyncResponse);
   rpc FileClose(FileCloseRequest) returns (FileCloseResponse);
+  rpc FileTruncate(FileTruncateRequest) returns (FileTruncateResponse);
 
   // FS - Streaming File Ops
   rpc FileReader(FileReadRequest) returns (stream FileReadResponse);
@@ -226,6 +227,15 @@ message FileCloseResponse {
   optional string error = 1;
 }
 
+message FileTruncateRequest {
+  string handle = 1;
+  int64 size = 2;
+}
+
+message FileTruncateResponse {
+  optional string error = 1;
+}
+
 message FileReadRequest {
   string handle = 1;
   uint32 chunk_size = 2;
@@ -256,7 +266,7 @@ message GetEnvRequest {
 
 message GetEnvResponse {
   string val = 1;
-  optional string error =2;
+  optional string error = 2;
 }
 
 message TempDirRequest {

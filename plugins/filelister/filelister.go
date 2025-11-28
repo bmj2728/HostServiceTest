@@ -92,7 +92,6 @@ func (f *FileLister) ListFiles(dir string) ([]string, error) {
 		hclog.Default().Error("Failed to open file via host service", "dir", dir, "err", err)
 	}
 	hclog.Default().Info("Opened file", "handle", fh, "size", sz)
-
 	// Close File called in a closure for deferment
 	defer func(hostServiceClient hostserve.IHostServices, ctx context.Context, handle hostserve.FileHandle) {
 		err := hostServiceClient.FileClose(ctx, handle)
@@ -156,6 +155,11 @@ func (f *FileLister) ListFiles(dir string) ([]string, error) {
 	err = f.hostServiceClient.FileSync(ctx, fh)
 	if err != nil {
 		hclog.Default().Error("Failed to sync file", "err", err)
+	}
+
+	err = f.hostServiceClient.FileTruncate(ctx, retrieved, 0)
+	if err != nil {
+		hclog.Default().Error("Failed to truncate file", "err", err)
 	}
 
 	// oops we missed closing the file handle -- this showcases the cleanup server-side

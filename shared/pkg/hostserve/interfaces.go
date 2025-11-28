@@ -55,10 +55,15 @@ type IHostFS interface {
 	// Returns the new cursor offset from the start of the file or an error if the operation fails.
 	FileSeek(ctx context.Context, handle FileHandle, offset int64, whence int) (int64, error)
 
+	// FileSync synchronizes the state of a file associated with the given handle to the storage device.
 	FileSync(ctx context.Context, handle FileHandle) error
 
 	// FileClose closes an open file identified by the provided FileHandle. Returns an error if the operation fails.
 	FileClose(ctx context.Context, handle FileHandle) error
+
+	// FileTruncate truncates the file represented by the given handle to the specified size in bytes.
+	// Returns an error if truncation fails, the size is invalid, or the handle is not valid.
+	FileTruncate(ctx context.Context, handle FileHandle, size int64) error
 
 	// FileReader reads data from an open file, identified by the provided FileHandle, in chunks of the specified size.
 	FileReader(ctx context.Context, handle FileHandle, chunkSize uint32) (io.Reader, error)

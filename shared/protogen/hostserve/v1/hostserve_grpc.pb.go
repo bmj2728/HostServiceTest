@@ -33,6 +33,7 @@ const (
 	HostService_FileSeek_FullMethodName       = "/hostserve.v1.HostService/FileSeek"
 	HostService_FileSync_FullMethodName       = "/hostserve.v1.HostService/FileSync"
 	HostService_FileClose_FullMethodName      = "/hostserve.v1.HostService/FileClose"
+	HostService_FileTruncate_FullMethodName   = "/hostserve.v1.HostService/FileTruncate"
 	HostService_FileReader_FullMethodName     = "/hostserve.v1.HostService/FileReader"
 	HostService_FileWriter_FullMethodName     = "/hostserve.v1.HostService/FileWriter"
 	HostService_GetEnv_FullMethodName         = "/hostserve.v1.HostService/GetEnv"
@@ -65,6 +66,7 @@ type HostServiceClient interface {
 	FileSeek(ctx context.Context, in *FileSeekRequest, opts ...grpc.CallOption) (*FileSeekResponse, error)
 	FileSync(ctx context.Context, in *FileSyncRequest, opts ...grpc.CallOption) (*FileSyncResponse, error)
 	FileClose(ctx context.Context, in *FileCloseRequest, opts ...grpc.CallOption) (*FileCloseResponse, error)
+	FileTruncate(ctx context.Context, in *FileTruncateRequest, opts ...grpc.CallOption) (*FileTruncateResponse, error)
 	// FS - Streaming File Ops
 	FileReader(ctx context.Context, in *FileReadRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[FileReadResponse], error)
 	FileWriter(ctx context.Context, opts ...grpc.CallOption) (grpc.ClientStreamingClient[FileWriteRequest, FileWriteResponse], error)
@@ -224,6 +226,16 @@ func (c *hostServiceClient) FileClose(ctx context.Context, in *FileCloseRequest,
 	return out, nil
 }
 
+func (c *hostServiceClient) FileTruncate(ctx context.Context, in *FileTruncateRequest, opts ...grpc.CallOption) (*FileTruncateResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(FileTruncateResponse)
+	err := c.cc.Invoke(ctx, HostService_FileTruncate_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *hostServiceClient) FileReader(ctx context.Context, in *FileReadRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[FileReadResponse], error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	stream, err := c.cc.NewStream(ctx, &HostService_ServiceDesc.Streams[0], HostService_FileReader_FullMethodName, cOpts...)
@@ -329,6 +341,7 @@ type HostServiceServer interface {
 	FileSeek(context.Context, *FileSeekRequest) (*FileSeekResponse, error)
 	FileSync(context.Context, *FileSyncRequest) (*FileSyncResponse, error)
 	FileClose(context.Context, *FileCloseRequest) (*FileCloseResponse, error)
+	FileTruncate(context.Context, *FileTruncateRequest) (*FileTruncateResponse, error)
 	// FS - Streaming File Ops
 	FileReader(*FileReadRequest, grpc.ServerStreamingServer[FileReadResponse]) error
 	FileWriter(grpc.ClientStreamingServer[FileWriteRequest, FileWriteResponse]) error
@@ -389,6 +402,9 @@ func (UnimplementedHostServiceServer) FileSync(context.Context, *FileSyncRequest
 }
 func (UnimplementedHostServiceServer) FileClose(context.Context, *FileCloseRequest) (*FileCloseResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method FileClose not implemented")
+}
+func (UnimplementedHostServiceServer) FileTruncate(context.Context, *FileTruncateRequest) (*FileTruncateResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method FileTruncate not implemented")
 }
 func (UnimplementedHostServiceServer) FileReader(*FileReadRequest, grpc.ServerStreamingServer[FileReadResponse]) error {
 	return status.Errorf(codes.Unimplemented, "method FileReader not implemented")
@@ -684,6 +700,24 @@ func _HostService_FileClose_Handler(srv interface{}, ctx context.Context, dec fu
 	return interceptor(ctx, in, info, handler)
 }
 
+func _HostService_FileTruncate_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(FileTruncateRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(HostServiceServer).FileTruncate(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: HostService_FileTruncate_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(HostServiceServer).FileTruncate(ctx, req.(*FileTruncateRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _HostService_FileReader_Handler(srv interface{}, stream grpc.ServerStream) error {
 	m := new(FileReadRequest)
 	if err := stream.RecvMsg(m); err != nil {
@@ -854,6 +888,10 @@ var HostService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "FileClose",
 			Handler:    _HostService_FileClose_Handler,
+		},
+		{
+			MethodName: "FileTruncate",
+			Handler:    _HostService_FileTruncate_Handler,
 		},
 		{
 			MethodName: "GetEnv",

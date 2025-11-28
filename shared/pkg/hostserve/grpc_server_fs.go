@@ -297,12 +297,14 @@ func (s *HostServiceGRPCServer) MkdirTemp(ctx context.Context, request *hostserv
 // FileCreate is a method that processes a request to create a new file with the specified path and returns its handle.
 func (s *HostServiceGRPCServer) FileCreate(ctx context.Context,
 	request *hostservev1.FileCreateRequest) (response *hostservev1.FileCreateResponse, err error) {
+
 	ctx, clientID, reqID, owner, err := s.processRequestContext(ctx)
 	if err != nil {
 		hclog.Default().Info("FileCreate bad request from client",
 			ctxClientIDKey, clientID,
 			ctxClientOwner, owner,
 			ctxHostRequestIDKey, reqID,
+			"path", request.Path,
 			"error", err,
 		)
 		return &hostservev1.FileCreateResponse{
@@ -314,7 +316,8 @@ func (s *HostServiceGRPCServer) FileCreate(ctx context.Context,
 		ctxClientIDKey, clientID,
 		ctxClientOwner, owner,
 		ctxHostRequestIDKey, reqID,
-		"path", request.Path)
+		"path", request.Path,
+	)
 
 	fh, err := s.Impl.FileCreate(ctx, request.Path)
 	if err != nil {
@@ -367,12 +370,18 @@ func (s *HostServiceGRPCServer) FileOpen(ctx context.Context,
 	request *hostservev1.FileOpenRequest,
 ) (*hostservev1.FileOpenResponse, error) {
 
+	ap, err := filepath.Abs(request.Path)
+	if err != nil {
+		ap = request.Path
+	}
+
 	ctx, clientID, reqID, owner, err := s.processRequestContext(ctx)
 	if err != nil {
 		hclog.Default().Info("FileOpen bad request from client",
 			ctxClientIDKey, clientID,
 			ctxClientOwner, owner,
 			ctxHostRequestIDKey, reqID,
+			"path", ap,
 			"error", err,
 		)
 		return &hostservev1.FileOpenResponse{
@@ -380,16 +389,13 @@ func (s *HostServiceGRPCServer) FileOpen(ctx context.Context,
 		}, nil
 	}
 
-	ap, err := filepath.Abs(request.Path)
-	if err != nil {
-		ap = request.Path
-	}
-
 	hclog.Default().Info("FileOpen request from client",
 		ctxClientIDKey, clientID,
 		ctxClientOwner, owner,
 		ctxHostRequestIDKey, reqID,
-		"path", ap)
+		"path", ap,
+		"mode", request.Mode,
+		"perm", request.Perm)
 
 	fh, size, err := s.Impl.FileOpen(ctx, request.Path, openFileModeToFlags(request.Mode), os.FileMode(request.Perm))
 	if err != nil {
@@ -407,12 +413,16 @@ func (s *HostServiceGRPCServer) FileOpen(ctx context.Context,
 }
 
 func (s *HostServiceGRPCServer) FileStat(ctx context.Context, request *hostservev1.FileStatRequest) (*hostservev1.FileStatResponse, error) {
+
+	fh := FileHandle(request.Handle)
+
 	ctx, clientID, reqID, owner, err := s.processRequestContext(ctx)
 	if err != nil {
-		hclog.Default().Info("FileSeek bad request from client",
+		hclog.Default().Info("FileStat bad request from client",
 			ctxClientIDKey, clientID,
 			ctxClientOwner, owner,
 			ctxHostRequestIDKey, reqID,
+			"handle", fh,
 			"error", err,
 		)
 		return &hostservev1.FileStatResponse{
@@ -420,9 +430,7 @@ func (s *HostServiceGRPCServer) FileStat(ctx context.Context, request *hostserve
 		}, nil
 	}
 
-	fh := FileHandle(request.Handle)
-
-	hclog.Default().Info("FileSeek request from client",
+	hclog.Default().Info("FileStat request from client",
 		ctxClientIDKey, clientID,
 		ctxClientOwner, owner,
 		ctxHostRequestIDKey, reqID,
@@ -440,21 +448,20 @@ func (s *HostServiceGRPCServer) FileStat(ctx context.Context, request *hostserve
 
 // FileSeek handles a file seek operation by delegating the request to the implementation and returns the new offset.
 func (s *HostServiceGRPCServer) FileSeek(ctx context.Context, request *hostservev1.FileSeekRequest) (*hostservev1.FileSeekResponse, error) {
-
+	fh := FileHandle(request.Handle)
 	ctx, clientID, reqID, owner, err := s.processRequestContext(ctx)
 	if err != nil {
 		hclog.Default().Info("FileSeek bad request from client",
 			ctxClientIDKey, clientID,
 			ctxClientOwner, owner,
 			ctxHostRequestIDKey, reqID,
+			"handle", fh,
 			"error", err,
 		)
 		return &hostservev1.FileSeekResponse{
 			Error: proto.String(err.Error()),
 		}, nil
 	}
-
-	fh := FileHandle(request.Handle)
 
 	hclog.Default().Info("FileSeek request from client",
 		ctxClientIDKey, clientID,
@@ -475,13 +482,18 @@ func (s *HostServiceGRPCServer) FileSeek(ctx context.Context, request *hostserve
 	return &hostservev1.FileSeekResponse{NewOffset: uint64(newOffset)}, nil
 }
 
+// FileSync synchronizes a file based on the given file handle in the request and returns the operation result.
 func (s *HostServiceGRPCServer) FileSync(ctx context.Context, request *hostservev1.FileSyncRequest) (*hostservev1.FileSyncResponse, error) {
+
+	fh := FileHandle(request.Handle)
+
 	ctx, clientID, reqID, owner, err := s.processRequestContext(ctx)
 	if err != nil {
 		hclog.Default().Info("FileSync bad request from client",
 			ctxClientIDKey, clientID,
 			ctxClientOwner, owner,
 			ctxHostRequestIDKey, reqID,
+			"handle", fh,
 			"error", err,
 		)
 		return &hostservev1.FileSyncResponse{
@@ -489,7 +501,6 @@ func (s *HostServiceGRPCServer) FileSync(ctx context.Context, request *hostserve
 		}, nil
 	}
 
-	fh := FileHandle(request.Handle)
 	hclog.Default().Info("FileSync request from client",
 		ctxClientIDKey, clientID,
 		ctxClientOwner, owner,
@@ -510,12 +521,15 @@ func (s *HostServiceGRPCServer) FileClose(ctx context.Context,
 	request *hostservev1.FileCloseRequest,
 ) (*hostservev1.FileCloseResponse, error) {
 
+	fh := FileHandle(request.Handle)
+
 	ctx, clientID, reqID, owner, err := s.processRequestContext(ctx)
 	if err != nil {
 		hclog.Default().Info("FileClose bad request from client",
 			ctxClientIDKey, clientID,
 			ctxClientOwner, owner,
 			ctxHostRequestIDKey, reqID,
+			"handle", fh,
 			"error", err,
 		)
 		return &hostservev1.FileCloseResponse{
@@ -523,7 +537,6 @@ func (s *HostServiceGRPCServer) FileClose(ctx context.Context,
 		}, nil
 	}
 
-	fh := FileHandle(request.Handle)
 	hclog.Default().Info("FileClose request from client",
 		ctxClientIDKey, clientID,
 		ctxClientOwner, owner,
@@ -534,6 +547,37 @@ func (s *HostServiceGRPCServer) FileClose(ctx context.Context,
 		return &hostservev1.FileCloseResponse{Error: proto.String(err.Error())}, nil
 	}
 	return &hostservev1.FileCloseResponse{}, nil
+}
+
+func (s *HostServiceGRPCServer) FileTruncate(ctx context.Context, request *hostservev1.FileTruncateRequest) (*hostservev1.FileTruncateResponse, error) {
+
+	fh := FileHandle(request.Handle)
+	ctx, clientID, reqID, owner, err := s.processRequestContext(ctx)
+	if err != nil {
+		hclog.Default().Info("FileTruncate bad request from client",
+			ctxClientIDKey, clientID,
+			ctxClientOwner, owner,
+			ctxHostRequestIDKey, reqID,
+			"handle", fh,
+			"error", err,
+		)
+		return &hostservev1.FileTruncateResponse{
+			Error: proto.String(err.Error()),
+		}, nil
+	}
+
+	hclog.Default().Info("FileTruncate request from client",
+		ctxClientIDKey, clientID,
+		ctxClientOwner, owner,
+		ctxHostRequestIDKey, reqID,
+		"handle", fh)
+	err = s.Impl.FileTruncate(ctx, fh, request.Size)
+	if err != nil {
+		return &hostservev1.FileTruncateResponse{
+			Error: proto.String(err.Error()),
+		}, nil
+	}
+	return &hostservev1.FileTruncateResponse{}, nil
 }
 
 // FileReader streams chunks of a file to the client based on the given file handle and chunk size in the request.

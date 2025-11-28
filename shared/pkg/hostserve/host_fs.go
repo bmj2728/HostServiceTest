@@ -283,6 +283,7 @@ func (hf *HostFS) FileSync(ctx context.Context, handle FileHandle) error {
 // Returns an error if the handle does not exist, the file cannot be closed, or the file reference cannot be removed.
 func (hf *HostFS) FileClose(ctx context.Context, handle FileHandle) error {
 	clientID := getClientIDFromContext(ctx)
+	hclog.Default().Debug("Placeholder Pseudo Cap Check...", "clientID", clientID, "handle", handle)
 	files, err := hf.GetOpenFiles().GetFilesByClient(clientID)
 	if err != nil {
 		return err
@@ -300,6 +301,23 @@ func (hf *HostFS) FileClose(ctx context.Context, handle FileHandle) error {
 		return err
 	}
 	return nil
+}
+
+// FileTruncate adjusts the size of a file to the specified length, truncating or extending it as required.
+// ctx is the context for carrying deadlines, cancellation signals, and other request-scoped values.
+// handle is the identifier for the open file to be truncated.
+// size specifies the new size of the file in bytes.
+// Returns an error if the operation fails, such as if the file handle is invalid or other I/O issues occur.
+func (hf *HostFS) FileTruncate(ctx context.Context, handle FileHandle, size int64) error {
+	clientID := getClientIDFromContext(ctx)
+	hclog.Default().Debug("Placeholder Pseudo Cap Check...", "clientID", clientID, "handle", handle)
+
+	file, err := hf.retrieveOpenFile(ctx, handle)
+	if err != nil {
+		return err
+	}
+
+	return file.Truncate(size)
 }
 
 // FileReader returns a reader for the specified file handle, typically os.File/fs.File.

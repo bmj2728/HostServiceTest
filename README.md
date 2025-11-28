@@ -155,6 +155,7 @@ This is the foundation for building plugin systems users can trust.
 
 **Latest improvements to the architecture:**
 
+- **Convenience stat method**: Added `Stat` method as a simpler alternative to FileOpen -> FileStat -> FileClose pattern for retrieving file information when you just need metadata
 - **Truly temporary files with automated cleanup**: Added `MkdirTemp` and `FileCreateTemp` methods that create temporary directories and files with server-side lifecycle tracking for guaranteed cleanup when connections close - unlike stdlib temps that persist until manual deletion
 - **File positioning**: Implemented `FileSeek` method for standard file seeking operations (similar to `os.File.Seek`)
 - **File information retrieval**: Added `FileStat` method to retrieve file metadata (size, mode, modification time) for open file handles - returns an object nearly identical to `fs.FileInfo`, but always returns nil for `Sys()`
@@ -240,6 +241,7 @@ This demo includes:
 - `ReadDir(path)`: Read directory contents (unary RPC)
 - `ReadFile(path)`: Read file contents (unary RPC)
 - `WriteFile(path, data, perm)`: Write file (unary RPC)
+- `Stat(path)`: Get file information (size, mode, modification time) for a path - convenience method that doesn't require file handle operations
 - `Mkdir(path, perm)`: Create a single directory (unary RPC)
 - `MkdirAll(path, perm)`: Create directory and all necessary parents (unary RPC)
 - `MkdirTemp(root_dir, pattern)`: Create temporary directory with server-side tracking for automatic cleanup (unary RPC)
@@ -375,6 +377,13 @@ data, err := hostServiceClient.ReadFile(ctx, "/path/to/file")
 // Write entire file at once
 err = hostServiceClient.WriteFile(ctx, "/path/to/file", data, 0644)
 
+// Get file information without opening a handle (convenience method)
+fileInfo, err := hostServiceClient.Stat(ctx, "/path/to/file")
+if err != nil {
+    log.Fatal(err)
+}
+log.Printf("File size: %d, Mode: %v, ModTime: %v", fileInfo.Size(), fileInfo.Mode(), fileInfo.ModTime())
+
 // Create a single directory
 err = hostServiceClient.Mkdir(ctx, "/path/to/newdir", 0755)
 
@@ -422,6 +431,7 @@ log.Printf("New file position: %d", newOffset)
 // Get file information (metadata) for the open file
 // Returns an fs.FileInfo-compatible object (Name, Size, Mode, ModTime, IsDir)
 // Note: Sys() always returns nil for remote file handles
+// TIP: If you only need file info and don't need to read/write, use Stat(path) instead
 fileInfo, err := hostServiceClient.FileStat(ctx, handle)
 if err != nil {
     log.Fatal(err)

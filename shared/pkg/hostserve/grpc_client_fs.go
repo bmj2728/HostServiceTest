@@ -223,14 +223,38 @@ func (c *HostServiceGRPCClient) FileSeek(ctx context.Context, handle FileHandle,
 	return int64(resp.NewOffset), nil
 }
 
-// FileClose closes a file associated with the provided handle and releases any resources tied to it.
-func (c *HostServiceGRPCClient) FileClose(ctx context.Context, handle FileHandle) error {
+// FileSync synchronizes the state of a given file handle with the host service over a gRPC connection.
+func (c *HostServiceGRPCClient) FileSync(ctx context.Context, handle FileHandle) error {
 	ctx = addTracingIDsToContext(ctx, c.clientID, NewRequestID())
-	_, err := c.client.FileClose(ctx, &hostservev1.FileCloseRequest{
+	resp, err := c.client.FileSync(ctx, &hostservev1.FileSyncRequest{
 		Handle: string(handle),
 	})
 	if err != nil {
 		return &HostServiceError{Message: err.Error()}
+	}
+	if resp == nil {
+		return &HostServiceError{Message: "nil response from FileSync"}
+	}
+	if resp.Error != nil {
+		return &HostServiceError{Message: *resp.Error}
+	}
+	return nil
+}
+
+// FileClose closes a file associated with the provided handle and releases any resources tied to it.
+func (c *HostServiceGRPCClient) FileClose(ctx context.Context, handle FileHandle) error {
+	ctx = addTracingIDsToContext(ctx, c.clientID, NewRequestID())
+	resp, err := c.client.FileClose(ctx, &hostservev1.FileCloseRequest{
+		Handle: string(handle),
+	})
+	if err != nil {
+		return &HostServiceError{Message: err.Error()}
+	}
+	if resp == nil {
+		return &HostServiceError{Message: "nil response from FileClose"}
+	}
+	if resp.Error != nil {
+		return &HostServiceError{Message: *resp.Error}
 	}
 	return nil
 }

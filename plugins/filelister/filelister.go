@@ -148,6 +148,15 @@ func (f *FileLister) ListFiles(dir string) ([]string, error) {
 		hclog.Default().Error("Failed to write to file", "err", err)
 	}
 	hclog.Default().Info("Wrote to file", "bytes", b)
+	err = writer.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	err = f.hostServiceClient.FileSync(ctx, fh)
+	if err != nil {
+		hclog.Default().Error("Failed to sync file", "err", err)
+	}
 
 	// oops we missed closing the file handle -- this showcases the cleanup server-side
 	//err = f.hostServiceClient.FileClose(ctx, retrieved)

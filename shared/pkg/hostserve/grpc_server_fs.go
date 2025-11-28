@@ -475,6 +475,34 @@ func (s *HostServiceGRPCServer) FileSeek(ctx context.Context, request *hostserve
 	return &hostservev1.FileSeekResponse{NewOffset: uint64(newOffset)}, nil
 }
 
+func (s *HostServiceGRPCServer) FileSync(ctx context.Context, request *hostservev1.FileSyncRequest) (*hostservev1.FileSyncResponse, error) {
+	ctx, clientID, reqID, owner, err := s.processRequestContext(ctx)
+	if err != nil {
+		hclog.Default().Info("FileSync bad request from client",
+			ctxClientIDKey, clientID,
+			ctxClientOwner, owner,
+			ctxHostRequestIDKey, reqID,
+			"error", err,
+		)
+		return &hostservev1.FileSyncResponse{
+			Error: proto.String(err.Error()),
+		}, nil
+	}
+
+	fh := FileHandle(request.Handle)
+	hclog.Default().Info("FileSync request from client",
+		ctxClientIDKey, clientID,
+		ctxClientOwner, owner,
+		ctxHostRequestIDKey, reqID,
+		"handle", fh)
+
+	err = s.Impl.FileSync(ctx, fh)
+	if err != nil {
+		return &hostservev1.FileSyncResponse{Error: proto.String(err.Error())}, nil
+	}
+	return &hostservev1.FileSyncResponse{}, nil
+}
+
 // FileClose handles the request to close a file identified by its handle sent by the client over gRPC.
 // It verifies the request context, extracts relevant metadata, and invokes the implementation's FileClose method.
 // Returns a FileCloseResponse containing an error message if the operation fails or an empty response on success.

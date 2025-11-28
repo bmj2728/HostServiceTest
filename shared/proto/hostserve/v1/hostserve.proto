@@ -49,6 +49,7 @@ service HostService {
   rpc FileOpen(FileOpenRequest) returns (FileOpenResponse);
   rpc FileStat(FileStatRequest) returns (FileStatResponse);
   rpc FileSeek(FileSeekRequest) returns (FileSeekResponse);
+  rpc FileSync(FileSyncRequest) returns (FileSyncResponse);
   rpc FileClose(FileCloseRequest) returns (FileCloseResponse);
 
   // FS - Streaming File Ops
@@ -207,6 +208,14 @@ message FileSeekRequest {
 message FileSeekResponse {
   uint64 new_offset = 1;
   optional string error = 2;
+}
+
+message FileSyncRequest {
+  string handle = 1;
+}
+
+message FileSyncResponse {
+  optional string error = 1;
 }
 
 message FileCloseRequest {

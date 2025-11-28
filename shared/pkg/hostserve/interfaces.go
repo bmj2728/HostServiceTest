@@ -55,6 +55,8 @@ type IHostFS interface {
 	// Returns the new cursor offset from the start of the file or an error if the operation fails.
 	FileSeek(ctx context.Context, handle FileHandle, offset int64, whence int) (int64, error)
 
+	FileSync(ctx context.Context, handle FileHandle) error
+
 	// FileClose closes an open file identified by the provided FileHandle. Returns an error if the operation fails.
 	FileClose(ctx context.Context, handle FileHandle) error
 

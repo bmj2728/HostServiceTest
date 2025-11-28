@@ -31,6 +31,7 @@ const (
 	HostService_FileOpen_FullMethodName       = "/hostserve.v1.HostService/FileOpen"
 	HostService_FileStat_FullMethodName       = "/hostserve.v1.HostService/FileStat"
 	HostService_FileSeek_FullMethodName       = "/hostserve.v1.HostService/FileSeek"
+	HostService_FileSync_FullMethodName       = "/hostserve.v1.HostService/FileSync"
 	HostService_FileClose_FullMethodName      = "/hostserve.v1.HostService/FileClose"
 	HostService_FileReader_FullMethodName     = "/hostserve.v1.HostService/FileReader"
 	HostService_FileWriter_FullMethodName     = "/hostserve.v1.HostService/FileWriter"
@@ -62,6 +63,7 @@ type HostServiceClient interface {
 	FileOpen(ctx context.Context, in *FileOpenRequest, opts ...grpc.CallOption) (*FileOpenResponse, error)
 	FileStat(ctx context.Context, in *FileStatRequest, opts ...grpc.CallOption) (*FileStatResponse, error)
 	FileSeek(ctx context.Context, in *FileSeekRequest, opts ...grpc.CallOption) (*FileSeekResponse, error)
+	FileSync(ctx context.Context, in *FileSyncRequest, opts ...grpc.CallOption) (*FileSyncResponse, error)
 	FileClose(ctx context.Context, in *FileCloseRequest, opts ...grpc.CallOption) (*FileCloseResponse, error)
 	// FS - Streaming File Ops
 	FileReader(ctx context.Context, in *FileReadRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[FileReadResponse], error)
@@ -202,6 +204,16 @@ func (c *hostServiceClient) FileSeek(ctx context.Context, in *FileSeekRequest, o
 	return out, nil
 }
 
+func (c *hostServiceClient) FileSync(ctx context.Context, in *FileSyncRequest, opts ...grpc.CallOption) (*FileSyncResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(FileSyncResponse)
+	err := c.cc.Invoke(ctx, HostService_FileSync_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *hostServiceClient) FileClose(ctx context.Context, in *FileCloseRequest, opts ...grpc.CallOption) (*FileCloseResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(FileCloseResponse)
@@ -315,6 +327,7 @@ type HostServiceServer interface {
 	FileOpen(context.Context, *FileOpenRequest) (*FileOpenResponse, error)
 	FileStat(context.Context, *FileStatRequest) (*FileStatResponse, error)
 	FileSeek(context.Context, *FileSeekRequest) (*FileSeekResponse, error)
+	FileSync(context.Context, *FileSyncRequest) (*FileSyncResponse, error)
 	FileClose(context.Context, *FileCloseRequest) (*FileCloseResponse, error)
 	// FS - Streaming File Ops
 	FileReader(*FileReadRequest, grpc.ServerStreamingServer[FileReadResponse]) error
@@ -370,6 +383,9 @@ func (UnimplementedHostServiceServer) FileStat(context.Context, *FileStatRequest
 }
 func (UnimplementedHostServiceServer) FileSeek(context.Context, *FileSeekRequest) (*FileSeekResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method FileSeek not implemented")
+}
+func (UnimplementedHostServiceServer) FileSync(context.Context, *FileSyncRequest) (*FileSyncResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method FileSync not implemented")
 }
 func (UnimplementedHostServiceServer) FileClose(context.Context, *FileCloseRequest) (*FileCloseResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method FileClose not implemented")
@@ -632,6 +648,24 @@ func _HostService_FileSeek_Handler(srv interface{}, ctx context.Context, dec fun
 	return interceptor(ctx, in, info, handler)
 }
 
+func _HostService_FileSync_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(FileSyncRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(HostServiceServer).FileSync(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: HostService_FileSync_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(HostServiceServer).FileSync(ctx, req.(*FileSyncRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _HostService_FileClose_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(FileCloseRequest)
 	if err := dec(in); err != nil {
@@ -812,6 +846,10 @@ var HostService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "FileSeek",
 			Handler:    _HostService_FileSeek_Handler,
+		},
+		{
+			MethodName: "FileSync",
+			Handler:    _HostService_FileSync_Handler,
 		},
 		{
 			MethodName: "FileClose",

@@ -266,6 +266,19 @@ func (hf *HostFS) FileSeek(ctx context.Context, handle FileHandle, offset int64,
 	return file.Seek(offset, whence)
 }
 
+// FileSync ensures the file associated with the given FileHandle is synchronized with storage.
+// It retrieves the file from the open file handle and calls its Sync method to persist data to storage.
+// Returns an error if the file retrieval or synchronization fails.
+func (hf *HostFS) FileSync(ctx context.Context, handle FileHandle) error {
+	clientID := getClientIDFromContext(ctx)
+	hclog.Default().Debug("Placeholder Pseudo Cap Check...", "clientID", clientID, "handle", handle)
+	file, err := hf.retrieveOpenFile(ctx, handle)
+	if err != nil {
+		return err
+	}
+	return file.Sync()
+}
+
 // FileClose closes an open file associated with the given file handle for a specific client and removes its reference.
 // Returns an error if the handle does not exist, the file cannot be closed, or the file reference cannot be removed.
 func (hf *HostFS) FileClose(ctx context.Context, handle FileHandle) error {

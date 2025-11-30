@@ -27,7 +27,7 @@ type FileLister struct {
 	connMutex         sync.Mutex
 }
 
-func (f *FileLister) ListFiles(dir string) ([]string, error) {
+func (f *FileLister) ListFiles(rootDir, path string) ([]string, error) {
 	ctx := context.Background() //this is needed for the host service calls
 
 	// simple env check
@@ -59,12 +59,11 @@ func (f *FileLister) ListFiles(dir string) ([]string, error) {
 		hclog.Default().Error("Failed to get user home dir", "err", err)
 	}
 	hclog.Default().Info("User home dir retrieved", "dir", uhd)
-	// TODO update lister interface and proto to take a rootDir parameter
+
 	// Read Dir
-	rootDir := "/home/brian/GolandProjects/HostServiceTest" // change me when plugin interface is updated, short-term will write local for tests
-	dirEntries, err := f.hostServiceClient.ReadDir(ctx, rootDir, dir)
+	dirEntries, err := f.hostServiceClient.ReadDir(ctx, rootDir, path)
 	if err != nil {
-		hclog.Default().Error("Failed to read directory via host service", "dir", dir, "err", err)
+		hclog.Default().Error("Failed to read directory via host service", "root", rootDir, "path", path, "err", err)
 		return nil, err
 	}
 
@@ -82,15 +81,15 @@ func (f *FileLister) ListFiles(dir string) ([]string, error) {
 	}
 
 	// Write file
-	err = f.hostServiceClient.WriteFile(ctx, filepath.Join(dir, "listed_files.txt"), buf.Bytes(), 0644)
+	err = f.hostServiceClient.WriteFile(ctx, filepath.Join(rootDir, "listed_files.txt"), buf.Bytes(), 0644)
 	if err != nil {
-		hclog.Default().Error("Failed to write file via host service", "dir", dir, "err", err)
+		hclog.Default().Error("Failed to write file via host service", "dir", rootDir, "err", err)
 	}
 
 	// Open file
-	fh, sz, err := f.hostServiceClient.FileOpen(ctx, filepath.Join(dir, "listed_files.txt"), os.O_RDONLY, 0644)
+	fh, sz, err := f.hostServiceClient.FileOpen(ctx, filepath.Join(rootDir, "listed_files.txt"), os.O_RDONLY, 0644)
 	if err != nil {
-		hclog.Default().Error("Failed to open file via host service", "dir", dir, "err", err)
+		hclog.Default().Error("Failed to open file via host service", "dir", rootDir, "err", err)
 	}
 	hclog.Default().Info("Opened file", "handle", fh, "size", sz)
 	// Close File called in a closure for deferment
@@ -102,17 +101,17 @@ func (f *FileLister) ListFiles(dir string) ([]string, error) {
 	}(f.hostServiceClient, ctx, fh)
 
 	//store the file handle
-	f.fileHandles[filepath.Join(dir, "listed_files.txt")] = fh
+	f.fileHandles[filepath.Join(rootDir, "listed_files.txt")] = fh
 
 	stream, err := f.hostServiceClient.FileReader(ctx, fh, 64*1024)
 	if err != nil {
-		hclog.Default().Error("FileRead failed to read file via host service", "dir", dir, "err", err)
+		hclog.Default().Error("FileRead failed to read file via host service", "root", rootDir, "err", err)
 	}
 	sb := make([]byte, 10)
 	for {
 		n, err := stream.Read(sb)
 		if err != nil && err != io.EOF {
-			hclog.Default().Error("FileRead failed to read file via host service", "dir", dir, "err", err)
+			hclog.Default().Error("FileRead failed to read file via host service", "root", rootDir, "err", err)
 			break
 		}
 		if n == 0 && err == io.EOF {
@@ -122,11 +121,11 @@ func (f *FileLister) ListFiles(dir string) ([]string, error) {
 		hclog.Default().Info("FileRead read file", "read", n)
 	}
 
-	newFileName := filepath.Join(dir, "testing_open_create.txt")
+	newFileName := filepath.Join(rootDir, "testing_open_create.txt")
 
 	fh2, sz2, err := f.hostServiceClient.FileOpen(ctx, newFileName, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0644)
 	if err != nil {
-		hclog.Default().Error("Failed to open file via host service", "dir", dir, "err", err)
+		hclog.Default().Error("Failed to open file via host service", "root", rootDir, "err", err)
 	}
 	hclog.Default().Info("Opened file", "handle", fh2, "size", sz2)
 

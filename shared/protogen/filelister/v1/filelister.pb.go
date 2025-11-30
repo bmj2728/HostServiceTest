@@ -24,8 +24,9 @@ const (
 
 type FileListRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Dir           string                 `protobuf:"bytes,1,opt,name=dir,proto3" json:"dir,omitempty"`
-	HostService   uint32                 `protobuf:"varint,2,opt,name=host_service,json=hostService,proto3" json:"host_service,omitempty"`
+	RootDir       string                 `protobuf:"bytes,1,opt,name=root_dir,json=rootDir,proto3" json:"root_dir,omitempty"`
+	Path          string                 `protobuf:"bytes,2,opt,name=path,proto3" json:"path,omitempty"`
+	HostService   uint32                 `protobuf:"varint,3,opt,name=host_service,json=hostService,proto3" json:"host_service,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -60,9 +61,16 @@ func (*FileListRequest) Descriptor() ([]byte, []int) {
 	return file_filelister_v1_filelister_proto_rawDescGZIP(), []int{0}
 }
 
-func (x *FileListRequest) GetDir() string {
+func (x *FileListRequest) GetRootDir() string {
 	if x != nil {
-		return x.Dir
+		return x.RootDir
+	}
+	return ""
+}
+
+func (x *FileListRequest) GetPath() string {
+	if x != nil {
+		return x.Path
 	}
 	return ""
 }
@@ -226,10 +234,11 @@ var File_filelister_v1_filelister_proto protoreflect.FileDescriptor
 
 const file_filelister_v1_filelister_proto_rawDesc = "" +
 	"\n" +
-	"\x1efilelister/v1/filelister.proto\x12\rfilelister.v1\x1a\x19google/protobuf/api.proto\"F\n" +
-	"\x0fFileListRequest\x12\x10\n" +
-	"\x03dir\x18\x01 \x01(\tR\x03dir\x12!\n" +
-	"\fhost_service\x18\x02 \x01(\rR\vhostService\"M\n" +
+	"\x1efilelister/v1/filelister.proto\x12\rfilelister.v1\x1a\x19google/protobuf/api.proto\"c\n" +
+	"\x0fFileListRequest\x12\x19\n" +
+	"\broot_dir\x18\x01 \x01(\tR\arootDir\x12\x12\n" +
+	"\x04path\x18\x02 \x01(\tR\x04path\x12!\n" +
+	"\fhost_service\x18\x03 \x01(\rR\vhostService\"M\n" +
 	"\x10FileListResponse\x12\x14\n" +
 	"\x05entry\x18\x01 \x03(\tR\x05entry\x12\x19\n" +
 	"\x05error\x18\x02 \x01(\tH\x00R\x05error\x88\x01\x01B\b\n" +

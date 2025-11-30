@@ -11,8 +11,9 @@ service FileLister {
 }
 
 message FileListRequest {
-  string dir = 1;
-  uint32 host_service = 2;
+  string root_dir = 1;
+  string path =2;
+  uint32 host_service = 3;
 }
 
 message FileListResponse {

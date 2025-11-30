@@ -29,7 +29,7 @@ type ColorLister struct {
 	connMutex         sync.Mutex
 }
 
-func (f *ColorLister) ListFiles(dir string) ([]string, error) {
+func (f *ColorLister) ListFiles(rootDir, path string) ([]string, error) {
 	ctx := context.Background()
 
 	td, err := f.hostServiceClient.MkdirTemp(ctx, ".", "ng-*-test")
@@ -44,13 +44,9 @@ func (f *ColorLister) ListFiles(dir string) ([]string, error) {
 	}
 	hclog.Default().Info("Created temp file", "file", tf)
 
-	//uses host to read dir vs. using os.ReadDir(dir) or fs.ReadDir(fs, dir)
-	// TODO update lister interface and proto to take a rootDir parameter
-	// Read Dir
-	rootDir := "/home/brian/GolandProjects/HostServiceTest" // change me when plugin interface is updated, short-term will write local for tests
-	dirEntries, err := f.hostServiceClient.ReadDir(ctx, rootDir, dir)
+	dirEntries, err := f.hostServiceClient.ReadDir(ctx, rootDir, path)
 	if err != nil {
-		hclog.Default().Error("Failed to read directory via host service", "dir", dir, "err", err)
+		hclog.Default().Error("Failed to read directory via host service", "root", rootDir, "path", path, "err", err)
 		return nil, err
 	}
 
@@ -59,9 +55,9 @@ func (f *ColorLister) ListFiles(dir string) ([]string, error) {
 		if entry.IsDir() {
 			entries = append(entries, dirFormat.Wrap(entry.Name(), true))
 		} else {
-			data, err := f.hostServiceClient.ReadFile(ctx, filepath.Join(dir, entry.Name()))
+			data, err := f.hostServiceClient.ReadFile(ctx, filepath.Join(rootDir, entry.Name()))
 			if err != nil {
-				hclog.Default().Error("Failed to read file via host service", "dir", dir,
+				hclog.Default().Error("Failed to read file via host service", "root", rootDir, "path", path,
 					"file", entry.Name(), "err", err)
 			}
 			contents := len(string(data))
@@ -69,21 +65,21 @@ func (f *ColorLister) ListFiles(dir string) ([]string, error) {
 		}
 	}
 
-	err = f.hostServiceClient.Mkdir(ctx, dir, "created_dir", 0755)
+	err = f.hostServiceClient.Mkdir(ctx, rootDir, "created_dir", 0755)
 	if err != nil {
-		hclog.Default().Error("Failed to create directory via host service", "dir", dir, "err", err)
+		hclog.Default().Error("Failed to create directory via host service", "root", rootDir, "err", err)
 		return nil, err
 	}
 
-	err = f.hostServiceClient.MkdirAll(ctx, dir, "nested/dir", 0755)
+	err = f.hostServiceClient.MkdirAll(ctx, rootDir, "nested/dir", 0755)
 	if err != nil {
-		hclog.Default().Error("Failed to create directory via host service", "dir", filepath.Join(dir, "nested/dir"), "err", err)
+		hclog.Default().Error("Failed to create directory via host service", "root", rootDir, "err", err)
 		return nil, err
 	}
 
-	fh, err := f.hostServiceClient.FileCreate(ctx, filepath.Join(dir, "nested/dir", "created_file.txt"))
+	fh, err := f.hostServiceClient.FileCreate(ctx, filepath.Join(rootDir, "nested/dir", "created_file.txt"))
 	if err != nil {
-		hclog.Default().Error("Failed to create file via host service", "dir", dir, "err", err)
+		hclog.Default().Error("Failed to create file via host service", "dir", rootDir, "err", err)
 		return nil, err
 	}
 	defer func(hostServiceClient hostserve.IHostServices, ctx context.Context, handle hostserve.FileHandle) {
@@ -95,21 +91,21 @@ func (f *ColorLister) ListFiles(dir string) ([]string, error) {
 
 	newOff, err := f.hostServiceClient.FileSeek(ctx, fh, 0, io.SeekStart)
 	if err != nil {
-		hclog.Default().Error("Failed to seek file via host service", "dir", dir, "err", err)
+		hclog.Default().Error("Failed to seek file via host service", "dir", rootDir, "err", err)
 		return nil, err
 	}
 	hclog.Default().Info("File seeked", "offset", newOff)
 
 	rfi, err := f.hostServiceClient.FileStat(ctx, fh)
 	if err != nil {
-		hclog.Default().Error("Failed to stat file via host service", "dir", dir, "err", err)
+		hclog.Default().Error("Failed to stat file via host service", "dir", rootDir, "err", err)
 		return nil, err
 	}
 	hclog.Default().Info("File stat", "file", rfi.Name(), "size", rfi.Size(), "mode", rfi.Mode(), "modTime", rfi.ModTime(), "isDir", rfi.IsDir())
 
-	convRFI, err := f.hostServiceClient.Stat(ctx, "README.md")
+	convRFI, err := f.hostServiceClient.Stat(ctx, filepath.Join(rootDir, "README.md"))
 	if err != nil {
-		hclog.Default().Error("Failed to stat file via host service", "dir", dir, "err", err)
+		hclog.Default().Error("Failed to stat file via host service", "dir", rootDir, "err", err)
 	}
 	hclog.Default().Info("File stat", "file", convRFI.Name(), "size", convRFI.Size(), "mode", convRFI.Mode(), "modTime", convRFI.ModTime(), "isDir", convRFI.IsDir())
 

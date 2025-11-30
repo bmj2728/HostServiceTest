@@ -12,7 +12,7 @@ import (
 // FileLister is the business interface for file listing plugins.
 // This interface contains only the core business logic methods.
 type FileLister interface {
-	ListFiles(dir string) ([]string, error)
+	ListFiles(rootDir, path string) ([]string, error)
 }
 
 // FileListerGRPCPlugin is a grpc-based implementation of FileLister for plugin integration using hashicorp/go-plugin.

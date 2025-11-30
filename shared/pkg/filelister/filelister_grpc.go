@@ -22,7 +22,7 @@ type GRPCServer struct {
 func (s *GRPCServer) List(ctx context.Context,
 	request *filelisterv1.FileListRequest) (*filelisterv1.FileListResponse, error) {
 
-	entries, err := s.Impl.ListFiles(request.Dir)
+	entries, err := s.Impl.ListFiles(request.RootDir, request.Path)
 	if err != nil {
 		errMsg := err.Error()
 		return &filelisterv1.FileListResponse{
@@ -96,9 +96,10 @@ func (c *GRPCClient) DisconnectHostServices() {
 }
 
 // ListFiles retrieves the list of files in the specified directory on the remote host using the gRPC client.
-func (c *GRPCClient) ListFiles(dir string) ([]string, error) {
+func (c *GRPCClient) ListFiles(rootDir, path string) ([]string, error) {
 	resp, err := c.client.List(context.Background(), &filelisterv1.FileListRequest{
-		Dir:         dir,
+		RootDir:     rootDir,
+		Path:        path,
 		HostService: c.hostServiceID,
 	})
 	if err != nil {

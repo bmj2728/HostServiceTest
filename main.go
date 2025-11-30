@@ -195,13 +195,13 @@ func main() {
 
 	fld := "plugins/filelister"
 	// Test the plugin by listing files in the current directory
-	entries, err := fileLister.ListFiles(fld)
+	entries, err := fileLister.ListFiles("/home/brian/GolandProjects/HostServiceTest", fld)
 	if err != nil {
 		logger.Error("Failed to list files", "err", err)
 		os.Exit(1)
 	}
 
-	colorEntries, err := colorlister.ListFiles("/home/brian/GolandProjects/HostServiceTest")
+	colorEntries, err := colorlister.ListFiles("/home/brian/GolandProjects/HostServiceTest", "/home/brian/GolandProjects/HostServiceTest")
 	if err != nil {
 		logger.Error("Failed to list files", "err", err)
 		os.Exit(1)

@@ -38,6 +38,7 @@ service HostService {
   rpc WriteFile(WriteFileRequest) returns (WriteFileResponse);
 
   rpc Stat(StatRequest) returns (StatResponse); // convenience for open->stat->close
+  rpc Rename(RenameRequest) returns (RenameResponse);
 
   rpc Mkdir(MkdirRequest) returns (MkdirResponse);
   rpc MkdirAll(MkdirAllRequest) returns (MkdirAllResponse);
@@ -94,7 +95,8 @@ message FileInfo {
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 message ReadDirRequest {
-  string path = 1;
+  string root_dir =1;
+  string path = 2;
 }
 
 message ReadDirResponse {
@@ -128,6 +130,16 @@ message StatRequest {
 message StatResponse {
   FileInfo info = 1;
   optional string error =2;
+}
+
+message  RenameRequest {
+  string root_dir = 1;
+  string old_name = 2;
+  string new_name =3;
+}
+
+message RenameResponse {
+  string error = 1;
 }
 
 message MkdirRequest {

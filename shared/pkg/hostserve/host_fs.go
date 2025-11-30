@@ -67,17 +67,46 @@ func (hf *HostFS) GetOpenFiles() *OpenFiles {
 }
 
 // ReadDir reads the contents of the specified directory path and returns a slice of directory entries or an error.
-func (hf *HostFS) ReadDir(ctx context.Context, path string) ([]fs.DirEntry, error) {
+func (hf *HostFS) ReadDir(ctx context.Context, rootDir, path string) ([]fs.DirEntry, error) {
 	clientID := getClientIDFromContext(ctx)
-	hclog.Default().Debug("Placeholder Pseudo Cap Check...", "clientID", clientID, "path", path)
-	r, err := getRoot(path)
+	hclog.Default().Debug("Placeholder Pseudo Cap Check...", "clientID", clientID, "root", rootDir, "path", path)
+
+	if !filepath.IsAbs(rootDir) {
+		// we will need logic here to check if the rootDir is absolute and identify the rootDir based on the context or
+		// a configuration file. For now, we will return an error.
+		hclog.Default().Warn("rootDir is not absolute", "rootDir", rootDir)
+		return nil, fmt.Errorf("rootDir is not absolute: %s", rootDir)
+	}
+
+	// We need to check if the path is absolute, and if so, we need to get the relative path from the rootDir
+	if filepath.IsAbs(path) {
+		rel, err := filepath.Rel(rootDir, path)
+		if err != nil {
+			hclog.Default().Warn("Failed to get relative path", "root", rootDir, "path", path, "err", err)
+			return nil, err
+		}
+		path = filepath.Clean(rel)
+	}
+
+	// Since we want to read a directory, we can open the path in the root to retrieve and os.File object
+	f, err := os.OpenInRoot(rootDir, path)
 	if err != nil {
-		hclog.Default().Error("Failed to open root", "path", path, "err", err)
+		hclog.Default().Error("Failed to open directory", "path", path, "err", err)
 		return nil, err
 	}
-	defer closeRoot(r)
-	entries, err := fs.ReadDir(r.FS(), ".")
-	if err != nil {
+	defer func(f *os.File) {
+		err := f.Close()
+		if err != nil {
+			hclog.Default().Error("Failed to close file", "path", path, "err", err)
+		}
+	}(f)
+
+	// We can then use the os.File object to read the directory entries
+	// potential future enhancement to accept an entry count parameter
+	// for now return all entries
+	entries, err := f.ReadDir(0)
+	// if we accept limit in api, we'll need to check for io.EOF if we return fewer entries than requested
+	if err != nil && err != io.EOF {
 		hclog.Default().Error("Failed to read directory", "path", path, "err", err)
 		return nil, err
 	}

@@ -11,11 +11,12 @@ import (
 
 // ReadDir retrieves a list of directory entries from the given path through a gRPC call to the host service.
 // Returns a slice of fs.DirEntry or an error if the operation fails.
-func (c *HostServiceGRPCClient) ReadDir(ctx context.Context, path string) ([]fs.DirEntry, error) {
+func (c *HostServiceGRPCClient) ReadDir(ctx context.Context, rootDir, path string) ([]fs.DirEntry, error) {
 
 	ctx = addTracingIDsToContext(ctx, c.clientID, NewRequestID())
 	resp, err := c.client.ReadDir(ctx, &hostservev1.ReadDirRequest{
-		Path: path,
+		RootDir: rootDir,
+		Path:    path,
 	})
 	if err != nil {
 		return nil, &HostServiceError{Message: err.Error()}

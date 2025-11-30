@@ -59,9 +59,10 @@ func (f *FileLister) ListFiles(dir string) ([]string, error) {
 		hclog.Default().Error("Failed to get user home dir", "err", err)
 	}
 	hclog.Default().Info("User home dir retrieved", "dir", uhd)
-
+	// TODO update lister interface and proto to take a rootDir parameter
 	// Read Dir
-	dirEntries, err := f.hostServiceClient.ReadDir(ctx, dir)
+	rootDir := "/home/brian/GolandProjects/HostServiceTest" // change me when plugin interface is updated, short-term will write local for tests
+	dirEntries, err := f.hostServiceClient.ReadDir(ctx, rootDir, dir)
 	if err != nil {
 		hclog.Default().Error("Failed to read directory via host service", "dir", dir, "err", err)
 		return nil, err

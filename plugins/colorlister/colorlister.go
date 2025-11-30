@@ -45,7 +45,10 @@ func (f *ColorLister) ListFiles(dir string) ([]string, error) {
 	hclog.Default().Info("Created temp file", "file", tf)
 
 	//uses host to read dir vs. using os.ReadDir(dir) or fs.ReadDir(fs, dir)
-	dirEntries, err := f.hostServiceClient.ReadDir(ctx, dir)
+	// TODO update lister interface and proto to take a rootDir parameter
+	// Read Dir
+	rootDir := "/home/brian/GolandProjects/HostServiceTest" // change me when plugin interface is updated, short-term will write local for tests
+	dirEntries, err := f.hostServiceClient.ReadDir(ctx, rootDir, dir)
 	if err != nil {
 		hclog.Default().Error("Failed to read directory via host service", "dir", dir, "err", err)
 		return nil, err

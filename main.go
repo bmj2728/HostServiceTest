@@ -24,6 +24,50 @@ var pluginMap = map[string]plugin.Plugin{
 	"cl-plugin": &filelister.FileListerGRPCPlugin{},
 }
 
+// used for testing nonlocal project paths
+var userAppHome string
+
+// just for testing
+func initializeHostServiceTestFolder() error {
+	userHome, err := os.UserHomeDir()
+	if err != nil {
+		return err
+	}
+	full := filepath.Join(userHome, "HostServiceTest")
+	err = os.Mkdir(full, 0755)
+	if err != nil && !os.IsExist(err) {
+		return err
+	}
+	if err != nil && os.IsExist(err) {
+		userAppHome = full
+		return nil
+	}
+	userAppHome = full
+	return nil
+}
+
+// just for tests
+func createProject(name string) (string, error) {
+	r, err := os.OpenRoot(userAppHome)
+	if err != nil {
+		return "", fmt.Errorf("failed to open root directory: %w", err)
+	}
+	defer func(r *os.Root) {
+		err := r.Close()
+		if err != nil {
+			fmt.Println(err)
+		}
+	}(r)
+	err = r.Mkdir(name, 0755)
+	if err != nil && !os.IsExist(err) {
+		return "", fmt.Errorf("failed to create project directory: %w", err)
+	}
+	if err != nil && os.IsExist(err) {
+		return filepath.Join(userAppHome, name), nil
+	}
+	return filepath.Join(userAppHome, name), nil
+}
+
 func main() {
 	logger := hclog.New(&hclog.LoggerOptions{
 		Name:   "host",
@@ -32,6 +76,16 @@ func main() {
 		Color:  hclog.ForceColor,
 	})
 	hclog.SetDefault(logger)
+
+	err := initializeHostServiceTestFolder()
+	if err != nil {
+		logger.Error("Failed to initialize test folder", "err", err)
+	}
+	projPath, err := createProject("test")
+	if err != nil {
+		logger.Error("Failed to create project", "err", err)
+	}
+	logger.Info("Created project", "path", projPath)
 
 	// Set up host services - create the implementation
 	// HostServices is a struct that embeds the HostFS and HostEnv interfaces
@@ -139,18 +193,15 @@ func main() {
 
 	// End plugin 2
 
-	logger.Info("Active clients",
-		"count", hostServices.ActiveClients().Len(),
-		"clients", hostServices.ActiveClients())
-
+	fld := "plugins/filelister"
 	// Test the plugin by listing files in the current directory
-	entries, err := fileLister.ListFiles(".")
+	entries, err := fileLister.ListFiles(fld)
 	if err != nil {
 		logger.Error("Failed to list files", "err", err)
 		os.Exit(1)
 	}
 
-	colorEntries, err := colorlister.ListFiles(".")
+	colorEntries, err := colorlister.ListFiles("/home/brian/GolandProjects/HostServiceTest")
 	if err != nil {
 		logger.Error("Failed to list files", "err", err)
 		os.Exit(1)

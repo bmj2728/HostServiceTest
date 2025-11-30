@@ -43,6 +43,8 @@ func (s *HostServiceGRPCServer) ReadDir(ctx context.Context,
 			ctxClientIDKey, clientID,
 			ctxClientOwner, owner,
 			ctxHostRequestIDKey, reqID,
+			"rootDir", request.RootDir,
+			"path", request.Path,
 			"error", err,
 		)
 		return &hostservev1.ReadDirResponse{
@@ -51,18 +53,20 @@ func (s *HostServiceGRPCServer) ReadDir(ctx context.Context,
 		}, nil
 	}
 
-	ap, err := filepath.Abs(request.Path)
-	if err != nil {
-		ap = request.Path
-	}
+	// 11/30/25 - remove abs call from code
+	//ap, err := filepath.Abs(request.Path)
+	//if err != nil {
+	//	ap = request.Path
+	//}
 
 	hclog.Default().Info("ReadDir request from client",
 		ctxClientIDKey, clientID,
 		ctxClientOwner, owner,
 		ctxHostRequestIDKey, reqID,
-		"path", ap)
+		"rootDir", request.RootDir,
+		"path", request.Path)
 
-	entries, err := s.Impl.ReadDir(ctx, request.Path)
+	entries, err := s.Impl.ReadDir(ctx, request.RootDir, request.Path)
 	if err != nil {
 		return &hostservev1.ReadDirResponse{
 			Entries: nil,

@@ -18,7 +18,7 @@ type IHostFS interface {
 
 	// ReadDir reads the contents of the directory specified by `path` and returns a slice of directory
 	// entries or an error.
-	ReadDir(ctx context.Context, path string) ([]fs.DirEntry, error)
+	ReadDir(ctx context.Context, rootDir, path string) ([]fs.DirEntry, error)
 
 	// ReadFile reads the specified file from the given directory and returns its contents as a byte slice or an error.
 	ReadFile(ctx context.Context, path string) ([]byte, error)

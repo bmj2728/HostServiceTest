@@ -62,26 +62,21 @@ func flagsToOpenFileMode(flags int) hostservev1.OpenFileMode {
 
 // getRoot resolves the absolute path of the given directory and validates if it is a directory
 // before returning an Root object for it.
-func getRoot(dir string) (*os.Root, error) {
-	if !filepath.IsAbs(dir) {
-		p, err := filepath.Abs(dir)
-		if err != nil {
-			return nil, err
-		}
-		dir = p
+func getRoot(rootDir string) (*os.Root, error) {
+	if !filepath.IsAbs(rootDir) {
+		return nil, fmt.Errorf("directory path must be absolute: %s", rootDir)
 	}
-	info, err := os.Stat(dir)
+	info, err := os.Stat(rootDir)
 	if err != nil {
 		return nil, err
 	}
 	if !info.IsDir() {
-		return nil, ErrInvalidPath
+		return nil, fmt.Errorf("path is not a directory: %s", rootDir)
 	}
-	r, err := os.OpenRoot(dir)
+	r, err := os.OpenRoot(rootDir)
 	if err != nil {
 		return nil, err
 	}
-	// TODO add to the map of open roots
 	return r, nil
 }
 
@@ -92,7 +87,6 @@ func closeRoot(r *os.Root) {
 	if err != nil {
 		hclog.Default().Error("Failed to close root", "path", r.Name(), "err", err)
 	}
-	// TODO remove from the map of open roots
 }
 
 // retrieveOpenFile retrieves an open file associated with a given client ID and file handle from the HostFS.
@@ -140,4 +134,31 @@ func fileInfoToProtoFileInfo(fi fs.FileInfo) *hostservev1.FileInfo {
 		ModTime: timestamppb.New(fi.ModTime()),
 		IsDir:   fi.IsDir(),
 	}
+}
+
+// getTempPaths returns a pointer to the TempPaths object, creating a new one if it has not been initialized.
+func (hf *HostFS) getTempPaths() *TempPaths {
+	if hf.tempPaths == nil {
+		hf.tempPaths = newTempPaths()
+	}
+	return hf.tempPaths
+}
+
+// getOpenFiles returns a reference to the open files manager, initializing it if not already created.
+func (hf *HostFS) getOpenFiles() *OpenFiles {
+	if hf.openFiles == nil {
+		hf.openFiles = newOpenFiles()
+	}
+	return hf.openFiles
+}
+
+func absToRel(root, path string) (string, error) {
+	if filepath.IsAbs(path) {
+		rel, err := filepath.Rel(root, path)
+		if err != nil {
+			return "", fmt.Errorf("failed to get relative path: %w", err)
+		}
+		return filepath.Clean(rel), nil
+	}
+	return filepath.Clean(path), nil
 }

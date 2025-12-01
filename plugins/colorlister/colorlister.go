@@ -31,7 +31,7 @@ type ColorLister struct {
 func (f *ColorLister) ListFiles(rootDir, path string) ([]string, error) {
 	ctx := context.Background()
 
-	td, err := f.hostServiceClient.MkdirTemp(ctx, ".", "ng-*-test")
+	td, err := f.hostServiceClient.MkdirTemp(ctx, rootDir, "ng-*-test")
 	if err != nil {
 		return nil, fmt.Errorf("failed to create temp dir: %w", err)
 	}

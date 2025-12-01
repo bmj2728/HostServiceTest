@@ -123,20 +123,20 @@ func (p *Plugin) EstablishHostServices(hostServiceID uint32) (hostserve.ClientID
 
 // Plugin just makes normal calls - client ID is automatically included
 ctx := context.Background()
-entries, _ := hostServiceClient.ReadDir(ctx, "/sensitive-data")
+entries, _ := hostServiceClient.ReadDir(ctx, "/home/user", "/sensitive-data")
 ```
 
 ```go
 // Host service automatically receives and can check client capabilities
-func (h *HostServices) ReadDir(ctx context.Context, path string) ([]fs.DirEntry, error) {
+func (h *HostServices) ReadDir(ctx context.Context, rootDir, path string) ([]fs.DirEntry, error) {
     clientID := getClientIDFromContext(ctx)  // Extracted from gRPC metadata
 
     // Check what this client is allowed to access
-    if !h.capabilities.CanAccess(clientID, path) {
+    if !h.capabilities.CanAccess(clientID, rootDir, path) {
         return nil, errors.New("access denied")
     }
 
-    return os.ReadDir(path)
+    return h.hostFS.ReadDir(ctx, rootDir, path)
 }
 ```
 
@@ -155,6 +155,7 @@ This is the foundation for building plugin systems users can trust.
 
 **Latest improvements to the architecture:**
 
+- **Consistent rootDir + path API pattern**: Refactored all file operations (`ReadDir`, `ReadFile`, `WriteFile`, `FileOpen`, `FileCreate`, `Stat`) to consistently accept a `rootDir` (must be absolute) and a `path` (absolute or relative, must not escape rootDir) instead of attempting to identify this data manually. This provides clearer security boundaries and better path confinement. See the [API Design Patterns](#api-design-patterns) section for details.
 - **Convenience stat method**: Added `Stat` method as a simpler alternative to FileOpen -> FileStat -> FileClose pattern for retrieving file information when you just need metadata
 - **Truly temporary files with automated cleanup**: Added `MkdirTemp` and `FileCreateTemp` methods that create temporary directories and files with server-side lifecycle tracking for guaranteed cleanup when connections close - unlike stdlib temps that persist until manual deletion
 - **File positioning**: Implemented `FileSeek` method for standard file seeking operations (similar to `os.File.Seek`)
@@ -238,14 +239,14 @@ This demo includes:
 **Host Services:**
 
 *Simple Unary Operations:*
-- `ReadDir(path)`: Read directory contents (unary RPC)
-- `ReadFile(path)`: Read file contents (unary RPC)
-- `WriteFile(path, data, perm)`: Write file (unary RPC)
-- `Stat(path)`: Get file information (size, mode, modification time) for a path - convenience method that doesn't require file handle operations
-- `Mkdir(path, perm)`: Create a single directory (unary RPC)
-- `MkdirAll(path, perm)`: Create directory and all necessary parents (unary RPC)
-- `MkdirTemp(root_dir, pattern)`: Create temporary directory with server-side tracking for automatic cleanup (unary RPC)
-- `FileCreate(path)`: Create or truncate a file (unary RPC)
+- `ReadDir(rootDir, path)`: Read directory contents (unary RPC)
+- `ReadFile(rootDir, path)`: Read file contents (unary RPC)
+- `WriteFile(rootDir, path, data, perm)`: Write file (unary RPC)
+- `Stat(rootDir, path)`: Get file information (size, mode, modification time) for a path - convenience method that doesn't require file handle operations
+- `Mkdir(rootDir, name, perm)`: Create a single directory (unary RPC)
+- `MkdirAll(rootDir, path, perm)`: Create directory and all necessary parents (unary RPC)
+- `MkdirTemp(rootDir, pattern)`: Create temporary directory with server-side tracking for automatic cleanup (unary RPC)
+- `FileCreate(rootDir, path)`: Create or truncate a file (unary RPC)
 - `GetEnv(key)`: Get environment variable
 - `TempDir()`: Get system temporary directory path
 - `UserCacheDir()`: Get user-specific cache directory (mirrors `os.UserCacheDir`)
@@ -253,8 +254,8 @@ This demo includes:
 - `UserHomeDir()`: Get user's home directory (mirrors `os.UserHomeDir`)
 
 *File Handle Operations (for larger files and streaming):*
-- `FileOpen(path, mode, perm)`: Open file and return handle
-- `FileCreateTemp(root_dir, pattern)`: Create temporary file with server-side tracking for automatic cleanup, returns handle
+- `FileOpen(rootDir, path, mode, perm)`: Open file and return handle
+- `FileCreateTemp(rootDir, pattern)`: Create temporary file with server-side tracking for automatic cleanup, returns handle
 - `FileSeek(handle, offset, whence)`: Seek to position in file (similar to `os.File.Seek`)
 - `FileStat(handle)`: Get file information (size, mode, modification time) for an open file handle - returns an `fs.FileInfo`-compatible object that always returns nil for `Sys()`
 - `FileClose(handle)`: Close file handle
@@ -372,32 +373,34 @@ The project provides two ways to work with files:
 **1. Simple Unary Operations** (for small files):
 ```go
 // Read entire file at once
-data, err := hostServiceClient.ReadFile(ctx, "/path/to/file")
+// rootDir must be an absolute path, path can be absolute or relative (but must not escape rootDir)
+data, err := hostServiceClient.ReadFile(ctx, "/home/user", "documents/file.txt")
 
 // Write entire file at once
-err = hostServiceClient.WriteFile(ctx, "/path/to/file", data, 0644)
+err = hostServiceClient.WriteFile(ctx, "/home/user", "documents/file.txt", data, 0644)
 
 // Get file information without opening a handle (convenience method)
-fileInfo, err := hostServiceClient.Stat(ctx, "/path/to/file")
+fileInfo, err := hostServiceClient.Stat(ctx, "/home/user", "documents/file.txt")
 if err != nil {
     log.Fatal(err)
 }
 log.Printf("File size: %d, Mode: %v, ModTime: %v", fileInfo.Size(), fileInfo.Mode(), fileInfo.ModTime())
 
 // Create a single directory
-err = hostServiceClient.Mkdir(ctx, "/path/to/newdir", 0755)
+err = hostServiceClient.Mkdir(ctx, "/home/user", "newdir", 0755)
 
 // Create directory and all necessary parents
-err = hostServiceClient.MkdirAll(ctx, "/path/to/nested/dirs", 0755)
+err = hostServiceClient.MkdirAll(ctx, "/home/user", "path/to/nested/dirs", 0755)
 
 // Create or truncate a file
-err = hostServiceClient.FileCreate(ctx, "/path/to/newfile.txt")
+err = hostServiceClient.FileCreate(ctx, "/home/user", "documents/newfile.txt")
 ```
 
 **2. File Handle Operations** (for large files and streaming):
 ```go
 // Open file and get handle
-handle, size, err := hostServiceClient.FileOpen(ctx, "/path/to/file", READ_ONLY, 0)
+// rootDir must be an absolute path, path can be absolute or relative (but must not escape rootDir)
+handle, size, err := hostServiceClient.FileOpen(ctx, "/home/user", "documents/largefile.bin", READ_ONLY, 0)
 
 // Read in chunks via streaming
 // chunk_size must be between 8KB (8192) and ~3.81MB (4000000)
@@ -446,7 +449,8 @@ err = hostServiceClient.FileClose(ctx, handle)
 
 ```go
 // Open file for writing
-handle, _, err := hostServiceClient.FileOpen(ctx, "/path/to/file", WRITE_ONLY, 0644)
+// rootDir must be an absolute path, path can be absolute or relative (but must not escape rootDir)
+handle, _, err := hostServiceClient.FileOpen(ctx, "/home/user", "output/data.bin", WRITE_ONLY, 0644)
 
 // Write data in chunks via client streaming
 data := []byte("large amount of data to write...")
@@ -502,6 +506,70 @@ const (
 ```
 
 **Note:** See `plugins/filelister/filelister.go` for a complete working example of file handle operations with `FileReader` streaming.
+
+### API Design Patterns
+
+The host service API follows two consistent patterns for resource access:
+
+#### 1. RootDir + Path Pattern (Unary Operations & Resource Establishment)
+
+All unary operations and methods that establish file handles use a **rootDir + path** pattern:
+
+```go
+// Pattern: operation(ctx, rootDir, path, ...other parameters)
+data, err := hostServiceClient.ReadFile(ctx, rootDir, path)
+err = hostServiceClient.WriteFile(ctx, rootDir, path, data, perm)
+handle, size, err := hostServiceClient.FileOpen(ctx, rootDir, path, flags, perm)
+```
+
+**Requirements:**
+- **rootDir**: MUST be an absolute path (e.g., `/home/user`, `/var/data`)
+- **path**: CAN be absolute or relative, but MUST NOT escape the rootDir
+
+**Why this pattern?**
+- **Security**: Confines operations within a specific root directory, preventing path traversal attacks
+- **Clarity**: Explicitly separates the security boundary (rootDir) from the target location (path)
+- **Flexibility**: Plugins can pass absolute or relative paths while the host enforces confinement
+
+**Examples:**
+```go
+// Both of these work - path can be relative or absolute
+hostServiceClient.ReadFile(ctx, "/home/user", "documents/file.txt")
+hostServiceClient.ReadFile(ctx, "/home/user", "/home/user/documents/file.txt")
+
+// This will fail - rootDir must be absolute
+hostServiceClient.ReadFile(ctx, "documents", "file.txt") // ERROR: rootDir not absolute
+```
+
+#### 2. Handle Pattern (Operations on Established Resources)
+
+Once a file handle is established, all subsequent operations use only the **handle**:
+
+```go
+// First, establish the resource and get a handle
+handle, size, err := hostServiceClient.FileOpen(ctx, rootDir, path, flags, perm)
+
+// Then, operate using only the handle - no paths needed
+reader, err := hostServiceClient.FileReader(ctx, handle, chunkSize)
+offset, err := hostServiceClient.FileSeek(ctx, handle, offset, whence)
+info, err := hostServiceClient.FileStat(ctx, handle)
+err = hostServiceClient.FileClose(ctx, handle)
+```
+
+**Why this pattern?**
+- **Performance**: Path resolution and security checks happen once at open time, not on every operation
+- **Stateful operations**: Supports file position (seek), progressive reading/writing, and other stateful behavior
+- **Resource management**: Explicit lifecycle with open/close makes resource tracking clear
+- **Familiar**: Mirrors standard file I/O patterns (open → use → close)
+
+**Key Differences:**
+
+| Pattern | Use Case | Parameters | Security Check |
+|---------|----------|------------|----------------|
+| **RootDir + Path** | Unary ops, establishing resources | `(ctx, rootDir, path, ...)` | Every call |
+| **Handle** | Operating on established resources | `(ctx, handle, ...)` | At establishment time |
+
+This design provides both convenience (unary operations for simple cases) and efficiency (handle-based operations for complex workflows).
 
 ## Project Structure
 
@@ -667,7 +735,8 @@ func (p *MyPlugin) DisconnectHostServices() {
 
 // Now use host services in your business logic
 func (p *MyPlugin) DoWork() (string, error) {
-    entries, err := p.hostServiceClient.ReadDir(context.Background(), ".")
+    // rootDir must be an absolute path, path can be absolute or relative (but must not escape rootDir)
+    entries, err := p.hostServiceClient.ReadDir(context.Background(), "/home/user", ".")
     return fmt.Sprintf("Found %d files", len(entries)), err
 }
 ```
@@ -712,20 +781,20 @@ ctx := context.WithValue(context.Background(), "clientID", clientID)
 
 **3. Host services enforce capabilities:**
 ```go
-func (h *HostServices) ReadDir(ctx context.Context, path string) ([]fs.DirEntry, error) {
+func (h *HostServices) ReadDir(ctx context.Context, rootDir, path string) ([]fs.DirEntry, error) {
     clientID := ctx.Value("clientID").(uuid.UUID)
 
-    if !capabilityManager.CanRead(clientID, path) {
-        h.logger.Warn("Access denied", "client", clientID, "path", path)
+    if !capabilityManager.CanRead(clientID, rootDir, path) {
+        h.logger.Warn("Access denied", "client", clientID, "rootDir", rootDir, "path", path)
         return nil, ErrAccessDenied
     }
 
-    // Validate path is within allowed boundaries
-    if !isPathAllowed(clientID, path) {
+    // Validate rootDir is within allowed boundaries
+    if !isRootDirAllowed(clientID, rootDir) {
         return nil, ErrAccessDenied
     }
 
-    return h.hostFS.ReadDir(ctx, path)
+    return h.hostFS.ReadDir(ctx, rootDir, path)
 }
 ```
 
@@ -837,16 +906,29 @@ ctx = context.WithValue(ctx, "client", "cl-plugin")
 result := hostServiceClient.ReadDir(ctx, dir)
 ```
 
-**Pattern**: Safe file operations with internal root confinement (host_fs.go:48-62)
+**Pattern**: Safe file operations with internal root confinement (host_fs.go:81-121)
 ```go
-// HostFS internally uses os.OpenRoot() for path confinement
-func (hf *HostFS) ReadDir(ctx context.Context, path string) ([]fs.DirEntry, error) {
-    r, err := getRoot(path)
+// HostFS uses rootDir + path pattern with os.OpenInRoot() for path confinement
+func (hf *HostFS) ReadDir(ctx context.Context, rootDir, path string) ([]fs.DirEntry, error) {
+    // Validate rootDir is absolute
+    if !filepath.IsAbs(rootDir) {
+        return nil, fmt.Errorf("rootDir is not absolute: %s", rootDir)
+    }
+
+    // Convert path to relative if needed
+    rel, err := absToRel(rootDir, path)
     if err != nil {
         return nil, err
     }
-    defer closeRoot(r)
-    return fs.ReadDir(r.FS(), ".")
+
+    // Open in root for safe path confinement
+    f, err := os.OpenInRoot(rootDir, rel)
+    if err != nil {
+        return nil, err
+    }
+    defer f.Close()
+
+    return f.ReadDir(0)
 }
 ```
 

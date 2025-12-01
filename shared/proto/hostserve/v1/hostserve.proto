@@ -176,7 +176,8 @@ message MkdirTempResponse {
 }
 
 message FileCreateRequest {
-  string path = 1;
+  string root_dir =1;
+  string path = 2;
 }
 
 message FileCreateResponse {
@@ -195,9 +196,10 @@ message FileCreateTempResponse {
 }
 
 message FileOpenRequest {
-  string path = 1;
-  OpenFileMode mode = 2;
-  uint32 perm = 3;
+  string root_dir = 1;
+  string path = 2;
+  OpenFileMode mode = 3;
+  uint32 perm = 4;
 }
 
 message FileOpenResponse {

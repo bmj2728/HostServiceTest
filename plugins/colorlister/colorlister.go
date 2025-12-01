@@ -5,7 +5,6 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"path/filepath"
 	"sync"
 
 	"github.com/bmj2728/hst/shared/pkg/filelister"
@@ -78,7 +77,7 @@ func (f *ColorLister) ListFiles(rootDir, path string) ([]string, error) {
 		return nil, err
 	}
 
-	fh, err := f.hostServiceClient.FileCreate(ctx, filepath.Join(rootDir, "nested/dir", "created_file.txt"))
+	fh, err := f.hostServiceClient.FileCreate(ctx, rootDir, "nested/dir/created_file.txt")
 	if err != nil {
 		hclog.Default().Error("Failed to create file via host service", "dir", rootDir, "err", err)
 		return nil, err

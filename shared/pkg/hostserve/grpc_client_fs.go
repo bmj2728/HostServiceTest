@@ -151,10 +151,11 @@ func (c *HostServiceGRPCClient) Stat(ctx context.Context, rootDir, path string) 
 }
 
 // FileCreate creates a new file at the specified path and returns a handle for the created file or an error if any occurs.
-func (c *HostServiceGRPCClient) FileCreate(ctx context.Context, path string) (FileHandle, error) {
+func (c *HostServiceGRPCClient) FileCreate(ctx context.Context, rootDir, path string) (FileHandle, error) {
 	ctx = addTracingIDsToContext(ctx, c.clientID, NewRequestID())
 	resp, err := c.client.FileCreate(ctx, &hostservev1.FileCreateRequest{
-		Path: path,
+		RootDir: rootDir,
+		Path:    path,
 	})
 	if err != nil {
 		return "", &HostServiceError{Message: err.Error()}
@@ -169,12 +170,13 @@ func (c *HostServiceGRPCClient) FileCreate(ctx context.Context, path string) (Fi
 }
 
 // FileOpen opens a file on the host, given the path, flag, and permissions, and returns a file handle, size, and error if any.
-func (c *HostServiceGRPCClient) FileOpen(ctx context.Context, path string, flag int, perm os.FileMode) (FileHandle, uint64, error) {
+func (c *HostServiceGRPCClient) FileOpen(ctx context.Context, rootDir, path string, flag int, perm os.FileMode) (FileHandle, uint64, error) {
 	ctx = addTracingIDsToContext(ctx, c.clientID, NewRequestID())
 	resp, err := c.client.FileOpen(ctx, &hostservev1.FileOpenRequest{
-		Path: path,
-		Mode: flagsToOpenFileMode(flag),
-		Perm: uint32(perm),
+		RootDir: rootDir,
+		Path:    path,
+		Mode:    flagsToOpenFileMode(flag),
+		Perm:    uint32(perm),
 	})
 	if err != nil {
 		return "", 0, &HostServiceError{Message: err.Error()}

@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"path/filepath"
 
 	"github.com/bmj2728/hst/shared/protogen/hostserve/v1"
 	"github.com/hashicorp/go-hclog"
@@ -311,6 +310,7 @@ func (s *HostServiceGRPCServer) FileCreate(ctx context.Context,
 			ctxClientIDKey, clientID,
 			ctxClientOwner, owner,
 			ctxHostRequestIDKey, reqID,
+			"rootDir", request.RootDir,
 			"path", request.Path,
 			"error", err,
 		)
@@ -323,10 +323,11 @@ func (s *HostServiceGRPCServer) FileCreate(ctx context.Context,
 		ctxClientIDKey, clientID,
 		ctxClientOwner, owner,
 		ctxHostRequestIDKey, reqID,
+		"rootDir", request.RootDir,
 		"path", request.Path,
 	)
 
-	fh, err := s.Impl.FileCreate(ctx, request.Path)
+	fh, err := s.Impl.FileCreate(ctx, request.RootDir, request.Path)
 	if err != nil {
 		return &hostservev1.FileCreateResponse{
 			Error: proto.String(err.Error()),
@@ -377,18 +378,14 @@ func (s *HostServiceGRPCServer) FileOpen(ctx context.Context,
 	request *hostservev1.FileOpenRequest,
 ) (*hostservev1.FileOpenResponse, error) {
 
-	ap, err := filepath.Abs(request.Path)
-	if err != nil {
-		ap = request.Path
-	}
-
 	ctx, clientID, reqID, owner, err := s.processRequestContext(ctx)
 	if err != nil {
 		hclog.Default().Info("FileOpen bad request from client",
 			ctxClientIDKey, clientID,
 			ctxClientOwner, owner,
 			ctxHostRequestIDKey, reqID,
-			"path", ap,
+			"rootDir", request.RootDir,
+			"path", request.Path,
 			"error", err,
 		)
 		return &hostservev1.FileOpenResponse{
@@ -400,11 +397,12 @@ func (s *HostServiceGRPCServer) FileOpen(ctx context.Context,
 		ctxClientIDKey, clientID,
 		ctxClientOwner, owner,
 		ctxHostRequestIDKey, reqID,
-		"path", ap,
+		"rootDir", request.RootDir,
+		"path", request.Path,
 		"mode", request.Mode,
 		"perm", request.Perm)
 
-	fh, size, err := s.Impl.FileOpen(ctx, request.Path, openFileModeToFlags(request.Mode), os.FileMode(request.Perm))
+	fh, size, err := s.Impl.FileOpen(ctx, request.RootDir, request.Path, openFileModeToFlags(request.Mode), os.FileMode(request.Perm))
 	if err != nil {
 		return &hostservev1.FileOpenResponse{Error: proto.String(err.Error())}, nil
 	}
@@ -413,7 +411,10 @@ func (s *HostServiceGRPCServer) FileOpen(ctx context.Context,
 		ctxClientIDKey, clientID,
 		ctxClientOwner, owner,
 		ctxHostRequestIDKey, reqID,
-		"path", ap,
+		"rootDir", request.RootDir,
+		"path", request.Path,
+		"mode", request.Mode,
+		"perm", request.Perm,
 		"handle", fh,
 		"size", size)
 	return &hostservev1.FileOpenResponse{Handle: fh.String(), Size: size}, nil

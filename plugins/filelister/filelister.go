@@ -87,18 +87,18 @@ func (f *FileLister) ListFiles(rootDir, path string) ([]string, error) {
 	}
 
 	// Open file
-	fh, sz, err := f.hostServiceClient.FileOpen(ctx, filepath.Join(rootDir, "listed_files.txt"), os.O_RDONLY, 0644)
+	fh, sz, err := f.hostServiceClient.FileOpen(ctx, rootDir, "listed_files.txt", os.O_RDONLY, 0644)
 	if err != nil {
 		hclog.Default().Error("Failed to open file via host service", "dir", rootDir, "err", err)
 	}
 	hclog.Default().Info("Opened file", "handle", fh, "size", sz)
 	// Close File called in a closure for deferment
-	defer func(hostServiceClient hostserve.IHostServices, ctx context.Context, handle hostserve.FileHandle) {
-		err := hostServiceClient.FileClose(ctx, handle)
-		if err != nil {
-			hclog.Default().Error("Failed to close file handle", "err", err)
-		}
-	}(f.hostServiceClient, ctx, fh)
+	//defer func(hostServiceClient hostserve.IHostServices, ctx context.Context, handle hostserve.FileHandle) {
+	//	err := hostServiceClient.FileClose(ctx, handle)
+	//	if err != nil {
+	//		hclog.Default().Error("Failed to close file handle", "dir", rootDir, "err", err)
+	//	}
+	//}(f.hostServiceClient, ctx, fh)
 
 	//store the file handle
 	f.fileHandles[filepath.Join(rootDir, "listed_files.txt")] = fh
@@ -121,9 +121,9 @@ func (f *FileLister) ListFiles(rootDir, path string) ([]string, error) {
 		hclog.Default().Info("FileRead read file", "read", n)
 	}
 
-	newFileName := filepath.Join(rootDir, "testing_open_create.txt")
+	newFileName := filepath.Join(rootDir, "listed_files.txt")
 
-	fh2, sz2, err := f.hostServiceClient.FileOpen(ctx, newFileName, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0644)
+	fh2, sz2, err := f.hostServiceClient.FileOpen(ctx, rootDir, "listed_files.txt", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0644)
 	if err != nil {
 		hclog.Default().Error("Failed to open file via host service", "root", rootDir, "err", err)
 	}
@@ -134,7 +134,7 @@ func (f *FileLister) ListFiles(rootDir, path string) ([]string, error) {
 	//retrieve the file handle
 	retrieved, ok := f.fileHandles[newFileName]
 	if !ok {
-		hclog.Default().Error("Failed to retrieve file handle")
+		hclog.Default().Error("Failed to retrieve file handle", "root", rootDir)
 	}
 	hclog.Default().Info("Retrieved file handle", "handle", retrieved)
 

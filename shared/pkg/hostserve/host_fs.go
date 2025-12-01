@@ -280,18 +280,35 @@ func (hf *HostFS) MkdirAll(ctx context.Context, rootDir string, path string, per
 }
 
 // FileCreate creates a new file at the specified path within the host file system and returns a FileHandle or an error.
-func (hf *HostFS) FileCreate(ctx context.Context, path string) (FileHandle, error) {
+func (hf *HostFS) FileCreate(ctx context.Context, rootDir, path string) (FileHandle, error) {
 	clientID := getClientIDFromContext(ctx)
-	d, f := filepath.Split(path)
-	r, err := getRoot(d)
+
+	if !filepath.IsAbs(rootDir) {
+		// we will need logic here to check if the rootDir is absolute and identify the rootDir based on the context or
+		// a configuration file. For now, we will return an error.
+		hclog.Default().Warn("rootDir is not absolute", "rootDir", rootDir)
+		return "", fmt.Errorf("rootDir is not absolute: %s", rootDir)
+	}
+	rel, err := absToRel(rootDir, path)
 	if err != nil {
-		hclog.Default().Error("Failed to open root", "path", d, "err", err)
+		hclog.Default().Error("Failed to get relative path", "rootDir", rootDir, "path", path, "err", err)
 		return "", err
 	}
-	defer closeRoot(r)
-	file, err := r.Create(f)
+
+	r, err := os.OpenRoot(rootDir)
 	if err != nil {
-		hclog.Default().Error("Failed to create file", "path", path, "err", err)
+		hclog.Default().Error("Failed to open file", "rootDir", rootDir, "path", path, "err", err)
+		return "", err
+	}
+	defer func(r *os.Root) {
+		err := r.Close()
+		if err != nil {
+			hclog.Default().Error("Failed to close file", "rootDir", rootDir, "path", path, "err", err)
+		}
+	}(r)
+	file, err := r.Create(rel)
+	if err != nil {
+		hclog.Default().Error("Failed to create file", "rootDir", rootDir, "path", path, "err", err)
 		return "", err
 	}
 	fh := newFileHandle()
@@ -303,29 +320,50 @@ func (hf *HostFS) FileCreate(ctx context.Context, path string) (FileHandle, erro
 }
 
 // FileOpen opens a file at the specified path with the given flags and permissions, returning a FileHandle and file size.
-func (hf *HostFS) FileOpen(ctx context.Context, path string, flag int, perm os.FileMode) (FileHandle, uint64, error) {
+func (hf *HostFS) FileOpen(ctx context.Context, rootDir, path string, flag int, perm os.FileMode) (FileHandle, uint64, error) {
 	clientID := getClientIDFromContext(ctx)
-	d, f := filepath.Split(path)
-	r, err := getRoot(d)
+	if !filepath.IsAbs(rootDir) {
+		// we will need logic here to check if the rootDir is absolute and identify the rootDir based on the context or
+		// a configuration file. For now, we will return an error.
+		hclog.Default().Warn("rootDir is not absolute", "rootDir", rootDir)
+		return "", 0, fmt.Errorf("rootDir is not absolute: %s", rootDir)
+	}
+
+	rel, err := absToRel(rootDir, path)
 	if err != nil {
-		hclog.Default().Error("Failed to open root", "path", d, "err", err)
+		hclog.Default().Error("Failed to get relative path", "rootDir", rootDir, "path", path, "err", err)
 		return "", 0, err
 	}
-	defer closeRoot(r)
-	file, err := r.OpenFile(f, flag, perm)
+
+	r, err := os.OpenRoot(rootDir)
 	if err != nil {
-		hclog.Default().Error("Failed to open file", "path", path, "err", err)
+		hclog.Default().Error("Failed to open file", "rootDir", rootDir, "path", path, "err", err)
 		return "", 0, err
 	}
+	defer func(r *os.Root) {
+		err := r.Close()
+		if err != nil {
+			hclog.Default().Error("Failed to close file", "rootDir", rootDir, "path", path, "err", err)
+		}
+	}(r)
+	file, err := r.OpenFile(rel, flag, perm)
+	if err != nil {
+		hclog.Default().Error("Failed to create file", "rootDir", rootDir, "path", path, "err", err)
+		return "", 0, err
+	}
+
 	fh := newFileHandle()
 	err = hf.openFiles.AddFile(clientID, fh, file)
+
 	if err != nil {
 		return "", 0, err
 	}
+
 	info, err := file.Stat()
 	if err != nil {
 		return fh, 0, err
 	}
+
 	return fh, uint64(info.Size()), nil
 }
 

@@ -1123,7 +1123,8 @@ func (x *MkdirTempResponse) GetError() string {
 
 type FileCreateRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Path          string                 `protobuf:"bytes,1,opt,name=path,proto3" json:"path,omitempty"`
+	RootDir       string                 `protobuf:"bytes,1,opt,name=root_dir,json=rootDir,proto3" json:"root_dir,omitempty"`
+	Path          string                 `protobuf:"bytes,2,opt,name=path,proto3" json:"path,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1156,6 +1157,13 @@ func (x *FileCreateRequest) ProtoReflect() protoreflect.Message {
 // Deprecated: Use FileCreateRequest.ProtoReflect.Descriptor instead.
 func (*FileCreateRequest) Descriptor() ([]byte, []int) {
 	return file_hostserve_v1_hostserve_proto_rawDescGZIP(), []int{19}
+}
+
+func (x *FileCreateRequest) GetRootDir() string {
+	if x != nil {
+		return x.RootDir
+	}
+	return ""
 }
 
 func (x *FileCreateRequest) GetPath() string {
@@ -1323,9 +1331,10 @@ func (x *FileCreateTempResponse) GetError() string {
 
 type FileOpenRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Path          string                 `protobuf:"bytes,1,opt,name=path,proto3" json:"path,omitempty"`
-	Mode          OpenFileMode           `protobuf:"varint,2,opt,name=mode,proto3,enum=hostserve.v1.OpenFileMode" json:"mode,omitempty"`
-	Perm          uint32                 `protobuf:"varint,3,opt,name=perm,proto3" json:"perm,omitempty"`
+	RootDir       string                 `protobuf:"bytes,1,opt,name=root_dir,json=rootDir,proto3" json:"root_dir,omitempty"`
+	Path          string                 `protobuf:"bytes,2,opt,name=path,proto3" json:"path,omitempty"`
+	Mode          OpenFileMode           `protobuf:"varint,3,opt,name=mode,proto3,enum=hostserve.v1.OpenFileMode" json:"mode,omitempty"`
+	Perm          uint32                 `protobuf:"varint,4,opt,name=perm,proto3" json:"perm,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1358,6 +1367,13 @@ func (x *FileOpenRequest) ProtoReflect() protoreflect.Message {
 // Deprecated: Use FileOpenRequest.ProtoReflect.Descriptor instead.
 func (*FileOpenRequest) Descriptor() ([]byte, []int) {
 	return file_hostserve_v1_hostserve_proto_rawDescGZIP(), []int{23}
+}
+
+func (x *FileOpenRequest) GetRootDir() string {
+	if x != nil {
+		return x.RootDir
+	}
+	return ""
 }
 
 func (x *FileOpenRequest) GetPath() string {
@@ -2650,9 +2666,10 @@ const file_hostserve_v1_hostserve_proto_rawDesc = "" +
 	"\x11MkdirTempResponse\x12\x12\n" +
 	"\x04path\x18\x01 \x01(\tR\x04path\x12\x19\n" +
 	"\x05error\x18\x02 \x01(\tH\x00R\x05error\x88\x01\x01B\b\n" +
-	"\x06_error\"'\n" +
-	"\x11FileCreateRequest\x12\x12\n" +
-	"\x04path\x18\x01 \x01(\tR\x04path\"Q\n" +
+	"\x06_error\"B\n" +
+	"\x11FileCreateRequest\x12\x19\n" +
+	"\broot_dir\x18\x01 \x01(\tR\arootDir\x12\x12\n" +
+	"\x04path\x18\x02 \x01(\tR\x04path\"Q\n" +
 	"\x12FileCreateResponse\x12\x16\n" +
 	"\x06handle\x18\x01 \x01(\tR\x06handle\x12\x19\n" +
 	"\x05error\x18\x03 \x01(\tH\x00R\x05error\x88\x01\x01B\b\n" +
@@ -2663,11 +2680,12 @@ const file_hostserve_v1_hostserve_proto_rawDesc = "" +
 	"\x16FileCreateTempResponse\x12\x16\n" +
 	"\x06handle\x18\x01 \x01(\tR\x06handle\x12\x19\n" +
 	"\x05error\x18\x03 \x01(\tH\x00R\x05error\x88\x01\x01B\b\n" +
-	"\x06_error\"i\n" +
-	"\x0fFileOpenRequest\x12\x12\n" +
-	"\x04path\x18\x01 \x01(\tR\x04path\x12.\n" +
-	"\x04mode\x18\x02 \x01(\x0e2\x1a.hostserve.v1.OpenFileModeR\x04mode\x12\x12\n" +
-	"\x04perm\x18\x03 \x01(\rR\x04perm\"c\n" +
+	"\x06_error\"\x84\x01\n" +
+	"\x0fFileOpenRequest\x12\x19\n" +
+	"\broot_dir\x18\x01 \x01(\tR\arootDir\x12\x12\n" +
+	"\x04path\x18\x02 \x01(\tR\x04path\x12.\n" +
+	"\x04mode\x18\x03 \x01(\x0e2\x1a.hostserve.v1.OpenFileModeR\x04mode\x12\x12\n" +
+	"\x04perm\x18\x04 \x01(\rR\x04perm\"c\n" +
 	"\x10FileOpenResponse\x12\x16\n" +
 	"\x06handle\x18\x01 \x01(\tR\x06handle\x12\x12\n" +
 	"\x04size\x18\x02 \x01(\x04R\x04size\x12\x19\n" +

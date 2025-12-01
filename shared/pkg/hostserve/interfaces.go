@@ -39,14 +39,14 @@ type IHostFS interface {
 	MkdirTemp(ctx context.Context, rootDir string, pattern string) (string, error)
 
 	// FileCreate creates a new file at the specified path and returns a FileHandle for the file or an error if it fails.
-	FileCreate(ctx context.Context, path string) (FileHandle, error)
+	FileCreate(ctx context.Context, rootDir, path string) (FileHandle, error)
 
 	// FileCreateTemp creates a new temporary file in the specified root directory using the given pattern.
 	FileCreateTemp(ctx context.Context, rootDir string, pattern string) (FileHandle, error)
 
 	// FileOpen opens a file at the specified path with the given flags and permissions,
 	// returning a handle, file size, and error.
-	FileOpen(ctx context.Context, path string, flag int, perm os.FileMode) (FileHandle, uint64, error)
+	FileOpen(ctx context.Context, rootDir, path string, flag int, perm os.FileMode) (FileHandle, uint64, error)
 
 	// FileStat retrieves metadata about a file represented by the provided FileHandle. It returns file information or an error.
 	FileStat(ctx context.Context, handle FileHandle) (fs.FileInfo, error)

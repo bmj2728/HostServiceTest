@@ -35,6 +35,9 @@ type IHostFS interface {
 	// Stat retrieves information about the specified file or directory at the given path relative to the rootDir.
 	Stat(ctx context.Context, rootDir, path string) (fs.FileInfo, error)
 
+	// Rename renames a file or directory from oldPath to newPath within the specified rootDir. Returns an error if the operation fails.
+	Rename(ctx context.Context, rootDir, oldPath, newPath string) error
+
 	// Mkdir creates a new directory with the specified name and permissions at the given root directory.
 	Mkdir(ctx context.Context, rootDir string, name string, perm os.FileMode) error
 

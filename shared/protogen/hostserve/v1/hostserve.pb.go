@@ -767,7 +767,7 @@ func (x *RenameRequest) GetNewName() string {
 
 type RenameResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Error         string                 `protobuf:"bytes,1,opt,name=error,proto3" json:"error,omitempty"`
+	Error         *string                `protobuf:"bytes,1,opt,name=error,proto3,oneof" json:"error,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -803,8 +803,8 @@ func (*RenameResponse) Descriptor() ([]byte, []int) {
 }
 
 func (x *RenameResponse) GetError() string {
-	if x != nil {
-		return x.Error
+	if x != nil && x.Error != nil {
+		return *x.Error
 	}
 	return ""
 }
@@ -2643,9 +2643,10 @@ const file_hostserve_v1_hostserve_proto_rawDesc = "" +
 	"\rRenameRequest\x12\x19\n" +
 	"\broot_dir\x18\x01 \x01(\tR\arootDir\x12\x19\n" +
 	"\bold_name\x18\x02 \x01(\tR\aoldName\x12\x19\n" +
-	"\bnew_name\x18\x03 \x01(\tR\anewName\"&\n" +
-	"\x0eRenameResponse\x12\x14\n" +
-	"\x05error\x18\x01 \x01(\tR\x05error\"Q\n" +
+	"\bnew_name\x18\x03 \x01(\tR\anewName\"5\n" +
+	"\x0eRenameResponse\x12\x19\n" +
+	"\x05error\x18\x01 \x01(\tH\x00R\x05error\x88\x01\x01B\b\n" +
+	"\x06_error\"Q\n" +
 	"\fMkdirRequest\x12\x19\n" +
 	"\broot_dir\x18\x01 \x01(\tR\arootDir\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12\x12\n" +
@@ -2940,6 +2941,7 @@ func file_hostserve_v1_hostserve_proto_init() {
 	file_hostserve_v1_hostserve_proto_msgTypes[6].OneofWrappers = []any{}
 	file_hostserve_v1_hostserve_proto_msgTypes[8].OneofWrappers = []any{}
 	file_hostserve_v1_hostserve_proto_msgTypes[10].OneofWrappers = []any{}
+	file_hostserve_v1_hostserve_proto_msgTypes[12].OneofWrappers = []any{}
 	file_hostserve_v1_hostserve_proto_msgTypes[14].OneofWrappers = []any{}
 	file_hostserve_v1_hostserve_proto_msgTypes[16].OneofWrappers = []any{}
 	file_hostserve_v1_hostserve_proto_msgTypes[18].OneofWrappers = []any{}

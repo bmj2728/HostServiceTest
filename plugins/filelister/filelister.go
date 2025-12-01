@@ -162,6 +162,11 @@ func (f *FileLister) ListFiles(rootDir, path string) ([]string, error) {
 		hclog.Default().Error("Failed to truncate file", "err", err)
 	}
 
+	err = f.hostServiceClient.Rename(ctx, rootDir, "renameme.md", "rename_works.md")
+	if err != nil {
+		hclog.Default().Error("Failed to rename file", "err", err)
+	}
+
 	// oops we missed closing the file handle -- this showcases the cleanup server-side
 	//err = f.hostServiceClient.FileClose(ctx, retrieved)
 	//if err != nil {

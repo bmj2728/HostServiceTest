@@ -160,6 +160,32 @@ func (hf *HostFS) Stat(ctx context.Context, rootDir, path string) (fs.FileInfo, 
 	return fs.Stat(r.FS(), rel)
 }
 
+// Rename renames a file or directory from oldPath to newPath within the specified rootDir. Returns an error on failure.
+func (hf *HostFS) Rename(ctx context.Context, rootDir, oldPath, newPath string) error {
+	clientID := getClientIDFromContext(ctx)
+	hclog.Default().Debug("Placeholder Pseudo Cap Check...", "clientID", clientID, "root", rootDir, "oldPath", oldPath, "newPath", newPath)
+
+	r, err := getRoot(rootDir)
+	if err != nil {
+		hclog.Default().Error("Failed to get root", "rootDir", rootDir, "err", err)
+		return err
+	}
+	defer closeRoot(r)
+
+	oldRel, err := absToRel(rootDir, oldPath)
+	if err != nil {
+		hclog.Default().Error("Failed to get relative path", "rootDir", rootDir, "oldPath", oldPath, "err", err)
+		return err
+	}
+	newRel, err := absToRel(rootDir, newPath)
+	if err != nil {
+		hclog.Default().Error("Failed to get relative path", "rootDir", rootDir, "newPath", newPath, "err", err)
+		return err
+	}
+
+	return r.Rename(oldRel, newRel)
+}
+
 // Mkdir creates a new directory within the given root directory with the specified name and permissions.
 // Returns an error if the directory cannot be created.
 // The `ctx` parameter is used for passing context and the `perm` argument defines the directory's permissions.

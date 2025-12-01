@@ -239,5 +239,11 @@ func main() {
 		hclog.Default().Error("Failed to remove temp dir", "err", err)
 	}
 
+	err = os.Rename("/home/brian/GolandProjects/HostServiceTest/rename_works.md",
+		"/home/brian/GolandProjects/HostServiceTest/renameme.md")
+	if err != nil {
+		hclog.Default().Error("Failed to rename file", "err", err)
+	}
+
 	os.Exit(0)
 }

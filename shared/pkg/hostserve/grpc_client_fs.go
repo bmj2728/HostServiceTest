@@ -150,6 +150,26 @@ func (c *HostServiceGRPCClient) Stat(ctx context.Context, rootDir, path string) 
 	return protoFileInfoToRemoteFileInfo(resp.Info), nil
 }
 
+// Rename renames a file or directory from oldPath to newPath within the specified rootDir using the gRPC client.
+func (c *HostServiceGRPCClient) Rename(ctx context.Context, rootDir, oldPath, newPath string) error {
+	ctx = addTracingIDsToContext(ctx, c.clientID, NewRequestID())
+	resp, err := c.client.Rename(ctx, &hostservev1.RenameRequest{
+		RootDir: rootDir,
+		OldName: oldPath,
+		NewName: newPath,
+	})
+	if err != nil {
+		return &HostServiceError{Message: err.Error()}
+	}
+	if resp == nil {
+		return &HostServiceError{Message: "nil response from Rename"}
+	}
+	if resp.Error != nil {
+		return &HostServiceError{Message: *resp.Error}
+	}
+	return nil
+}
+
 // FileCreate creates a new file at the specified path and returns a handle for the created file or an error if any occurs.
 func (c *HostServiceGRPCClient) FileCreate(ctx context.Context, rootDir, path string) (FileHandle, error) {
 	ctx = addTracingIDsToContext(ctx, c.clientID, NewRequestID())

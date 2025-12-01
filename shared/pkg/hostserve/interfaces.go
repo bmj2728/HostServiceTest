@@ -21,10 +21,10 @@ type IHostFS interface {
 	ReadDir(ctx context.Context, rootDir, path string) ([]fs.DirEntry, error)
 
 	// ReadFile reads the specified file from the given directory and returns its contents as a byte slice or an error.
-	ReadFile(ctx context.Context, path string) ([]byte, error)
+	ReadFile(ctx context.Context, rootDir, path string) ([]byte, error)
 
 	// WriteFile writes data to the specified file within the given directory, applying the provided file permissions.
-	WriteFile(ctx context.Context, path string, data []byte, perm os.FileMode) error
+	WriteFile(ctx context.Context, rootDir, path string, data []byte, perm os.FileMode) error
 
 	// Stat retrieves the file information for the specified path in the host file system.
 	Stat(ctx context.Context, path string) (fs.FileInfo, error)

@@ -100,6 +100,8 @@ func (s *HostServiceGRPCServer) ReadFile(ctx context.Context,
 			ctxClientIDKey, clientID,
 			ctxClientOwner, owner,
 			ctxHostRequestIDKey, reqID,
+			"rootDir", request.RootDir,
+			"path", request.Path,
 			"error", err,
 		)
 		return &hostservev1.ReadFileResponse{
@@ -108,17 +110,14 @@ func (s *HostServiceGRPCServer) ReadFile(ctx context.Context,
 		}, nil
 	}
 
-	ap, err := filepath.Abs(request.Path)
-	if err != nil {
-		ap = request.Path
-	}
 	hclog.Default().Info("ReadFile request from client",
 		ctxClientIDKey, clientID,
 		ctxClientOwner, owner,
 		ctxHostRequestIDKey, reqID,
-		"path", ap)
+		"rootDir", request.RootDir,
+		"path", request.Path)
 
-	bytes, err := s.Impl.ReadFile(ctx, request.Path)
+	bytes, err := s.Impl.ReadFile(ctx, request.RootDir, request.Path)
 	if err != nil {
 		return &hostservev1.ReadFileResponse{
 			Contents: nil,
@@ -148,6 +147,10 @@ func (s *HostServiceGRPCServer) WriteFile(ctx context.Context,
 			ctxClientIDKey, clientID,
 			ctxClientOwner, owner,
 			ctxHostRequestIDKey, reqID,
+			"rootDir", request.RootDir,
+			"path", request.Path,
+			"dataLen", len(request.Data),
+			"perm", request.Perm,
 			"error", err,
 		)
 		return &hostservev1.WriteFileResponse{
@@ -155,17 +158,16 @@ func (s *HostServiceGRPCServer) WriteFile(ctx context.Context,
 		}, nil
 	}
 
-	ap, err := filepath.Abs(request.Path)
-	if err != nil {
-		ap = request.Path
-	}
 	hclog.Default().Info("WriteFile request from client",
 		ctxClientIDKey, clientID,
 		ctxClientOwner, owner,
 		ctxHostRequestIDKey, reqID,
-		"path", ap)
+		"rootDir", request.RootDir,
+		"path", request.Path,
+		"dataLen", len(request.Data),
+		"perm", request.Perm)
 
-	err = s.Impl.WriteFile(ctx, request.Path, request.Data, os.FileMode(request.Perm))
+	err = s.Impl.WriteFile(ctx, request.RootDir, request.Path, request.Data, os.FileMode(request.Perm))
 	if err != nil {
 		return &hostservev1.WriteFileResponse{Error: proto.String(err.Error())}, nil
 	}

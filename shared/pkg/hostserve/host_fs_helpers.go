@@ -103,7 +103,7 @@ func (hf *HostFS) retrieveOpenFile(ctx context.Context, handle FileHandle) (*os.
 	if clientId == "" {
 		return nil, fmt.Errorf("client ID not found in context")
 	}
-	file, err := hf.GetOpenFiles().GetFile(clientId, handle)
+	file, err := hf.getOpenFiles().GetFile(clientId, handle)
 	if err != nil {
 		return nil, err
 	}

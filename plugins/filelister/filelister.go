@@ -81,7 +81,7 @@ func (f *FileLister) ListFiles(rootDir, path string) ([]string, error) {
 	}
 
 	// Write file
-	err = f.hostServiceClient.WriteFile(ctx, filepath.Join(rootDir, "listed_files.txt"), buf.Bytes(), 0644)
+	err = f.hostServiceClient.WriteFile(ctx, rootDir, "listed_files.txt", buf.Bytes(), 0644)
 	if err != nil {
 		hclog.Default().Error("Failed to write file via host service", "dir", rootDir, "err", err)
 	}

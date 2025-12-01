@@ -105,7 +105,8 @@ message ReadDirResponse {
 }
 
 message ReadFileRequest {
-  string path = 1;
+  string root_dir = 1;
+  string path = 2;
 }
 
 message ReadFileResponse {
@@ -114,9 +115,10 @@ message ReadFileResponse {
 }
 
 message WriteFileRequest {
-  string path = 1;
-  bytes data = 2;
-  uint32 perm = 3;
+  string root_dir = 1;
+  string path = 2;
+  bytes data = 3;
+  uint32 perm = 4;
 }
 
 message WriteFileResponse {

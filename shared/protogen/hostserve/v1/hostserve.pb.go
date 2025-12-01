@@ -387,7 +387,8 @@ func (x *ReadDirResponse) GetError() string {
 
 type ReadFileRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Path          string                 `protobuf:"bytes,1,opt,name=path,proto3" json:"path,omitempty"`
+	RootDir       string                 `protobuf:"bytes,1,opt,name=root_dir,json=rootDir,proto3" json:"root_dir,omitempty"`
+	Path          string                 `protobuf:"bytes,2,opt,name=path,proto3" json:"path,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -420,6 +421,13 @@ func (x *ReadFileRequest) ProtoReflect() protoreflect.Message {
 // Deprecated: Use ReadFileRequest.ProtoReflect.Descriptor instead.
 func (*ReadFileRequest) Descriptor() ([]byte, []int) {
 	return file_hostserve_v1_hostserve_proto_rawDescGZIP(), []int{5}
+}
+
+func (x *ReadFileRequest) GetRootDir() string {
+	if x != nil {
+		return x.RootDir
+	}
+	return ""
 }
 
 func (x *ReadFileRequest) GetPath() string {
@@ -483,9 +491,10 @@ func (x *ReadFileResponse) GetError() string {
 
 type WriteFileRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Path          string                 `protobuf:"bytes,1,opt,name=path,proto3" json:"path,omitempty"`
-	Data          []byte                 `protobuf:"bytes,2,opt,name=data,proto3" json:"data,omitempty"`
-	Perm          uint32                 `protobuf:"varint,3,opt,name=perm,proto3" json:"perm,omitempty"`
+	RootDir       string                 `protobuf:"bytes,1,opt,name=root_dir,json=rootDir,proto3" json:"root_dir,omitempty"`
+	Path          string                 `protobuf:"bytes,2,opt,name=path,proto3" json:"path,omitempty"`
+	Data          []byte                 `protobuf:"bytes,3,opt,name=data,proto3" json:"data,omitempty"`
+	Perm          uint32                 `protobuf:"varint,4,opt,name=perm,proto3" json:"perm,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -518,6 +527,13 @@ func (x *WriteFileRequest) ProtoReflect() protoreflect.Message {
 // Deprecated: Use WriteFileRequest.ProtoReflect.Descriptor instead.
 func (*WriteFileRequest) Descriptor() ([]byte, []int) {
 	return file_hostserve_v1_hostserve_proto_rawDescGZIP(), []int{7}
+}
+
+func (x *WriteFileRequest) GetRootDir() string {
+	if x != nil {
+		return x.RootDir
+	}
+	return ""
 }
 
 func (x *WriteFileRequest) GetPath() string {
@@ -2577,17 +2593,19 @@ const file_hostserve_v1_hostserve_proto_rawDesc = "" +
 	"\x0fReadDirResponse\x120\n" +
 	"\aentries\x18\x01 \x03(\v2\x16.hostserve.v1.DirEntryR\aentries\x12\x19\n" +
 	"\x05error\x18\x02 \x01(\tH\x00R\x05error\x88\x01\x01B\b\n" +
-	"\x06_error\"%\n" +
-	"\x0fReadFileRequest\x12\x12\n" +
-	"\x04path\x18\x01 \x01(\tR\x04path\"S\n" +
+	"\x06_error\"@\n" +
+	"\x0fReadFileRequest\x12\x19\n" +
+	"\broot_dir\x18\x01 \x01(\tR\arootDir\x12\x12\n" +
+	"\x04path\x18\x02 \x01(\tR\x04path\"S\n" +
 	"\x10ReadFileResponse\x12\x1a\n" +
 	"\bcontents\x18\x01 \x01(\fR\bcontents\x12\x19\n" +
 	"\x05error\x18\x02 \x01(\tH\x00R\x05error\x88\x01\x01B\b\n" +
-	"\x06_error\"N\n" +
-	"\x10WriteFileRequest\x12\x12\n" +
-	"\x04path\x18\x01 \x01(\tR\x04path\x12\x12\n" +
-	"\x04data\x18\x02 \x01(\fR\x04data\x12\x12\n" +
-	"\x04perm\x18\x03 \x01(\rR\x04perm\"8\n" +
+	"\x06_error\"i\n" +
+	"\x10WriteFileRequest\x12\x19\n" +
+	"\broot_dir\x18\x01 \x01(\tR\arootDir\x12\x12\n" +
+	"\x04path\x18\x02 \x01(\tR\x04path\x12\x12\n" +
+	"\x04data\x18\x03 \x01(\fR\x04data\x12\x12\n" +
+	"\x04perm\x18\x04 \x01(\rR\x04perm\"8\n" +
 	"\x11WriteFileResponse\x12\x19\n" +
 	"\x05error\x18\x01 \x01(\tH\x00R\x05error\x88\x01\x01B\b\n" +
 	"\x06_error\"!\n" +

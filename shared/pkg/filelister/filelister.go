@@ -33,6 +33,7 @@ func (fl *FileListerGRPCPlugin) GRPCServer(broker *plugin.GRPCBroker, s *grpc.Se
 }
 
 // GRPCClient creates and returns a new GRPCClient instance for interacting with the FileLister service via gRPC.
+// Future state would include context - e.g. project ID, user ID, auth token, etc.
 func (fl *FileListerGRPCPlugin) GRPCClient(ctx context.Context,
 	broker *plugin.GRPCBroker,
 	c *grpc.ClientConn) (interface{}, error) {

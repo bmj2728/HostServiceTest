@@ -39,10 +39,11 @@ func (c *HostServiceGRPCClient) ReadDir(ctx context.Context, rootDir, path strin
 
 // ReadFile reads the specified file from the given directory and returns its contents as a byte slice.
 // Returns an error if the file cannot be read or the service encounters an issue.
-func (c *HostServiceGRPCClient) ReadFile(ctx context.Context, path string) ([]byte, error) {
+func (c *HostServiceGRPCClient) ReadFile(ctx context.Context, rootDir, path string) ([]byte, error) {
 	ctx = addTracingIDsToContext(ctx, c.clientID, NewRequestID())
 	resp, err := c.client.ReadFile(ctx, &hostservev1.ReadFileRequest{
-		Path: path,
+		RootDir: rootDir,
+		Path:    path,
 	})
 	if err != nil {
 		return nil, &HostServiceError{Message: err.Error()}
@@ -57,15 +58,16 @@ func (c *HostServiceGRPCClient) ReadFile(ctx context.Context, path string) ([]by
 // The context is used for tracing and request cancellation.
 // If permissions are set to 0, standardPermissions will be applied as the default.
 // Returns an error if the operation fails or in case of a nil response from the server.
-func (c *HostServiceGRPCClient) WriteFile(ctx context.Context, path string, data []byte, perm os.FileMode) error {
+func (c *HostServiceGRPCClient) WriteFile(ctx context.Context, rootDir, path string, data []byte, perm os.FileMode) error {
 	ctx = addTracingIDsToContext(ctx, c.clientID, NewRequestID())
 	if perm == 0 {
 		perm = standardPermissions
 	}
 	resp, err := c.client.WriteFile(ctx, &hostservev1.WriteFileRequest{
-		Path: path,
-		Data: data,
-		Perm: uint32(perm),
+		RootDir: rootDir,
+		Path:    path,
+		Data:    data,
+		Perm:    uint32(perm),
 	})
 	if err != nil {
 		return &HostServiceError{Message: err.Error()}

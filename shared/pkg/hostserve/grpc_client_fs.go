@@ -132,10 +132,11 @@ func (c *HostServiceGRPCClient) MkdirAll(ctx context.Context, rootDir string, pa
 // Stat retrieves file or directory information from the remote host based on the provided path.
 // Returns fs.FileInfo for the requested path or an error if the operation fails.
 // Uses gRPC to communicate with the remote service and adds tracing metadata to the context.
-func (c *HostServiceGRPCClient) Stat(ctx context.Context, path string) (fs.FileInfo, error) {
+func (c *HostServiceGRPCClient) Stat(ctx context.Context, rootDir, path string) (fs.FileInfo, error) {
 	ctx = addTracingIDsToContext(ctx, c.clientID, NewRequestID())
 	resp, err := c.client.Stat(ctx, &hostservev1.StatRequest{
-		Path: path,
+		RootDir: rootDir,
+		Path:    path,
 	})
 	if err != nil {
 		return nil, &HostServiceError{Message: err.Error()}

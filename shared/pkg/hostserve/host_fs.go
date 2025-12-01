@@ -164,14 +164,24 @@ func (hf *HostFS) ReadFile(ctx context.Context, rootDir, path string) ([]byte, e
 func (hf *HostFS) WriteFile(ctx context.Context, rootDir, path string, data []byte, perm os.FileMode) error {
 	clientID := getClientIDFromContext(ctx)
 	hclog.Default().Debug("Placeholder Pseudo Cap Check...", "clientID", clientID, "rootDir", rootDir, "path", path)
+
 	if perm&permissionsMask == 0 {
 		perm = standardPermissions
 	}
+
+	if !filepath.IsAbs(rootDir) {
+		// we will need logic here to check if the rootDir is absolute and identify the rootDir based on the context or
+		// a configuration file. For now, we will return an error.
+		hclog.Default().Warn("rootDir is not absolute", "rootDir", rootDir)
+		return fmt.Errorf("rootDir is not absolute: %s", rootDir)
+	}
+
 	rel, err := absToRel(rootDir, path)
 	if err != nil {
 		hclog.Default().Error("Failed to get relative path", "rootDir", rootDir, "path", path, "err", err)
 		return err
 	}
+
 	r, err := os.OpenRoot(rootDir)
 	if err != nil {
 		hclog.Default().Error("Failed to open file", "path", path, "err", err)
@@ -193,14 +203,23 @@ func (hf *HostFS) WriteFile(ctx context.Context, rootDir, path string, data []by
 }
 
 // Stat retrieves the FileInfo for the given path within the HostFS, returning an error if the operation fails.
-func (hf *HostFS) Stat(ctx context.Context, path string) (fs.FileInfo, error) {
+func (hf *HostFS) Stat(ctx context.Context, rootDir, path string) (fs.FileInfo, error) {
 	clientID := getClientIDFromContext(ctx)
 	hclog.Default().Debug("Placeholder Pseudo Cap Check...", "clientID", clientID, "path", path)
 
-	abs, err := filepath.Abs(path)
-	d, f := filepath.Split(abs)
+	if !filepath.IsAbs(rootDir) {
+		// we will need logic here to check if the rootDir is absolute and identify the rootDir based on the context or
+		// a configuration file. For now, we will return an error.
+		hclog.Default().Warn("rootDir is not absolute", "rootDir", rootDir)
+		return nil, fmt.Errorf("rootDir is not absolute: %s", rootDir)
+	}
+	rel, err := absToRel(rootDir, path)
+	if err != nil {
+		hclog.Default().Error("Failed to get relative path", "rootDir", rootDir, "path", path, "err", err)
+		return nil, err
+	}
 
-	file, err := os.OpenInRoot(d, f)
+	file, err := os.OpenInRoot(rootDir, rel)
 	if err != nil {
 		fmt.Println(err)
 	}

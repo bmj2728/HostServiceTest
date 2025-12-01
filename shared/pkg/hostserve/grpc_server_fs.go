@@ -193,9 +193,10 @@ func (s *HostServiceGRPCServer) Stat(ctx context.Context, request *hostservev1.S
 		ctxClientIDKey, clientID,
 		ctxClientOwner, owner,
 		ctxHostRequestIDKey, reqID,
+		"rootDir", request.RootDir,
 		"path", request.Path)
 
-	info, err := s.Impl.Stat(ctx, request.Path)
+	info, err := s.Impl.Stat(ctx, request.RootDir, request.Path)
 	if err != nil {
 		return &hostservev1.StatResponse{Error: proto.String(err.Error())}, nil
 	}

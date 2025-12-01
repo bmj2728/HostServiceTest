@@ -126,7 +126,8 @@ message WriteFileResponse {
 }
 
 message StatRequest {
-  string path = 1;
+  string root_dir = 1;
+  string path = 2;
 }
 
 message StatResponse {

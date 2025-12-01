@@ -603,7 +603,8 @@ func (x *WriteFileResponse) GetError() string {
 
 type StatRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Path          string                 `protobuf:"bytes,1,opt,name=path,proto3" json:"path,omitempty"`
+	RootDir       string                 `protobuf:"bytes,1,opt,name=root_dir,json=rootDir,proto3" json:"root_dir,omitempty"`
+	Path          string                 `protobuf:"bytes,2,opt,name=path,proto3" json:"path,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -636,6 +637,13 @@ func (x *StatRequest) ProtoReflect() protoreflect.Message {
 // Deprecated: Use StatRequest.ProtoReflect.Descriptor instead.
 func (*StatRequest) Descriptor() ([]byte, []int) {
 	return file_hostserve_v1_hostserve_proto_rawDescGZIP(), []int{9}
+}
+
+func (x *StatRequest) GetRootDir() string {
+	if x != nil {
+		return x.RootDir
+	}
+	return ""
 }
 
 func (x *StatRequest) GetPath() string {
@@ -2608,9 +2616,10 @@ const file_hostserve_v1_hostserve_proto_rawDesc = "" +
 	"\x04perm\x18\x04 \x01(\rR\x04perm\"8\n" +
 	"\x11WriteFileResponse\x12\x19\n" +
 	"\x05error\x18\x01 \x01(\tH\x00R\x05error\x88\x01\x01B\b\n" +
-	"\x06_error\"!\n" +
-	"\vStatRequest\x12\x12\n" +
-	"\x04path\x18\x01 \x01(\tR\x04path\"_\n" +
+	"\x06_error\"<\n" +
+	"\vStatRequest\x12\x19\n" +
+	"\broot_dir\x18\x01 \x01(\tR\arootDir\x12\x12\n" +
+	"\x04path\x18\x02 \x01(\tR\x04path\"_\n" +
 	"\fStatResponse\x12*\n" +
 	"\x04info\x18\x01 \x01(\v2\x16.hostserve.v1.FileInfoR\x04info\x12\x19\n" +
 	"\x05error\x18\x02 \x01(\tH\x00R\x05error\x88\x01\x01B\b\n" +

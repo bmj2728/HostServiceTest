@@ -27,7 +27,7 @@ type IHostFS interface {
 	WriteFile(ctx context.Context, rootDir, path string, data []byte, perm os.FileMode) error
 
 	// Stat retrieves the file information for the specified path in the host file system.
-	Stat(ctx context.Context, path string) (fs.FileInfo, error)
+	Stat(ctx context.Context, rootDir, path string) (fs.FileInfo, error)
 
 	// Mkdir creates a new directory within the specified root directory with the given name and permissions.
 	Mkdir(ctx context.Context, rootDir string, name string, perm os.FileMode) error

@@ -216,7 +216,6 @@ func main() {
 	for _, entry := range colorEntries {
 		fmt.Println(entry)
 	}
-
 	// Clean shutdown - disconnect from host services
 	logger.Info("Shutting down plugins")
 	hostconn.DisconnectHostServices(raw, logger)

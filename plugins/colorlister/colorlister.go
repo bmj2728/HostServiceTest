@@ -82,12 +82,12 @@ func (f *ColorLister) ListFiles(rootDir, path string) ([]string, error) {
 		hclog.Default().Error("Failed to create file via host service", "dir", rootDir, "err", err)
 		return nil, err
 	}
-	defer func(hostServiceClient hostserve.IHostServices, ctx context.Context, handle hostserve.FileHandle) {
-		err := hostServiceClient.FileClose(ctx, handle)
+	defer func(ctx context.Context, handle hostserve.FileHandle) {
+		err := f.hostServiceClient.FileClose(ctx, handle)
 		if err != nil {
 			hclog.Default().Error("Failed to close file handle", "err", err)
 		}
-	}(f.hostServiceClient, ctx, fh)
+	}(ctx, fh)
 
 	newOff, err := f.hostServiceClient.FileSeek(ctx, fh, 0, io.SeekStart)
 	if err != nil {
@@ -99,7 +99,6 @@ func (f *ColorLister) ListFiles(rootDir, path string) ([]string, error) {
 	rfi, err := f.hostServiceClient.FileStat(ctx, fh)
 	if err != nil {
 		hclog.Default().Error("Failed to stat file via host service", "dir", rootDir, "err", err)
-		return nil, err
 	}
 	hclog.Default().Info("File stat", "file", rfi.Name(), "size", rfi.Size(), "mode", rfi.Mode(), "modTime", rfi.ModTime(), "isDir", rfi.IsDir())
 

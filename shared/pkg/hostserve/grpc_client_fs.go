@@ -7,6 +7,7 @@ import (
 	"os"
 
 	"github.com/bmj2728/hst/shared/protogen/hostserve/v1"
+	"github.com/hashicorp/go-hclog"
 )
 
 // ReadDir retrieves a list of directory entries from the given path through a gRPC call to the host service.
@@ -274,12 +275,15 @@ func (c *HostServiceGRPCClient) FileClose(ctx context.Context, handle FileHandle
 		Handle: string(handle),
 	})
 	if err != nil {
+		hclog.Default().Error("Failed to close file via host service", "err", err)
 		return &HostServiceError{Message: err.Error()}
 	}
 	if resp == nil {
+		hclog.Default().Error("Received nil response from host service when closing file", "handle", handle)
 		return &HostServiceError{Message: "nil response from FileClose"}
 	}
 	if resp.Error != nil {
+		hclog.Default().Error("Received error response from host service when closing file", "handle", handle, "err", *resp.Error)
 		return &HostServiceError{Message: *resp.Error}
 	}
 	return nil

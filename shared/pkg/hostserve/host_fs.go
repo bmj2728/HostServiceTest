@@ -371,6 +371,7 @@ func (hf *HostFS) FileClose(ctx context.Context, handle FileHandle) error {
 	if err != nil {
 		return err
 	}
+	hclog.Default().Debug("Closed File", "clientID", clientID, "handle", handle, "request", getRequestIDFromContext(ctx))
 	err = hf.getOpenFiles().RemoveFile(clientID, handle)
 	if err != nil {
 		return err

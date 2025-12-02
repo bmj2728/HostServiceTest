@@ -74,18 +74,20 @@ func (of *OpenFiles) AddFile(clientID ClientID, fileHandle FileHandle, file *os.
 func (of *OpenFiles) RemoveFile(clientID ClientID, fileHandle FileHandle) error {
 	of.mu.Lock()
 	defer of.mu.Unlock()
-	if _, exists := of.files[clientID]; !exists {
+	files, exists := of.files[clientID]
+	if !exists {
 		return fmt.Errorf("client %s has no open files", clientID)
 	}
-	if _, exists := of.files[clientID][fileHandle]; !exists {
+	file, exists := files[fileHandle]
+	if !exists {
 		return fmt.Errorf("file handle %s does not exist for client %s", fileHandle, clientID)
 	}
-	err := of.files[clientID][fileHandle].Close()
+	err := file.Close()
 	if err != nil {
-		delete(of.files[clientID], fileHandle)
+		hclog.Default().Error("Failed to close file", "file", fileHandle, "err", err)
 		return err
 	}
-	delete(of.files[clientID], fileHandle)
+	delete(files, fileHandle)
 	return nil
 }
 
@@ -134,8 +136,9 @@ func (of *OpenFiles) CloseAll() {
 			err := file.Close()
 			if err != nil {
 				hclog.Default().Error("Failed to close file", "file", h, "err", err)
+			} else {
+				hclog.Default().Debug("Closed file", "file", h)
 			}
-			hclog.Default().Debug("Closing file", "file", h)
 			delete(of.files[c], h)
 		}
 	}

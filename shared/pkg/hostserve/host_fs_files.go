@@ -58,6 +58,8 @@ func newOpenFiles() *OpenFiles {
 
 //**************************Functions****************************************
 
+// AddFile adds a file to the OpenFiles map for a given client and file handle, ensuring uniqueness within the client context.
+// Returns an error if the file handle already exists for the given client.
 func (of *OpenFiles) AddFile(clientID ClientID, fileHandle FileHandle, file *os.File) error {
 	of.mu.Lock()
 	defer of.mu.Unlock()
@@ -71,6 +73,7 @@ func (of *OpenFiles) AddFile(clientID ClientID, fileHandle FileHandle, file *os.
 	return nil
 }
 
+// RemoveFile removes a file handle from a client's open files map. Returns an error if the client or file handle doesn't exist.
 func (of *OpenFiles) RemoveFile(clientID ClientID, fileHandle FileHandle) error {
 	of.mu.Lock()
 	defer of.mu.Unlock()
@@ -78,19 +81,16 @@ func (of *OpenFiles) RemoveFile(clientID ClientID, fileHandle FileHandle) error 
 	if !exists {
 		return fmt.Errorf("client %s has no open files", clientID)
 	}
-	file, exists := files[fileHandle]
+	_, exists = files[fileHandle]
 	if !exists {
 		return fmt.Errorf("file handle %s does not exist for client %s", fileHandle, clientID)
-	}
-	err := file.Close()
-	if err != nil {
-		hclog.Default().Error("Failed to close file", "file", fileHandle, "err", err)
-		return err
 	}
 	delete(files, fileHandle)
 	return nil
 }
 
+// GetFilesByClient retrieves all open files associated with the specified client ID.
+// Returns a map of file handles to os.File pointers or an error if the client has no open files.
 func (of *OpenFiles) GetFilesByClient(clientID ClientID) (map[FileHandle]*os.File, error) {
 	of.mu.RLock()
 	defer of.mu.RUnlock()
@@ -100,6 +100,8 @@ func (of *OpenFiles) GetFilesByClient(clientID ClientID) (map[FileHandle]*os.Fil
 	return of.files[clientID], nil
 }
 
+// GetFile retrieves an open file associated with the specified clientID and fileHandle.
+// Returns the *os.File instance if found, or an error if the file handle or client ID does not exist.
 func (of *OpenFiles) GetFile(clientID ClientID, fileHandle FileHandle) (*os.File, error) {
 	files, err := of.GetFilesByClient(clientID)
 	if err != nil {
@@ -111,12 +113,14 @@ func (of *OpenFiles) GetFile(clientID ClientID, fileHandle FileHandle) (*os.File
 	return files[fileHandle], nil
 }
 
+// GetFiles returns the entire mapping of clients and their associated open file handles in a thread-safe manner.
 func (of *OpenFiles) GetFiles() ClientFileMap {
 	of.mu.RLock()
 	defer of.mu.RUnlock()
 	return of.files
 }
 
+// Len returns the total number of open files across all clients in the OpenFiles instance. It is thread-safe.
 func (of *OpenFiles) Len() int {
 	of.mu.RLock()
 	defer of.mu.RUnlock()
@@ -127,6 +131,7 @@ func (of *OpenFiles) Len() int {
 	return length
 }
 
+// CloseAll closes all open files managed by the OpenFiles instance and removes their entries from the internal map.
 func (of *OpenFiles) CloseAll() {
 	of.mu.Lock()
 	defer of.mu.Unlock()

@@ -359,19 +359,23 @@ func (hf *HostFS) FileSync(ctx context.Context, handle FileHandle) error {
 func (hf *HostFS) FileClose(ctx context.Context, handle FileHandle) error {
 	clientID := getClientIDFromContext(ctx)
 	hclog.Default().Debug("Placeholder Pseudo Cap Check...", "clientID", clientID, "handle", handle)
+
 	files, err := hf.getOpenFiles().GetFilesByClient(clientID)
 	if err != nil {
 		return err
 	}
+
 	file, exists := files[handle]
 	if !exists {
 		return fmt.Errorf("file handle %s does not exist for client %s", handle, clientID)
 	}
+
 	err = file.Close()
 	if err != nil {
 		return err
 	}
 	hclog.Default().Debug("Closed File", "clientID", clientID, "handle", handle, "request", getRequestIDFromContext(ctx))
+
 	err = hf.getOpenFiles().RemoveFile(clientID, handle)
 	if err != nil {
 		return err

@@ -69,6 +69,25 @@ func createProject(name string) (string, error) {
 }
 
 func main() {
+
+	//clean up
+	err := os.RemoveAll("./created_dir")
+	if err != nil {
+		hclog.Default().Error("Failed to remove temp dir", "err", err)
+	}
+
+	err = os.RemoveAll("./nested")
+	if err != nil {
+		hclog.Default().Error("Failed to remove temp dir", "err", err)
+	}
+
+	err = os.Rename("/home/brian/GolandProjects/HostServiceTest/rename_works.md",
+		"/home/brian/GolandProjects/HostServiceTest/renameme.md")
+	if err != nil {
+		hclog.Default().Error("Failed to rename file", "err", err)
+	}
+
+	// Set up logging
 	logger := hclog.New(&hclog.LoggerOptions{
 		Name:   "host",
 		Output: os.Stdout,
@@ -77,7 +96,7 @@ func main() {
 	})
 	hclog.SetDefault(logger)
 
-	err := initializeHostServiceTestFolder()
+	err = initializeHostServiceTestFolder()
 	if err != nil {
 		logger.Error("Failed to initialize test folder", "err", err)
 	}
@@ -227,22 +246,6 @@ func main() {
 	}
 	hfs.Cleanup()
 	hostServices.ActiveClients().Clear()
-
-	err = os.RemoveAll("./created_dir")
-	if err != nil {
-		hclog.Default().Error("Failed to remove temp dir", "err", err)
-	}
-
-	err = os.RemoveAll("./nested")
-	if err != nil {
-		hclog.Default().Error("Failed to remove temp dir", "err", err)
-	}
-
-	err = os.Rename("/home/brian/GolandProjects/HostServiceTest/rename_works.md",
-		"/home/brian/GolandProjects/HostServiceTest/renameme.md")
-	if err != nil {
-		hclog.Default().Error("Failed to rename file", "err", err)
-	}
 
 	os.Exit(0)
 }

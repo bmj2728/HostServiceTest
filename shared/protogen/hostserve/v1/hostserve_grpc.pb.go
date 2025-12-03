@@ -24,6 +24,8 @@ const (
 	HostService_WriteFile_FullMethodName      = "/hostserve.v1.HostService/WriteFile"
 	HostService_Stat_FullMethodName           = "/hostserve.v1.HostService/Stat"
 	HostService_Rename_FullMethodName         = "/hostserve.v1.HostService/Rename"
+	HostService_Remove_FullMethodName         = "/hostserve.v1.HostService/Remove"
+	HostService_RemoveAll_FullMethodName      = "/hostserve.v1.HostService/RemoveAll"
 	HostService_Mkdir_FullMethodName          = "/hostserve.v1.HostService/Mkdir"
 	HostService_MkdirAll_FullMethodName       = "/hostserve.v1.HostService/MkdirAll"
 	HostService_MkdirTemp_FullMethodName      = "/hostserve.v1.HostService/MkdirTemp"
@@ -57,6 +59,8 @@ type HostServiceClient interface {
 	WriteFile(ctx context.Context, in *WriteFileRequest, opts ...grpc.CallOption) (*WriteFileResponse, error)
 	Stat(ctx context.Context, in *StatRequest, opts ...grpc.CallOption) (*StatResponse, error)
 	Rename(ctx context.Context, in *RenameRequest, opts ...grpc.CallOption) (*RenameResponse, error)
+	Remove(ctx context.Context, in *RemoveRequest, opts ...grpc.CallOption) (*RemoveResponse, error)
+	RemoveAll(ctx context.Context, in *RemoveAllRequest, opts ...grpc.CallOption) (*RemoveAllResponse, error)
 	Mkdir(ctx context.Context, in *MkdirRequest, opts ...grpc.CallOption) (*MkdirResponse, error)
 	MkdirAll(ctx context.Context, in *MkdirAllRequest, opts ...grpc.CallOption) (*MkdirAllResponse, error)
 	MkdirTemp(ctx context.Context, in *MkdirTempRequest, opts ...grpc.CallOption) (*MkdirTempResponse, error)
@@ -132,6 +136,26 @@ func (c *hostServiceClient) Rename(ctx context.Context, in *RenameRequest, opts 
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(RenameResponse)
 	err := c.cc.Invoke(ctx, HostService_Rename_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *hostServiceClient) Remove(ctx context.Context, in *RemoveRequest, opts ...grpc.CallOption) (*RemoveResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(RemoveResponse)
+	err := c.cc.Invoke(ctx, HostService_Remove_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *hostServiceClient) RemoveAll(ctx context.Context, in *RemoveAllRequest, opts ...grpc.CallOption) (*RemoveAllResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(RemoveAllResponse)
+	err := c.cc.Invoke(ctx, HostService_RemoveAll_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -343,6 +367,8 @@ type HostServiceServer interface {
 	WriteFile(context.Context, *WriteFileRequest) (*WriteFileResponse, error)
 	Stat(context.Context, *StatRequest) (*StatResponse, error)
 	Rename(context.Context, *RenameRequest) (*RenameResponse, error)
+	Remove(context.Context, *RemoveRequest) (*RemoveResponse, error)
+	RemoveAll(context.Context, *RemoveAllRequest) (*RemoveAllResponse, error)
 	Mkdir(context.Context, *MkdirRequest) (*MkdirResponse, error)
 	MkdirAll(context.Context, *MkdirAllRequest) (*MkdirAllResponse, error)
 	MkdirTemp(context.Context, *MkdirTempRequest) (*MkdirTempResponse, error)
@@ -388,6 +414,12 @@ func (UnimplementedHostServiceServer) Stat(context.Context, *StatRequest) (*Stat
 }
 func (UnimplementedHostServiceServer) Rename(context.Context, *RenameRequest) (*RenameResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Rename not implemented")
+}
+func (UnimplementedHostServiceServer) Remove(context.Context, *RemoveRequest) (*RemoveResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Remove not implemented")
+}
+func (UnimplementedHostServiceServer) RemoveAll(context.Context, *RemoveAllRequest) (*RemoveAllResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RemoveAll not implemented")
 }
 func (UnimplementedHostServiceServer) Mkdir(context.Context, *MkdirRequest) (*MkdirResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Mkdir not implemented")
@@ -550,6 +582,42 @@ func _HostService_Rename_Handler(srv interface{}, ctx context.Context, dec func(
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(HostServiceServer).Rename(ctx, req.(*RenameRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _HostService_Remove_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RemoveRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(HostServiceServer).Remove(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: HostService_Remove_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(HostServiceServer).Remove(ctx, req.(*RemoveRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _HostService_RemoveAll_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RemoveAllRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(HostServiceServer).RemoveAll(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: HostService_RemoveAll_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(HostServiceServer).RemoveAll(ctx, req.(*RemoveAllRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -886,6 +954,14 @@ var HostService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Rename",
 			Handler:    _HostService_Rename_Handler,
+		},
+		{
+			MethodName: "Remove",
+			Handler:    _HostService_Remove_Handler,
+		},
+		{
+			MethodName: "RemoveAll",
+			Handler:    _HostService_RemoveAll_Handler,
 		},
 		{
 			MethodName: "Mkdir",

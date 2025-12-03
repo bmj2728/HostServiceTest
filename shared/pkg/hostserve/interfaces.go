@@ -38,6 +38,12 @@ type IHostFS interface {
 	// Rename renames a file or directory from oldPath to newPath within the specified rootDir. Returns an error if the operation fails.
 	Rename(ctx context.Context, rootDir, oldPath, newPath string) error
 
+	// Remove deletes the file or empty directory specified by the given path. The path cannot escape the root directory.
+	Remove(ctx context.Context, rootDir, path string) error
+
+	// RemoveAll recursively removes the specified directory or file at the given path. The path cannot escape the root directory.
+	RemoveAll(ctx context.Context, rootDir, path string) error
+
 	// Mkdir creates a new directory with the specified name and permissions at the given root directory.
 	Mkdir(ctx context.Context, rootDir string, name string, perm os.FileMode) error
 

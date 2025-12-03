@@ -39,6 +39,8 @@ service HostService {
 
   rpc Stat(StatRequest) returns (StatResponse); // convenience for open->stat->close
   rpc Rename(RenameRequest) returns (RenameResponse);
+  rpc Remove(RemoveRequest) returns (RemoveResponse);
+  rpc RemoveAll(RemoveAllRequest) returns (RemoveAllResponse);
 
   rpc Mkdir(MkdirRequest) returns (MkdirResponse);
   rpc MkdirAll(MkdirAllRequest) returns (MkdirAllResponse);
@@ -142,6 +144,24 @@ message  RenameRequest {
 }
 
 message RenameResponse {
+  optional string error = 1;
+}
+
+message RemoveRequest {
+  string root_dir = 1;
+  string path = 2;
+}
+
+message RemoveResponse {
+  optional string error = 1;
+}
+
+message RemoveAllRequest {
+  string root_dir = 1;
+  string path = 2;
+}
+
+message RemoveAllResponse {
   optional string error = 1;
 }
 

@@ -186,6 +186,47 @@ func (hf *HostFS) Rename(ctx context.Context, rootDir, oldPath, newPath string) 
 	return r.Rename(oldRel, newRel)
 }
 
+func (hf *HostFS) Remove(ctx context.Context, rootDir, path string) error {
+	clientID := getClientIDFromContext(ctx)
+	hclog.Default().Debug("Placeholder Pseudo Cap Check...", "clientID", clientID, "root", rootDir, "path", path)
+
+	r, err := getRoot(rootDir)
+	if err != nil {
+		hclog.Default().Error("Failed to get root", "rootDir", rootDir, "err", err)
+		return err
+	}
+	defer closeRoot(r)
+
+	rel, err := absToRel(rootDir, path)
+	if err != nil {
+		hclog.Default().Error("Failed to get relative path", "rootDir", rootDir, "path", path, "err", err)
+		return err
+	}
+
+	return r.Remove(rel)
+}
+
+func (hf *HostFS) RemoveAll(ctx context.Context, rootDir, path string) error {
+	clientID := getClientIDFromContext(ctx)
+	hclog.Default().Debug("Placeholder Pseudo Cap Check...", "clientID", clientID, "root", rootDir, "path", path)
+
+	r, err := getRoot(rootDir)
+	if err != nil {
+		hclog.Default().Error("Failed to get root", "rootDir", rootDir, "err", err)
+		return err
+	}
+	defer closeRoot(r)
+
+	// absToRel handles either absolute or relative paths returning a relative path
+	rel, err := absToRel(rootDir, path)
+	if err != nil {
+		hclog.Default().Error("Failed to get relative path", "rootDir", rootDir, "path", path, "err", err)
+		return err
+	}
+
+	return r.RemoveAll(rel)
+}
+
 // Mkdir creates a new directory within the given root directory with the specified name and permissions.
 // Returns an error if the directory cannot be created.
 // The `ctx` parameter is used for passing context and the `perm` argument defines the directory's permissions.

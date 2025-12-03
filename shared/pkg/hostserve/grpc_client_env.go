@@ -88,6 +88,38 @@ func (c *HostServiceGRPCClient) GetGroups(ctx context.Context) ([]int32, error) 
 	return resp.Groups, nil
 }
 
+// Getpid retrieves the process ID from the remote host service and returns it, or an error if the operation fails.
+func (c *HostServiceGRPCClient) Getpid(ctx context.Context) (int32, error) {
+	ctx = addTracingIDsToContext(ctx, c.clientID, NewRequestID())
+	resp, err := c.client.Getpid(ctx, &hostservev1.GetpidRequest{})
+	if err != nil {
+		return 0, err
+	}
+	if resp == nil {
+		return 0, &HostServiceError{Message: "nil response from Getpid"}
+	}
+	if resp.GetError() != "" {
+		return 0, &HostServiceError{Message: resp.GetError()}
+	}
+	return resp.Pid, nil
+}
+
+// Getppid retrieves the parent process ID (ppid) using gRPC and returns it or an error if the operation fails.
+func (c *HostServiceGRPCClient) Getppid(ctx context.Context) (int32, error) {
+	ctx = addTracingIDsToContext(ctx, c.clientID, NewRequestID())
+	resp, err := c.client.Getppid(ctx, &hostservev1.GetppidRequest{})
+	if err != nil {
+		return 0, err
+	}
+	if resp == nil {
+		return 0, &HostServiceError{Message: "nil response from Getppid"}
+	}
+	if resp.GetError() != "" {
+		return 0, &HostServiceError{Message: resp.GetError()}
+	}
+	return resp.Ppid, nil
+}
+
 // GetEnv retrieves the value of the specified environment variable via a gRPC call to the host service.
 // Returns an empty string if an error occurs.
 func (c *HostServiceGRPCClient) GetEnv(ctx context.Context, key string) (string, error) {

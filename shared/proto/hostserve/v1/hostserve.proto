@@ -32,16 +32,16 @@ enum OpenFileMode {
 // access to the plugin process
 service HostService {
 
+  // TODO Chmod(unary + handle), Chown(unary + handle), Chtimes(unary + handle), Lchown, Link, Lstat, Readlink, Symlink, Getpid, Getppid, ReadAt(unary + stream), WriteAt(unary + stream)
+
   // FS Endpoints - Unary Calls
   rpc ReadDir(ReadDirRequest) returns (ReadDirResponse);
   rpc ReadFile(ReadFileRequest) returns (ReadFileResponse);
   rpc WriteFile(WriteFileRequest) returns (WriteFileResponse);
-
   rpc Stat(StatRequest) returns (StatResponse); // convenience for open->stat->close
   rpc Rename(RenameRequest) returns (RenameResponse);
   rpc Remove(RemoveRequest) returns (RemoveResponse);
   rpc RemoveAll(RemoveAllRequest) returns (RemoveAllResponse);
-
   rpc Mkdir(MkdirRequest) returns (MkdirResponse);
   rpc MkdirAll(MkdirAllRequest) returns (MkdirAllResponse);
   rpc MkdirTemp(MkdirTempRequest) returns (MkdirTempResponse);
@@ -66,6 +66,8 @@ service HostService {
   rpc Geteuid(GeteuidRequest) returns (GeteuidResponse);
   rpc Getegid(GetegidRequest) returns (GetegidResponse);
   rpc GetGroups(GetGroupsRequest) returns (GetGroupsResponse);
+  rpc Getpid(GetpidRequest) returns (GetpidResponse);
+  rpc Getppid(GetppidRequest) returns (GetppidResponse);
   rpc GetEnv(GetEnvRequest) returns (GetEnvResponse);
   rpc TempDir(TempDirRequest) returns (TempDirResponse);
   rpc UserCacheDir(UserCacheDirRequest) returns (UserCacheDirResponse);
@@ -345,6 +347,24 @@ message GetGroupsRequest {
 message GetGroupsResponse {
   repeated int32 groups = 1;
   optional string error = 2;
+}
+
+message GetpidRequest {
+
+}
+
+message GetpidResponse {
+  int32 pid = 1;
+  optional string error =2;
+}
+
+message GetppidRequest {
+
+}
+
+message GetppidResponse {
+  int32 ppid = 1;
+  optional string error =2;
 }
 
 message GetEnvRequest {

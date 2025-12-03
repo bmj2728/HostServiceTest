@@ -44,6 +44,8 @@ const (
 	HostService_Geteuid_FullMethodName        = "/hostserve.v1.HostService/Geteuid"
 	HostService_Getegid_FullMethodName        = "/hostserve.v1.HostService/Getegid"
 	HostService_GetGroups_FullMethodName      = "/hostserve.v1.HostService/GetGroups"
+	HostService_Getpid_FullMethodName         = "/hostserve.v1.HostService/Getpid"
+	HostService_Getppid_FullMethodName        = "/hostserve.v1.HostService/Getppid"
 	HostService_GetEnv_FullMethodName         = "/hostserve.v1.HostService/GetEnv"
 	HostService_TempDir_FullMethodName        = "/hostserve.v1.HostService/TempDir"
 	HostService_UserCacheDir_FullMethodName   = "/hostserve.v1.HostService/UserCacheDir"
@@ -87,6 +89,8 @@ type HostServiceClient interface {
 	Geteuid(ctx context.Context, in *GeteuidRequest, opts ...grpc.CallOption) (*GeteuidResponse, error)
 	Getegid(ctx context.Context, in *GetegidRequest, opts ...grpc.CallOption) (*GetegidResponse, error)
 	GetGroups(ctx context.Context, in *GetGroupsRequest, opts ...grpc.CallOption) (*GetGroupsResponse, error)
+	Getpid(ctx context.Context, in *GetpidRequest, opts ...grpc.CallOption) (*GetpidResponse, error)
+	Getppid(ctx context.Context, in *GetppidRequest, opts ...grpc.CallOption) (*GetppidResponse, error)
 	GetEnv(ctx context.Context, in *GetEnvRequest, opts ...grpc.CallOption) (*GetEnvResponse, error)
 	TempDir(ctx context.Context, in *TempDirRequest, opts ...grpc.CallOption) (*TempDirResponse, error)
 	UserCacheDir(ctx context.Context, in *UserCacheDirRequest, opts ...grpc.CallOption) (*UserCacheDirResponse, error)
@@ -364,6 +368,26 @@ func (c *hostServiceClient) GetGroups(ctx context.Context, in *GetGroupsRequest,
 	return out, nil
 }
 
+func (c *hostServiceClient) Getpid(ctx context.Context, in *GetpidRequest, opts ...grpc.CallOption) (*GetpidResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetpidResponse)
+	err := c.cc.Invoke(ctx, HostService_Getpid_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *hostServiceClient) Getppid(ctx context.Context, in *GetppidRequest, opts ...grpc.CallOption) (*GetppidResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetppidResponse)
+	err := c.cc.Invoke(ctx, HostService_Getppid_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *hostServiceClient) GetEnv(ctx context.Context, in *GetEnvRequest, opts ...grpc.CallOption) (*GetEnvResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(GetEnvResponse)
@@ -450,6 +474,8 @@ type HostServiceServer interface {
 	Geteuid(context.Context, *GeteuidRequest) (*GeteuidResponse, error)
 	Getegid(context.Context, *GetegidRequest) (*GetegidResponse, error)
 	GetGroups(context.Context, *GetGroupsRequest) (*GetGroupsResponse, error)
+	Getpid(context.Context, *GetpidRequest) (*GetpidResponse, error)
+	Getppid(context.Context, *GetppidRequest) (*GetppidResponse, error)
 	GetEnv(context.Context, *GetEnvRequest) (*GetEnvResponse, error)
 	TempDir(context.Context, *TempDirRequest) (*TempDirResponse, error)
 	UserCacheDir(context.Context, *UserCacheDirRequest) (*UserCacheDirResponse, error)
@@ -539,6 +565,12 @@ func (UnimplementedHostServiceServer) Getegid(context.Context, *GetegidRequest) 
 }
 func (UnimplementedHostServiceServer) GetGroups(context.Context, *GetGroupsRequest) (*GetGroupsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetGroups not implemented")
+}
+func (UnimplementedHostServiceServer) Getpid(context.Context, *GetpidRequest) (*GetpidResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Getpid not implemented")
+}
+func (UnimplementedHostServiceServer) Getppid(context.Context, *GetppidRequest) (*GetppidResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Getppid not implemented")
 }
 func (UnimplementedHostServiceServer) GetEnv(context.Context, *GetEnvRequest) (*GetEnvResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetEnv not implemented")
@@ -1008,6 +1040,42 @@ func _HostService_GetGroups_Handler(srv interface{}, ctx context.Context, dec fu
 	return interceptor(ctx, in, info, handler)
 }
 
+func _HostService_Getpid_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetpidRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(HostServiceServer).Getpid(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: HostService_Getpid_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(HostServiceServer).Getpid(ctx, req.(*GetpidRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _HostService_Getppid_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetppidRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(HostServiceServer).Getppid(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: HostService_Getppid_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(HostServiceServer).Getppid(ctx, req.(*GetppidRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _HostService_GetEnv_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(GetEnvRequest)
 	if err := dec(in); err != nil {
@@ -1196,6 +1264,14 @@ var HostService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetGroups",
 			Handler:    _HostService_GetGroups_Handler,
+		},
+		{
+			MethodName: "Getpid",
+			Handler:    _HostService_Getpid_Handler,
+		},
+		{
+			MethodName: "Getppid",
+			Handler:    _HostService_Getppid_Handler,
 		},
 		{
 			MethodName: "GetEnv",

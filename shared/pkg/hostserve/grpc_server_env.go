@@ -172,6 +172,70 @@ func (s *HostServiceGRPCServer) GetGroups(ctx context.Context, _ *hostservev1.Ge
 	}, nil
 }
 
+// Getpid handles a request to retrieve the process ID of the server and returns it in a GetpidResponse.
+func (s *HostServiceGRPCServer) Getpid(ctx context.Context, _ *hostservev1.GetpidRequest) (*hostservev1.GetpidResponse, error) {
+	ctx, clientID, reqID, owner, err := s.processRequestContext(ctx)
+	if err != nil {
+		hclog.Default().Info("Getpid bad request from client",
+			ctxClientIDKey, clientID,
+			ctxClientOwner, owner,
+			ctxHostRequestIDKey, reqID,
+			"error", err,
+		)
+		return &hostservev1.GetpidResponse{
+			Error: proto.String(err.Error()),
+		}, nil
+	}
+
+	// Log the request
+	hclog.Default().Info("Getpid request from client",
+		ctxClientIDKey, clientID,
+		ctxClientOwner, owner,
+		ctxHostRequestIDKey, reqID)
+
+	pid, err := s.Impl.Getpid(ctx)
+	if err != nil {
+		return &hostservev1.GetpidResponse{
+			Error: proto.String(err.Error()),
+		}, nil
+	}
+	return &hostservev1.GetpidResponse{
+		Pid: pid,
+	}, nil
+}
+
+// Getppid handles a request to retrieve the parent process ID (PPID) using information from the server's implementation.
+func (s *HostServiceGRPCServer) Getppid(ctx context.Context, _ *hostservev1.GetppidRequest) (*hostservev1.GetppidResponse, error) {
+	ctx, clientID, reqID, owner, err := s.processRequestContext(ctx)
+	if err != nil {
+		hclog.Default().Info("Getppid bad request from client",
+			ctxClientIDKey, clientID,
+			ctxClientOwner, owner,
+			ctxHostRequestIDKey, reqID,
+			"error", err,
+		)
+		return &hostservev1.GetppidResponse{
+			Error: proto.String(err.Error()),
+		}, nil
+	}
+
+	// Log the request
+	hclog.Default().Info("Getppid request from client",
+		ctxClientIDKey, clientID,
+		ctxClientOwner, owner,
+		ctxHostRequestIDKey, reqID)
+
+	ppid, err := s.Impl.Getppid(ctx)
+	if err != nil {
+		return &hostservev1.GetppidResponse{
+			Error: proto.String(err.Error()),
+		}, nil
+	}
+	return &hostservev1.GetppidResponse{
+		Ppid: ppid,
+	}, nil
+}
+
 // GetEnv handles a gRPC request to retrieve the value of an environment variable identified by the request key.
 func (s *HostServiceGRPCServer) GetEnv(ctx context.Context,
 	request *hostservev1.GetEnvRequest) (*hostservev1.GetEnvResponse, error) {

@@ -106,6 +106,12 @@ type IHostEnv interface {
 	// GetGroups retrieves the list of group IDs associated with the current user context.
 	GetGroups(ctx context.Context) ([]int32, error)
 
+	// Getpid retrieves the process ID of the currently running process on the host system.
+	Getpid(ctx context.Context) (int32, error)
+
+	// Getppid retrieves the parent process ID of the current process in the host environment.
+	Getppid(ctx context.Context) (int32, error)
+
 	// GetEnv fetches the value of an environment variable by its key and returns it as a string.
 	GetEnv(ctx context.Context, key string) (string, error)
 

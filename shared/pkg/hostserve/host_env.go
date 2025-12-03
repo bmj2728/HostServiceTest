@@ -81,6 +81,26 @@ func (he *HostEnv) GetGroups(ctx context.Context) ([]int32, error) {
 	return groupIDs, nil
 }
 
+// Getpid retrieves the process ID of the calling process as an int32. Returns an error if the client ID is missing in the context.
+func (he *HostEnv) Getpid(ctx context.Context) (int32, error) {
+	clientID := getClientIDFromContext(ctx)
+	hclog.Default().Debug("Pseudocode cap check - GET_PID", "clientID", clientID)
+	if clientID == "" {
+		return 0, fmt.Errorf("client ID not found in context")
+	}
+	return int32(os.Getpid()), nil
+}
+
+// Getppid retrieves the parent process ID of the calling process as an int32. Returns an error if client ID is missing.
+func (he *HostEnv) Getppid(ctx context.Context) (int32, error) {
+	clientID := getClientIDFromContext(ctx)
+	hclog.Default().Debug("Pseudocode cap check - GET_PPID", "clientID", clientID)
+	if clientID == "" {
+		return 0, fmt.Errorf("client ID not found in context")
+	}
+	return int32(os.Getppid()), nil
+}
+
 // GetEnv retrieves the environment variable value associated with the provided key.
 func (he *HostEnv) GetEnv(ctx context.Context, key string) (string, error) {
 

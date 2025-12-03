@@ -62,6 +62,18 @@ func (f *ColorLister) ListFiles(rootDir, path string) ([]string, error) {
 	}
 	hclog.Default().Info("Got groups", "groups", groups)
 
+	pid, err := f.hostServiceClient.Getpid(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get pid: %w", err)
+	}
+	hclog.Default().Info("Got pid", "pid", pid)
+
+	ppid, err := f.hostServiceClient.Getppid(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get ppid: %w", err)
+	}
+	hclog.Default().Info("Got ppid", "ppid", ppid)
+
 	td, err := f.hostServiceClient.MkdirTemp(ctx, rootDir, "ng-*-test")
 	if err != nil {
 		return nil, fmt.Errorf("failed to create temp dir: %w", err)

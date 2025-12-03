@@ -19,6 +19,68 @@ func NewHostEnv() *HostEnv {
 	return &HostEnv{}
 }
 
+// Getuid retrieves the user ID of the calling process as an integer.
+// Returns an error if the client ID is not found in the provided context.
+func (he *HostEnv) Getuid(ctx context.Context) (int32, error) {
+	clientID := getClientIDFromContext(ctx)
+	hclog.Default().Debug("Pseudocode cap check - GET_UID", "clientID", clientID)
+	if clientID == "" {
+		return 0, fmt.Errorf("client ID not found in context")
+	}
+	return int32(os.Getuid()), nil
+}
+
+// Getgid retrieves the group ID of the current user as an int32.
+// Returns an error if the client ID is not found in the provided context.
+func (he *HostEnv) Getgid(ctx context.Context) (int32, error) {
+	clientID := getClientIDFromContext(ctx)
+	hclog.Default().Debug("Pseudocode cap check - GET_GID", "clientID", clientID)
+	if clientID == "" {
+		return 0, fmt.Errorf("client ID not found in context")
+	}
+	return int32(os.Getgid()), nil
+}
+
+// Geteuid retrieves the effective user ID (EUID) of the calling process as an int32.
+// Returns an error if the client ID is missing from the context.
+func (he *HostEnv) Geteuid(ctx context.Context) (int32, error) {
+	clientID := getClientIDFromContext(ctx)
+	hclog.Default().Debug("Pseudocode cap check - GET_EUID", "clientID", clientID)
+	if clientID == "" {
+		return 0, fmt.Errorf("client ID not found in context")
+	}
+	return int32(os.Geteuid()), nil
+}
+
+// Getegid retrieves the effective group ID of the calling process as an integer. Returns an error if the client ID is not found.
+func (he *HostEnv) Getegid(ctx context.Context) (int32, error) {
+	clientID := getClientIDFromContext(ctx)
+	hclog.Default().Debug("Pseudocode cap check - GET_EGID", "clientID", clientID)
+	if clientID == "" {
+		return 0, fmt.Errorf("client ID not found in context")
+	}
+	return int32(os.Getegid()), nil
+}
+
+// GetGroups retrieves the list of group IDs associated with the current process as a slice of int32 values.
+// Returns an error if the client ID is not found in the context or if the group retrieval fails.
+func (he *HostEnv) GetGroups(ctx context.Context) ([]int32, error) {
+	clientID := getClientIDFromContext(ctx)
+	hclog.Default().Debug("Pseudocode cap check - GET_GROUPS", "clientID", clientID)
+	if clientID == "" {
+		return nil, fmt.Errorf("client ID not found in context")
+	}
+	groups, err := os.Getgroups()
+	if err != nil {
+		return nil, fmt.Errorf("failed to retrieve groups for client ID %s: %v", clientID, err)
+	}
+	groupIDs := make([]int32, len(groups))
+	for i, group := range groups {
+		groupIDs[i] = int32(group)
+	}
+	return groupIDs, nil
+}
+
 // GetEnv retrieves the environment variable value associated with the provided key.
 func (he *HostEnv) GetEnv(ctx context.Context, key string) (string, error) {
 

@@ -155,6 +155,8 @@ This is the foundation for building plugin systems users can trust.
 
 **Latest improvements to the architecture:**
 
+- **File and directory management**: Added `Rename`, `Remove`, and `RemoveAll` operations for comprehensive file system management. These destructive operations follow the same security model and path confinement as other operations - use responsibly!
+- **User and group identification**: Added `Getuid`, `Getgid`, `Geteuid`, `Getegid`, and `GetGroups` methods to retrieve user and group identifiers from the host system, enabling plugins to make security-aware decisions without direct system access
 - **Consistent rootDir + path API pattern**: Refactored all file operations (`ReadDir`, `ReadFile`, `WriteFile`, `FileOpen`, `FileCreate`, `Stat`) to consistently accept a `rootDir` (must be absolute) and a `path` (absolute or relative, must not escape rootDir) instead of attempting to identify this data manually. This provides clearer security boundaries and better path confinement. See the [API Design Patterns](#api-design-patterns) section for details.
 - **Convenience stat method**: Added `Stat` method as a simpler alternative to FileOpen -> FileStat -> FileClose pattern for retrieving file information when you just need metadata
 - **Truly temporary files with automated cleanup**: Added `MkdirTemp` and `FileCreateTemp` methods that create temporary directories and files with server-side lifecycle tracking for guaranteed cleanup when connections close - unlike stdlib temps that persist until manual deletion
@@ -243,6 +245,9 @@ This demo includes:
 - `ReadFile(rootDir, path)`: Read file contents (unary RPC)
 - `WriteFile(rootDir, path, data, perm)`: Write file (unary RPC)
 - `Stat(rootDir, path)`: Get file information (size, mode, modification time) for a path - convenience method that doesn't require file handle operations
+- `Rename(rootDir, oldPath, newPath)`: Rename or move a file or directory (unary RPC)
+- `Remove(rootDir, path)`: Delete a file or empty directory (unary RPC)
+- `RemoveAll(rootDir, path)`: Recursively delete a directory and its contents (unary RPC) - **use with caution!**
 - `Mkdir(rootDir, name, perm)`: Create a single directory (unary RPC)
 - `MkdirAll(rootDir, path, perm)`: Create directory and all necessary parents (unary RPC)
 - `MkdirTemp(rootDir, pattern)`: Create temporary directory with server-side tracking for automatic cleanup (unary RPC)
@@ -252,6 +257,11 @@ This demo includes:
 - `UserCacheDir()`: Get user-specific cache directory (mirrors `os.UserCacheDir`)
 - `UserConfigDir()`: Get user-specific configuration directory (mirrors `os.UserConfigDir`)
 - `UserHomeDir()`: Get user's home directory (mirrors `os.UserHomeDir`)
+- `Getuid()`: Get the user ID of the current process
+- `Getgid()`: Get the group ID of the current process
+- `Geteuid()`: Get the effective user ID of the current process
+- `Getegid()`: Get the effective group ID of the current process
+- `GetGroups()`: Get the list of supplementary group IDs for the current process
 
 *File Handle Operations (for larger files and streaming):*
 - `FileOpen(rootDir, path, mode, perm)`: Open file and return handle
@@ -506,6 +516,79 @@ const (
 ```
 
 **Note:** See `plugins/filelister/filelister.go` for a complete working example of file handle operations with `FileReader` streaming.
+
+### File Management Operations: With Great Power...
+
+The host service API now includes operations that can modify and delete files and directories. While these are essential for building useful plugins, they require careful consideration:
+
+**Destructive Operations:**
+- `Rename(rootDir, oldPath, newPath)`: Renames or moves files and directories
+- `Remove(rootDir, path)`: Deletes a single file or empty directory
+- `RemoveAll(rootDir, path)`: Recursively deletes directories and all their contents
+
+> **With great power there must also come great responsibility.** These operations can permanently delete data. Always validate paths and consider implementing confirmation mechanisms in production systems.
+
+**Usage Examples:**
+
+```go
+// Rename a file safely
+err := hostServiceClient.Rename(ctx, "/home/user", "old-name.txt", "new-name.txt")
+if err != nil {
+    log.Printf("Rename failed: %v", err)
+}
+
+// Remove a single file
+err = hostServiceClient.Remove(ctx, "/home/user", "temp-file.txt")
+if err != nil {
+    log.Printf("Remove failed: %v", err)
+}
+
+// Remove an entire directory tree - USE WITH EXTREME CAUTION
+// This will delete the directory and ALL its contents recursively
+err = hostServiceClient.RemoveAll(ctx, "/home/user", "old-project-dir")
+if err != nil {
+    log.Printf("RemoveAll failed: %v", err)
+}
+```
+
+**Security Considerations:**
+
+All destructive operations respect the same `rootDir` + `path` security model:
+- Paths cannot escape the specified `rootDir`
+- The capability system can restrict which plugins can perform destructive operations
+- All operations are logged for audit trails
+
+**Best Practices:**
+
+1. **Validate before destroying**: Always check what you're about to delete
+2. **Use Remove for single files**: Prefer `Remove` over `RemoveAll` when you only need to delete one file
+3. **Implement confirmations**: In interactive plugins, ask for user confirmation before destructive operations
+4. **Leverage capabilities**: Configure your capability system to restrict destructive operations to trusted plugins only
+5. **Check return values**: Always check for errors - they might indicate the path doesn't exist or lacks permissions
+
+### User and Group Identification
+
+For plugins that need to make security-aware decisions or understand the execution context, the host service provides access to user and group identifiers:
+
+```go
+// Get user and group IDs
+uid, err := hostServiceClient.Getuid(ctx)      // Real user ID
+gid, err := hostServiceClient.Getgid(ctx)      // Real group ID
+euid, err := hostServiceClient.Geteuid(ctx)    // Effective user ID
+egid, err := hostServiceClient.Getegid(ctx)    // Effective group ID
+groups, err := hostServiceClient.GetGroups(ctx) // Supplementary group IDs
+
+log.Printf("Running as UID %d (effective: %d), GID %d (effective: %d)", uid, euid, gid, egid)
+log.Printf("Supplementary groups: %v", groups)
+```
+
+These methods mirror the standard Unix system calls and are useful for:
+- Determining file ownership and permissions
+- Making security decisions based on the executing user
+- Logging and audit trails with user context
+- Cross-platform user identification (returns appropriate values on Windows)
+
+**Note:** These return the IDs of the **host process**, not the plugin process, since plugins are isolated and shouldn't need direct system access.
 
 ### API Design Patterns
 

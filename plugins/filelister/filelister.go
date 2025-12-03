@@ -167,6 +167,11 @@ func (f *FileLister) ListFiles(rootDir, path string) ([]string, error) {
 		hclog.Default().Error("Failed to rename file", "err", err)
 	}
 
+	err = f.hostServiceClient.Remove(ctx, rootDir, "deleteme.txt")
+	if err != nil {
+		hclog.Default().Error("Failed to remove file", "err", err)
+	}
+
 	// oops we missed closing the file handle -- this showcases the cleanup server-side
 	//err = f.hostServiceClient.FileClose(ctx, retrieved)
 	//if err != nil {

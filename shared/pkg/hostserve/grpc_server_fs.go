@@ -287,7 +287,7 @@ func (s *HostServiceGRPCServer) RemoveAll(ctx context.Context, request *hostserv
 		"path", request.Path,
 	)
 
-	err = s.Impl.Remove(ctx, request.RootDir, request.Path)
+	err = s.Impl.RemoveAll(ctx, request.RootDir, request.Path)
 	if err != nil {
 		return &hostservev1.RemoveAllResponse{Error: proto.String(err.Error())}, nil
 	}

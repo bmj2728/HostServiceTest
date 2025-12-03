@@ -87,6 +87,8 @@ func main() {
 		hclog.Default().Error("Failed to rename file", "err", err)
 	}
 
+	_, err = os.Create("./deleteme.txt")
+
 	// Set up logging
 	logger := hclog.New(&hclog.LoggerOptions{
 		Name:   "host",

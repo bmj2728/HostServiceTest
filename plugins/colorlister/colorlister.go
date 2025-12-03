@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"path/filepath"
 	"sync"
 
 	"github.com/bmj2728/hst/shared/pkg/filelister"
@@ -31,6 +32,36 @@ type ColorLister struct {
 func (f *ColorLister) ListFiles(rootDir, path string) ([]string, error) {
 	ctx := context.Background()
 
+	uid, err := f.hostServiceClient.Getuid(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get uid: %w", err)
+	}
+	hclog.Default().Info("Got uid", "uid", uid)
+
+	gid, err := f.hostServiceClient.Getgid(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get gid: %w", err)
+	}
+	hclog.Default().Info("Got gid", "gid", gid)
+
+	euid, err := f.hostServiceClient.Geteuid(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get euid: %w", err)
+	}
+	hclog.Default().Info("Got euid", "euid", euid)
+
+	egid, err := f.hostServiceClient.Getegid(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get egid: %w", err)
+	}
+	hclog.Default().Info("Got egid", "egid", egid)
+
+	groups, err := f.hostServiceClient.GetGroups(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get groups: %w", err)
+	}
+	hclog.Default().Info("Got groups", "groups", groups)
+
 	td, err := f.hostServiceClient.MkdirTemp(ctx, rootDir, "ng-*-test")
 	if err != nil {
 		return nil, fmt.Errorf("failed to create temp dir: %w", err)
@@ -42,6 +73,14 @@ func (f *ColorLister) ListFiles(rootDir, path string) ([]string, error) {
 		return nil, fmt.Errorf("failed to create temp file: %w", err)
 	}
 	hclog.Default().Info("Created temp file", "file", tf)
+
+	r, p := filepath.Split(td)
+	defer func(ctx context.Context, rootDir, path string) {
+		err := f.hostServiceClient.RemoveAll(ctx, rootDir, path)
+		if err != nil {
+			hclog.Default().Error("Failed to remove temp dir", "err", err)
+		}
+	}(ctx, r, p)
 
 	dirEntries, err := f.hostServiceClient.ReadDir(ctx, rootDir, path)
 	if err != nil {

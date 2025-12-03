@@ -171,6 +171,47 @@ func (c *HostServiceGRPCClient) Rename(ctx context.Context, rootDir, oldPath, ne
 	return nil
 }
 
+// Remove removes a specified path within a root directory by making a gRPC call to the host service.
+// Returns an error if the operation fails or if the response contains an error.
+// Context is enhanced with tracing IDs before sending the request.
+func (c *HostServiceGRPCClient) Remove(ctx context.Context, rootDir, path string) error {
+	ctx = addTracingIDsToContext(ctx, c.clientID, NewRequestID())
+	resp, err := c.client.Remove(ctx, &hostservev1.RemoveRequest{
+		RootDir: rootDir,
+		Path:    path,
+	})
+	if err != nil {
+		return &HostServiceError{Message: err.Error()}
+	}
+	if resp == nil {
+		return &HostServiceError{Message: "nil response from Remove"}
+	}
+	if resp.Error != nil {
+		return &HostServiceError{Message: *resp.Error}
+	}
+	return nil
+}
+
+// RemoveAll removes all files and directories within the specified path under the provided root directory via gRPC.
+// It expects a context with tracing metadata and returns an error if the operation fails or the response is nil or contains errors.
+func (c *HostServiceGRPCClient) RemoveAll(ctx context.Context, rootDir, path string) error {
+	ctx = addTracingIDsToContext(ctx, c.clientID, NewRequestID())
+	resp, err := c.client.RemoveAll(ctx, &hostservev1.RemoveAllRequest{
+		RootDir: rootDir,
+		Path:    path,
+	})
+	if err != nil {
+		return &HostServiceError{Message: err.Error()}
+	}
+	if resp == nil {
+		return &HostServiceError{Message: "nil response from Remove"}
+	}
+	if resp.Error != nil {
+		return &HostServiceError{Message: *resp.Error}
+	}
+	return nil
+}
+
 // FileCreate creates a new file at the specified path and returns a handle for the created file or an error if any occurs.
 func (c *HostServiceGRPCClient) FileCreate(ctx context.Context, rootDir, path string) (FileHandle, error) {
 	ctx = addTracingIDsToContext(ctx, c.clientID, NewRequestID())

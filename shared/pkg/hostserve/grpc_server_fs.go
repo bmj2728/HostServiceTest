@@ -235,6 +235,65 @@ func (s *HostServiceGRPCServer) Rename(ctx context.Context, request *hostservev1
 	return &hostservev1.RenameResponse{}, nil
 }
 
+// Remove handles a client request to remove a specified path under a root directory and returns a response or an error.
+func (s *HostServiceGRPCServer) Remove(ctx context.Context, request *hostservev1.RemoveRequest) (*hostservev1.RemoveResponse, error) {
+	ctx, clientID, reqID, owner, err := s.processRequestContext(ctx)
+	if err != nil {
+		hclog.Default().Info("Remove bad request from client",
+			ctxClientIDKey, clientID,
+			ctxClientOwner, owner,
+			ctxHostRequestIDKey, reqID,
+			"rootDir", request.RootDir,
+			"path", request.Path,
+			"error", err,
+		)
+		return &hostservev1.RemoveResponse{Error: proto.String(err.Error())}, nil
+	}
+	hclog.Default().Info("Remove request from client",
+		ctxClientIDKey, clientID,
+		ctxClientOwner, owner,
+		ctxHostRequestIDKey, reqID,
+		"rootDir", request.RootDir,
+		"path", request.Path,
+	)
+
+	err = s.Impl.Remove(ctx, request.RootDir, request.Path)
+	if err != nil {
+		return &hostservev1.RemoveResponse{Error: proto.String(err.Error())}, nil
+	}
+	return &hostservev1.RemoveResponse{}, nil
+}
+
+// RemoveAll removes all resources specified by the RootDir and Path fields in the given request.
+// Returns a response with an error message if the operation fails.
+func (s *HostServiceGRPCServer) RemoveAll(ctx context.Context, request *hostservev1.RemoveAllRequest) (*hostservev1.RemoveAllResponse, error) {
+	ctx, clientID, reqID, owner, err := s.processRequestContext(ctx)
+	if err != nil {
+		hclog.Default().Info("RemoveAll bad request from client",
+			ctxClientIDKey, clientID,
+			ctxClientOwner, owner,
+			ctxHostRequestIDKey, reqID,
+			"rootDir", request.RootDir,
+			"path", request.Path,
+			"error", err,
+		)
+		return &hostservev1.RemoveAllResponse{Error: proto.String(err.Error())}, nil
+	}
+	hclog.Default().Info("RemoveAll request from client",
+		ctxClientIDKey, clientID,
+		ctxClientOwner, owner,
+		ctxHostRequestIDKey, reqID,
+		"rootDir", request.RootDir,
+		"path", request.Path,
+	)
+
+	err = s.Impl.RemoveAll(ctx, request.RootDir, request.Path)
+	if err != nil {
+		return &hostservev1.RemoveAllResponse{Error: proto.String(err.Error())}, nil
+	}
+	return &hostservev1.RemoveAllResponse{}, nil
+}
+
 // Mkdir handles a gRPC request to create a new directory at the specified root directory with the given name and permissions.
 func (s *HostServiceGRPCServer) Mkdir(ctx context.Context,
 	request *hostservev1.MkdirRequest,

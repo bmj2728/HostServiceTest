@@ -24,6 +24,8 @@ const (
 	HostService_WriteFile_FullMethodName      = "/hostserve.v1.HostService/WriteFile"
 	HostService_Stat_FullMethodName           = "/hostserve.v1.HostService/Stat"
 	HostService_Rename_FullMethodName         = "/hostserve.v1.HostService/Rename"
+	HostService_Remove_FullMethodName         = "/hostserve.v1.HostService/Remove"
+	HostService_RemoveAll_FullMethodName      = "/hostserve.v1.HostService/RemoveAll"
 	HostService_Mkdir_FullMethodName          = "/hostserve.v1.HostService/Mkdir"
 	HostService_MkdirAll_FullMethodName       = "/hostserve.v1.HostService/MkdirAll"
 	HostService_MkdirTemp_FullMethodName      = "/hostserve.v1.HostService/MkdirTemp"
@@ -37,6 +39,11 @@ const (
 	HostService_FileTruncate_FullMethodName   = "/hostserve.v1.HostService/FileTruncate"
 	HostService_FileReader_FullMethodName     = "/hostserve.v1.HostService/FileReader"
 	HostService_FileWriter_FullMethodName     = "/hostserve.v1.HostService/FileWriter"
+	HostService_Getuid_FullMethodName         = "/hostserve.v1.HostService/Getuid"
+	HostService_Getgid_FullMethodName         = "/hostserve.v1.HostService/Getgid"
+	HostService_Geteuid_FullMethodName        = "/hostserve.v1.HostService/Geteuid"
+	HostService_Getegid_FullMethodName        = "/hostserve.v1.HostService/Getegid"
+	HostService_GetGroups_FullMethodName      = "/hostserve.v1.HostService/GetGroups"
 	HostService_GetEnv_FullMethodName         = "/hostserve.v1.HostService/GetEnv"
 	HostService_TempDir_FullMethodName        = "/hostserve.v1.HostService/TempDir"
 	HostService_UserCacheDir_FullMethodName   = "/hostserve.v1.HostService/UserCacheDir"
@@ -57,6 +64,8 @@ type HostServiceClient interface {
 	WriteFile(ctx context.Context, in *WriteFileRequest, opts ...grpc.CallOption) (*WriteFileResponse, error)
 	Stat(ctx context.Context, in *StatRequest, opts ...grpc.CallOption) (*StatResponse, error)
 	Rename(ctx context.Context, in *RenameRequest, opts ...grpc.CallOption) (*RenameResponse, error)
+	Remove(ctx context.Context, in *RemoveRequest, opts ...grpc.CallOption) (*RemoveResponse, error)
+	RemoveAll(ctx context.Context, in *RemoveAllRequest, opts ...grpc.CallOption) (*RemoveAllResponse, error)
 	Mkdir(ctx context.Context, in *MkdirRequest, opts ...grpc.CallOption) (*MkdirResponse, error)
 	MkdirAll(ctx context.Context, in *MkdirAllRequest, opts ...grpc.CallOption) (*MkdirAllResponse, error)
 	MkdirTemp(ctx context.Context, in *MkdirTempRequest, opts ...grpc.CallOption) (*MkdirTempResponse, error)
@@ -73,6 +82,11 @@ type HostServiceClient interface {
 	FileReader(ctx context.Context, in *FileReadRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[FileReadResponse], error)
 	FileWriter(ctx context.Context, opts ...grpc.CallOption) (grpc.ClientStreamingClient[FileWriteRequest, FileWriteResponse], error)
 	// Env Endpoints
+	Getuid(ctx context.Context, in *GetuidRequest, opts ...grpc.CallOption) (*GetuidResponse, error)
+	Getgid(ctx context.Context, in *GetgidRequest, opts ...grpc.CallOption) (*GetgidResponse, error)
+	Geteuid(ctx context.Context, in *GeteuidRequest, opts ...grpc.CallOption) (*GeteuidResponse, error)
+	Getegid(ctx context.Context, in *GetegidRequest, opts ...grpc.CallOption) (*GetegidResponse, error)
+	GetGroups(ctx context.Context, in *GetGroupsRequest, opts ...grpc.CallOption) (*GetGroupsResponse, error)
 	GetEnv(ctx context.Context, in *GetEnvRequest, opts ...grpc.CallOption) (*GetEnvResponse, error)
 	TempDir(ctx context.Context, in *TempDirRequest, opts ...grpc.CallOption) (*TempDirResponse, error)
 	UserCacheDir(ctx context.Context, in *UserCacheDirRequest, opts ...grpc.CallOption) (*UserCacheDirResponse, error)
@@ -132,6 +146,26 @@ func (c *hostServiceClient) Rename(ctx context.Context, in *RenameRequest, opts 
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(RenameResponse)
 	err := c.cc.Invoke(ctx, HostService_Rename_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *hostServiceClient) Remove(ctx context.Context, in *RemoveRequest, opts ...grpc.CallOption) (*RemoveResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(RemoveResponse)
+	err := c.cc.Invoke(ctx, HostService_Remove_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *hostServiceClient) RemoveAll(ctx context.Context, in *RemoveAllRequest, opts ...grpc.CallOption) (*RemoveAllResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(RemoveAllResponse)
+	err := c.cc.Invoke(ctx, HostService_RemoveAll_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -280,6 +314,56 @@ func (c *hostServiceClient) FileWriter(ctx context.Context, opts ...grpc.CallOpt
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
 type HostService_FileWriterClient = grpc.ClientStreamingClient[FileWriteRequest, FileWriteResponse]
 
+func (c *hostServiceClient) Getuid(ctx context.Context, in *GetuidRequest, opts ...grpc.CallOption) (*GetuidResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetuidResponse)
+	err := c.cc.Invoke(ctx, HostService_Getuid_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *hostServiceClient) Getgid(ctx context.Context, in *GetgidRequest, opts ...grpc.CallOption) (*GetgidResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetgidResponse)
+	err := c.cc.Invoke(ctx, HostService_Getgid_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *hostServiceClient) Geteuid(ctx context.Context, in *GeteuidRequest, opts ...grpc.CallOption) (*GeteuidResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GeteuidResponse)
+	err := c.cc.Invoke(ctx, HostService_Geteuid_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *hostServiceClient) Getegid(ctx context.Context, in *GetegidRequest, opts ...grpc.CallOption) (*GetegidResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetegidResponse)
+	err := c.cc.Invoke(ctx, HostService_Getegid_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *hostServiceClient) GetGroups(ctx context.Context, in *GetGroupsRequest, opts ...grpc.CallOption) (*GetGroupsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetGroupsResponse)
+	err := c.cc.Invoke(ctx, HostService_GetGroups_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *hostServiceClient) GetEnv(ctx context.Context, in *GetEnvRequest, opts ...grpc.CallOption) (*GetEnvResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(GetEnvResponse)
@@ -343,6 +427,8 @@ type HostServiceServer interface {
 	WriteFile(context.Context, *WriteFileRequest) (*WriteFileResponse, error)
 	Stat(context.Context, *StatRequest) (*StatResponse, error)
 	Rename(context.Context, *RenameRequest) (*RenameResponse, error)
+	Remove(context.Context, *RemoveRequest) (*RemoveResponse, error)
+	RemoveAll(context.Context, *RemoveAllRequest) (*RemoveAllResponse, error)
 	Mkdir(context.Context, *MkdirRequest) (*MkdirResponse, error)
 	MkdirAll(context.Context, *MkdirAllRequest) (*MkdirAllResponse, error)
 	MkdirTemp(context.Context, *MkdirTempRequest) (*MkdirTempResponse, error)
@@ -359,6 +445,11 @@ type HostServiceServer interface {
 	FileReader(*FileReadRequest, grpc.ServerStreamingServer[FileReadResponse]) error
 	FileWriter(grpc.ClientStreamingServer[FileWriteRequest, FileWriteResponse]) error
 	// Env Endpoints
+	Getuid(context.Context, *GetuidRequest) (*GetuidResponse, error)
+	Getgid(context.Context, *GetgidRequest) (*GetgidResponse, error)
+	Geteuid(context.Context, *GeteuidRequest) (*GeteuidResponse, error)
+	Getegid(context.Context, *GetegidRequest) (*GetegidResponse, error)
+	GetGroups(context.Context, *GetGroupsRequest) (*GetGroupsResponse, error)
 	GetEnv(context.Context, *GetEnvRequest) (*GetEnvResponse, error)
 	TempDir(context.Context, *TempDirRequest) (*TempDirResponse, error)
 	UserCacheDir(context.Context, *UserCacheDirRequest) (*UserCacheDirResponse, error)
@@ -388,6 +479,12 @@ func (UnimplementedHostServiceServer) Stat(context.Context, *StatRequest) (*Stat
 }
 func (UnimplementedHostServiceServer) Rename(context.Context, *RenameRequest) (*RenameResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Rename not implemented")
+}
+func (UnimplementedHostServiceServer) Remove(context.Context, *RemoveRequest) (*RemoveResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Remove not implemented")
+}
+func (UnimplementedHostServiceServer) RemoveAll(context.Context, *RemoveAllRequest) (*RemoveAllResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RemoveAll not implemented")
 }
 func (UnimplementedHostServiceServer) Mkdir(context.Context, *MkdirRequest) (*MkdirResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Mkdir not implemented")
@@ -427,6 +524,21 @@ func (UnimplementedHostServiceServer) FileReader(*FileReadRequest, grpc.ServerSt
 }
 func (UnimplementedHostServiceServer) FileWriter(grpc.ClientStreamingServer[FileWriteRequest, FileWriteResponse]) error {
 	return status.Errorf(codes.Unimplemented, "method FileWriter not implemented")
+}
+func (UnimplementedHostServiceServer) Getuid(context.Context, *GetuidRequest) (*GetuidResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Getuid not implemented")
+}
+func (UnimplementedHostServiceServer) Getgid(context.Context, *GetgidRequest) (*GetgidResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Getgid not implemented")
+}
+func (UnimplementedHostServiceServer) Geteuid(context.Context, *GeteuidRequest) (*GeteuidResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Geteuid not implemented")
+}
+func (UnimplementedHostServiceServer) Getegid(context.Context, *GetegidRequest) (*GetegidResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Getegid not implemented")
+}
+func (UnimplementedHostServiceServer) GetGroups(context.Context, *GetGroupsRequest) (*GetGroupsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetGroups not implemented")
 }
 func (UnimplementedHostServiceServer) GetEnv(context.Context, *GetEnvRequest) (*GetEnvResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetEnv not implemented")
@@ -550,6 +662,42 @@ func _HostService_Rename_Handler(srv interface{}, ctx context.Context, dec func(
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(HostServiceServer).Rename(ctx, req.(*RenameRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _HostService_Remove_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RemoveRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(HostServiceServer).Remove(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: HostService_Remove_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(HostServiceServer).Remove(ctx, req.(*RemoveRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _HostService_RemoveAll_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RemoveAllRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(HostServiceServer).RemoveAll(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: HostService_RemoveAll_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(HostServiceServer).RemoveAll(ctx, req.(*RemoveAllRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -770,6 +918,96 @@ func _HostService_FileWriter_Handler(srv interface{}, stream grpc.ServerStream) 
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
 type HostService_FileWriterServer = grpc.ClientStreamingServer[FileWriteRequest, FileWriteResponse]
 
+func _HostService_Getuid_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetuidRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(HostServiceServer).Getuid(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: HostService_Getuid_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(HostServiceServer).Getuid(ctx, req.(*GetuidRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _HostService_Getgid_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetgidRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(HostServiceServer).Getgid(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: HostService_Getgid_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(HostServiceServer).Getgid(ctx, req.(*GetgidRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _HostService_Geteuid_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GeteuidRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(HostServiceServer).Geteuid(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: HostService_Geteuid_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(HostServiceServer).Geteuid(ctx, req.(*GeteuidRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _HostService_Getegid_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetegidRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(HostServiceServer).Getegid(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: HostService_Getegid_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(HostServiceServer).Getegid(ctx, req.(*GetegidRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _HostService_GetGroups_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetGroupsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(HostServiceServer).GetGroups(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: HostService_GetGroups_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(HostServiceServer).GetGroups(ctx, req.(*GetGroupsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _HostService_GetEnv_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(GetEnvRequest)
 	if err := dec(in); err != nil {
@@ -888,6 +1126,14 @@ var HostService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _HostService_Rename_Handler,
 		},
 		{
+			MethodName: "Remove",
+			Handler:    _HostService_Remove_Handler,
+		},
+		{
+			MethodName: "RemoveAll",
+			Handler:    _HostService_RemoveAll_Handler,
+		},
+		{
 			MethodName: "Mkdir",
 			Handler:    _HostService_Mkdir_Handler,
 		},
@@ -930,6 +1176,26 @@ var HostService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "FileTruncate",
 			Handler:    _HostService_FileTruncate_Handler,
+		},
+		{
+			MethodName: "Getuid",
+			Handler:    _HostService_Getuid_Handler,
+		},
+		{
+			MethodName: "Getgid",
+			Handler:    _HostService_Getgid_Handler,
+		},
+		{
+			MethodName: "Geteuid",
+			Handler:    _HostService_Geteuid_Handler,
+		},
+		{
+			MethodName: "Getegid",
+			Handler:    _HostService_Getegid_Handler,
+		},
+		{
+			MethodName: "GetGroups",
+			Handler:    _HostService_GetGroups_Handler,
 		},
 		{
 			MethodName: "GetEnv",

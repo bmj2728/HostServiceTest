@@ -809,6 +809,198 @@ func (x *RenameResponse) GetError() string {
 	return ""
 }
 
+type RemoveRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	RootDir       string                 `protobuf:"bytes,1,opt,name=root_dir,json=rootDir,proto3" json:"root_dir,omitempty"`
+	Path          string                 `protobuf:"bytes,2,opt,name=path,proto3" json:"path,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *RemoveRequest) Reset() {
+	*x = RemoveRequest{}
+	mi := &file_hostserve_v1_hostserve_proto_msgTypes[13]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RemoveRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RemoveRequest) ProtoMessage() {}
+
+func (x *RemoveRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_hostserve_v1_hostserve_proto_msgTypes[13]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RemoveRequest.ProtoReflect.Descriptor instead.
+func (*RemoveRequest) Descriptor() ([]byte, []int) {
+	return file_hostserve_v1_hostserve_proto_rawDescGZIP(), []int{13}
+}
+
+func (x *RemoveRequest) GetRootDir() string {
+	if x != nil {
+		return x.RootDir
+	}
+	return ""
+}
+
+func (x *RemoveRequest) GetPath() string {
+	if x != nil {
+		return x.Path
+	}
+	return ""
+}
+
+type RemoveResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Error         *string                `protobuf:"bytes,1,opt,name=error,proto3,oneof" json:"error,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *RemoveResponse) Reset() {
+	*x = RemoveResponse{}
+	mi := &file_hostserve_v1_hostserve_proto_msgTypes[14]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RemoveResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RemoveResponse) ProtoMessage() {}
+
+func (x *RemoveResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_hostserve_v1_hostserve_proto_msgTypes[14]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RemoveResponse.ProtoReflect.Descriptor instead.
+func (*RemoveResponse) Descriptor() ([]byte, []int) {
+	return file_hostserve_v1_hostserve_proto_rawDescGZIP(), []int{14}
+}
+
+func (x *RemoveResponse) GetError() string {
+	if x != nil && x.Error != nil {
+		return *x.Error
+	}
+	return ""
+}
+
+type RemoveAllRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	RootDir       string                 `protobuf:"bytes,1,opt,name=root_dir,json=rootDir,proto3" json:"root_dir,omitempty"`
+	Path          string                 `protobuf:"bytes,2,opt,name=path,proto3" json:"path,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *RemoveAllRequest) Reset() {
+	*x = RemoveAllRequest{}
+	mi := &file_hostserve_v1_hostserve_proto_msgTypes[15]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RemoveAllRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RemoveAllRequest) ProtoMessage() {}
+
+func (x *RemoveAllRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_hostserve_v1_hostserve_proto_msgTypes[15]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RemoveAllRequest.ProtoReflect.Descriptor instead.
+func (*RemoveAllRequest) Descriptor() ([]byte, []int) {
+	return file_hostserve_v1_hostserve_proto_rawDescGZIP(), []int{15}
+}
+
+func (x *RemoveAllRequest) GetRootDir() string {
+	if x != nil {
+		return x.RootDir
+	}
+	return ""
+}
+
+func (x *RemoveAllRequest) GetPath() string {
+	if x != nil {
+		return x.Path
+	}
+	return ""
+}
+
+type RemoveAllResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Error         *string                `protobuf:"bytes,1,opt,name=error,proto3,oneof" json:"error,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *RemoveAllResponse) Reset() {
+	*x = RemoveAllResponse{}
+	mi := &file_hostserve_v1_hostserve_proto_msgTypes[16]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RemoveAllResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RemoveAllResponse) ProtoMessage() {}
+
+func (x *RemoveAllResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_hostserve_v1_hostserve_proto_msgTypes[16]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RemoveAllResponse.ProtoReflect.Descriptor instead.
+func (*RemoveAllResponse) Descriptor() ([]byte, []int) {
+	return file_hostserve_v1_hostserve_proto_rawDescGZIP(), []int{16}
+}
+
+func (x *RemoveAllResponse) GetError() string {
+	if x != nil && x.Error != nil {
+		return *x.Error
+	}
+	return ""
+}
+
 type MkdirRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	RootDir       string                 `protobuf:"bytes,1,opt,name=root_dir,json=rootDir,proto3" json:"root_dir,omitempty"`
@@ -820,7 +1012,7 @@ type MkdirRequest struct {
 
 func (x *MkdirRequest) Reset() {
 	*x = MkdirRequest{}
-	mi := &file_hostserve_v1_hostserve_proto_msgTypes[13]
+	mi := &file_hostserve_v1_hostserve_proto_msgTypes[17]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -832,7 +1024,7 @@ func (x *MkdirRequest) String() string {
 func (*MkdirRequest) ProtoMessage() {}
 
 func (x *MkdirRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_hostserve_v1_hostserve_proto_msgTypes[13]
+	mi := &file_hostserve_v1_hostserve_proto_msgTypes[17]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -845,7 +1037,7 @@ func (x *MkdirRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use MkdirRequest.ProtoReflect.Descriptor instead.
 func (*MkdirRequest) Descriptor() ([]byte, []int) {
-	return file_hostserve_v1_hostserve_proto_rawDescGZIP(), []int{13}
+	return file_hostserve_v1_hostserve_proto_rawDescGZIP(), []int{17}
 }
 
 func (x *MkdirRequest) GetRootDir() string {
@@ -878,7 +1070,7 @@ type MkdirResponse struct {
 
 func (x *MkdirResponse) Reset() {
 	*x = MkdirResponse{}
-	mi := &file_hostserve_v1_hostserve_proto_msgTypes[14]
+	mi := &file_hostserve_v1_hostserve_proto_msgTypes[18]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -890,7 +1082,7 @@ func (x *MkdirResponse) String() string {
 func (*MkdirResponse) ProtoMessage() {}
 
 func (x *MkdirResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_hostserve_v1_hostserve_proto_msgTypes[14]
+	mi := &file_hostserve_v1_hostserve_proto_msgTypes[18]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -903,7 +1095,7 @@ func (x *MkdirResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use MkdirResponse.ProtoReflect.Descriptor instead.
 func (*MkdirResponse) Descriptor() ([]byte, []int) {
-	return file_hostserve_v1_hostserve_proto_rawDescGZIP(), []int{14}
+	return file_hostserve_v1_hostserve_proto_rawDescGZIP(), []int{18}
 }
 
 func (x *MkdirResponse) GetError() string {
@@ -924,7 +1116,7 @@ type MkdirAllRequest struct {
 
 func (x *MkdirAllRequest) Reset() {
 	*x = MkdirAllRequest{}
-	mi := &file_hostserve_v1_hostserve_proto_msgTypes[15]
+	mi := &file_hostserve_v1_hostserve_proto_msgTypes[19]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -936,7 +1128,7 @@ func (x *MkdirAllRequest) String() string {
 func (*MkdirAllRequest) ProtoMessage() {}
 
 func (x *MkdirAllRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_hostserve_v1_hostserve_proto_msgTypes[15]
+	mi := &file_hostserve_v1_hostserve_proto_msgTypes[19]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -949,7 +1141,7 @@ func (x *MkdirAllRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use MkdirAllRequest.ProtoReflect.Descriptor instead.
 func (*MkdirAllRequest) Descriptor() ([]byte, []int) {
-	return file_hostserve_v1_hostserve_proto_rawDescGZIP(), []int{15}
+	return file_hostserve_v1_hostserve_proto_rawDescGZIP(), []int{19}
 }
 
 func (x *MkdirAllRequest) GetRootDir() string {
@@ -982,7 +1174,7 @@ type MkdirAllResponse struct {
 
 func (x *MkdirAllResponse) Reset() {
 	*x = MkdirAllResponse{}
-	mi := &file_hostserve_v1_hostserve_proto_msgTypes[16]
+	mi := &file_hostserve_v1_hostserve_proto_msgTypes[20]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -994,7 +1186,7 @@ func (x *MkdirAllResponse) String() string {
 func (*MkdirAllResponse) ProtoMessage() {}
 
 func (x *MkdirAllResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_hostserve_v1_hostserve_proto_msgTypes[16]
+	mi := &file_hostserve_v1_hostserve_proto_msgTypes[20]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1007,7 +1199,7 @@ func (x *MkdirAllResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use MkdirAllResponse.ProtoReflect.Descriptor instead.
 func (*MkdirAllResponse) Descriptor() ([]byte, []int) {
-	return file_hostserve_v1_hostserve_proto_rawDescGZIP(), []int{16}
+	return file_hostserve_v1_hostserve_proto_rawDescGZIP(), []int{20}
 }
 
 func (x *MkdirAllResponse) GetError() string {
@@ -1027,7 +1219,7 @@ type MkdirTempRequest struct {
 
 func (x *MkdirTempRequest) Reset() {
 	*x = MkdirTempRequest{}
-	mi := &file_hostserve_v1_hostserve_proto_msgTypes[17]
+	mi := &file_hostserve_v1_hostserve_proto_msgTypes[21]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1039,7 +1231,7 @@ func (x *MkdirTempRequest) String() string {
 func (*MkdirTempRequest) ProtoMessage() {}
 
 func (x *MkdirTempRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_hostserve_v1_hostserve_proto_msgTypes[17]
+	mi := &file_hostserve_v1_hostserve_proto_msgTypes[21]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1052,7 +1244,7 @@ func (x *MkdirTempRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use MkdirTempRequest.ProtoReflect.Descriptor instead.
 func (*MkdirTempRequest) Descriptor() ([]byte, []int) {
-	return file_hostserve_v1_hostserve_proto_rawDescGZIP(), []int{17}
+	return file_hostserve_v1_hostserve_proto_rawDescGZIP(), []int{21}
 }
 
 func (x *MkdirTempRequest) GetRootDir() string {
@@ -1079,7 +1271,7 @@ type MkdirTempResponse struct {
 
 func (x *MkdirTempResponse) Reset() {
 	*x = MkdirTempResponse{}
-	mi := &file_hostserve_v1_hostserve_proto_msgTypes[18]
+	mi := &file_hostserve_v1_hostserve_proto_msgTypes[22]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1091,7 +1283,7 @@ func (x *MkdirTempResponse) String() string {
 func (*MkdirTempResponse) ProtoMessage() {}
 
 func (x *MkdirTempResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_hostserve_v1_hostserve_proto_msgTypes[18]
+	mi := &file_hostserve_v1_hostserve_proto_msgTypes[22]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1104,7 +1296,7 @@ func (x *MkdirTempResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use MkdirTempResponse.ProtoReflect.Descriptor instead.
 func (*MkdirTempResponse) Descriptor() ([]byte, []int) {
-	return file_hostserve_v1_hostserve_proto_rawDescGZIP(), []int{18}
+	return file_hostserve_v1_hostserve_proto_rawDescGZIP(), []int{22}
 }
 
 func (x *MkdirTempResponse) GetPath() string {
@@ -1131,7 +1323,7 @@ type FileCreateRequest struct {
 
 func (x *FileCreateRequest) Reset() {
 	*x = FileCreateRequest{}
-	mi := &file_hostserve_v1_hostserve_proto_msgTypes[19]
+	mi := &file_hostserve_v1_hostserve_proto_msgTypes[23]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1143,7 +1335,7 @@ func (x *FileCreateRequest) String() string {
 func (*FileCreateRequest) ProtoMessage() {}
 
 func (x *FileCreateRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_hostserve_v1_hostserve_proto_msgTypes[19]
+	mi := &file_hostserve_v1_hostserve_proto_msgTypes[23]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1156,7 +1348,7 @@ func (x *FileCreateRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use FileCreateRequest.ProtoReflect.Descriptor instead.
 func (*FileCreateRequest) Descriptor() ([]byte, []int) {
-	return file_hostserve_v1_hostserve_proto_rawDescGZIP(), []int{19}
+	return file_hostserve_v1_hostserve_proto_rawDescGZIP(), []int{23}
 }
 
 func (x *FileCreateRequest) GetRootDir() string {
@@ -1183,7 +1375,7 @@ type FileCreateResponse struct {
 
 func (x *FileCreateResponse) Reset() {
 	*x = FileCreateResponse{}
-	mi := &file_hostserve_v1_hostserve_proto_msgTypes[20]
+	mi := &file_hostserve_v1_hostserve_proto_msgTypes[24]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1195,7 +1387,7 @@ func (x *FileCreateResponse) String() string {
 func (*FileCreateResponse) ProtoMessage() {}
 
 func (x *FileCreateResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_hostserve_v1_hostserve_proto_msgTypes[20]
+	mi := &file_hostserve_v1_hostserve_proto_msgTypes[24]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1208,7 +1400,7 @@ func (x *FileCreateResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use FileCreateResponse.ProtoReflect.Descriptor instead.
 func (*FileCreateResponse) Descriptor() ([]byte, []int) {
-	return file_hostserve_v1_hostserve_proto_rawDescGZIP(), []int{20}
+	return file_hostserve_v1_hostserve_proto_rawDescGZIP(), []int{24}
 }
 
 func (x *FileCreateResponse) GetHandle() string {
@@ -1235,7 +1427,7 @@ type FileCreateTempRequest struct {
 
 func (x *FileCreateTempRequest) Reset() {
 	*x = FileCreateTempRequest{}
-	mi := &file_hostserve_v1_hostserve_proto_msgTypes[21]
+	mi := &file_hostserve_v1_hostserve_proto_msgTypes[25]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1247,7 +1439,7 @@ func (x *FileCreateTempRequest) String() string {
 func (*FileCreateTempRequest) ProtoMessage() {}
 
 func (x *FileCreateTempRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_hostserve_v1_hostserve_proto_msgTypes[21]
+	mi := &file_hostserve_v1_hostserve_proto_msgTypes[25]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1260,7 +1452,7 @@ func (x *FileCreateTempRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use FileCreateTempRequest.ProtoReflect.Descriptor instead.
 func (*FileCreateTempRequest) Descriptor() ([]byte, []int) {
-	return file_hostserve_v1_hostserve_proto_rawDescGZIP(), []int{21}
+	return file_hostserve_v1_hostserve_proto_rawDescGZIP(), []int{25}
 }
 
 func (x *FileCreateTempRequest) GetRootDir() string {
@@ -1287,7 +1479,7 @@ type FileCreateTempResponse struct {
 
 func (x *FileCreateTempResponse) Reset() {
 	*x = FileCreateTempResponse{}
-	mi := &file_hostserve_v1_hostserve_proto_msgTypes[22]
+	mi := &file_hostserve_v1_hostserve_proto_msgTypes[26]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1299,7 +1491,7 @@ func (x *FileCreateTempResponse) String() string {
 func (*FileCreateTempResponse) ProtoMessage() {}
 
 func (x *FileCreateTempResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_hostserve_v1_hostserve_proto_msgTypes[22]
+	mi := &file_hostserve_v1_hostserve_proto_msgTypes[26]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1312,7 +1504,7 @@ func (x *FileCreateTempResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use FileCreateTempResponse.ProtoReflect.Descriptor instead.
 func (*FileCreateTempResponse) Descriptor() ([]byte, []int) {
-	return file_hostserve_v1_hostserve_proto_rawDescGZIP(), []int{22}
+	return file_hostserve_v1_hostserve_proto_rawDescGZIP(), []int{26}
 }
 
 func (x *FileCreateTempResponse) GetHandle() string {
@@ -1341,7 +1533,7 @@ type FileOpenRequest struct {
 
 func (x *FileOpenRequest) Reset() {
 	*x = FileOpenRequest{}
-	mi := &file_hostserve_v1_hostserve_proto_msgTypes[23]
+	mi := &file_hostserve_v1_hostserve_proto_msgTypes[27]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1353,7 +1545,7 @@ func (x *FileOpenRequest) String() string {
 func (*FileOpenRequest) ProtoMessage() {}
 
 func (x *FileOpenRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_hostserve_v1_hostserve_proto_msgTypes[23]
+	mi := &file_hostserve_v1_hostserve_proto_msgTypes[27]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1366,7 +1558,7 @@ func (x *FileOpenRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use FileOpenRequest.ProtoReflect.Descriptor instead.
 func (*FileOpenRequest) Descriptor() ([]byte, []int) {
-	return file_hostserve_v1_hostserve_proto_rawDescGZIP(), []int{23}
+	return file_hostserve_v1_hostserve_proto_rawDescGZIP(), []int{27}
 }
 
 func (x *FileOpenRequest) GetRootDir() string {
@@ -1408,7 +1600,7 @@ type FileOpenResponse struct {
 
 func (x *FileOpenResponse) Reset() {
 	*x = FileOpenResponse{}
-	mi := &file_hostserve_v1_hostserve_proto_msgTypes[24]
+	mi := &file_hostserve_v1_hostserve_proto_msgTypes[28]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1420,7 +1612,7 @@ func (x *FileOpenResponse) String() string {
 func (*FileOpenResponse) ProtoMessage() {}
 
 func (x *FileOpenResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_hostserve_v1_hostserve_proto_msgTypes[24]
+	mi := &file_hostserve_v1_hostserve_proto_msgTypes[28]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1433,7 +1625,7 @@ func (x *FileOpenResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use FileOpenResponse.ProtoReflect.Descriptor instead.
 func (*FileOpenResponse) Descriptor() ([]byte, []int) {
-	return file_hostserve_v1_hostserve_proto_rawDescGZIP(), []int{24}
+	return file_hostserve_v1_hostserve_proto_rawDescGZIP(), []int{28}
 }
 
 func (x *FileOpenResponse) GetHandle() string {
@@ -1466,7 +1658,7 @@ type FileStatRequest struct {
 
 func (x *FileStatRequest) Reset() {
 	*x = FileStatRequest{}
-	mi := &file_hostserve_v1_hostserve_proto_msgTypes[25]
+	mi := &file_hostserve_v1_hostserve_proto_msgTypes[29]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1478,7 +1670,7 @@ func (x *FileStatRequest) String() string {
 func (*FileStatRequest) ProtoMessage() {}
 
 func (x *FileStatRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_hostserve_v1_hostserve_proto_msgTypes[25]
+	mi := &file_hostserve_v1_hostserve_proto_msgTypes[29]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1491,7 +1683,7 @@ func (x *FileStatRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use FileStatRequest.ProtoReflect.Descriptor instead.
 func (*FileStatRequest) Descriptor() ([]byte, []int) {
-	return file_hostserve_v1_hostserve_proto_rawDescGZIP(), []int{25}
+	return file_hostserve_v1_hostserve_proto_rawDescGZIP(), []int{29}
 }
 
 func (x *FileStatRequest) GetHandle() string {
@@ -1511,7 +1703,7 @@ type FileStatResponse struct {
 
 func (x *FileStatResponse) Reset() {
 	*x = FileStatResponse{}
-	mi := &file_hostserve_v1_hostserve_proto_msgTypes[26]
+	mi := &file_hostserve_v1_hostserve_proto_msgTypes[30]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1523,7 +1715,7 @@ func (x *FileStatResponse) String() string {
 func (*FileStatResponse) ProtoMessage() {}
 
 func (x *FileStatResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_hostserve_v1_hostserve_proto_msgTypes[26]
+	mi := &file_hostserve_v1_hostserve_proto_msgTypes[30]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1536,7 +1728,7 @@ func (x *FileStatResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use FileStatResponse.ProtoReflect.Descriptor instead.
 func (*FileStatResponse) Descriptor() ([]byte, []int) {
-	return file_hostserve_v1_hostserve_proto_rawDescGZIP(), []int{26}
+	return file_hostserve_v1_hostserve_proto_rawDescGZIP(), []int{30}
 }
 
 func (x *FileStatResponse) GetInfo() *FileInfo {
@@ -1564,7 +1756,7 @@ type FileSeekRequest struct {
 
 func (x *FileSeekRequest) Reset() {
 	*x = FileSeekRequest{}
-	mi := &file_hostserve_v1_hostserve_proto_msgTypes[27]
+	mi := &file_hostserve_v1_hostserve_proto_msgTypes[31]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1576,7 +1768,7 @@ func (x *FileSeekRequest) String() string {
 func (*FileSeekRequest) ProtoMessage() {}
 
 func (x *FileSeekRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_hostserve_v1_hostserve_proto_msgTypes[27]
+	mi := &file_hostserve_v1_hostserve_proto_msgTypes[31]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1589,7 +1781,7 @@ func (x *FileSeekRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use FileSeekRequest.ProtoReflect.Descriptor instead.
 func (*FileSeekRequest) Descriptor() ([]byte, []int) {
-	return file_hostserve_v1_hostserve_proto_rawDescGZIP(), []int{27}
+	return file_hostserve_v1_hostserve_proto_rawDescGZIP(), []int{31}
 }
 
 func (x *FileSeekRequest) GetHandle() string {
@@ -1623,7 +1815,7 @@ type FileSeekResponse struct {
 
 func (x *FileSeekResponse) Reset() {
 	*x = FileSeekResponse{}
-	mi := &file_hostserve_v1_hostserve_proto_msgTypes[28]
+	mi := &file_hostserve_v1_hostserve_proto_msgTypes[32]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1635,7 +1827,7 @@ func (x *FileSeekResponse) String() string {
 func (*FileSeekResponse) ProtoMessage() {}
 
 func (x *FileSeekResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_hostserve_v1_hostserve_proto_msgTypes[28]
+	mi := &file_hostserve_v1_hostserve_proto_msgTypes[32]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1648,7 +1840,7 @@ func (x *FileSeekResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use FileSeekResponse.ProtoReflect.Descriptor instead.
 func (*FileSeekResponse) Descriptor() ([]byte, []int) {
-	return file_hostserve_v1_hostserve_proto_rawDescGZIP(), []int{28}
+	return file_hostserve_v1_hostserve_proto_rawDescGZIP(), []int{32}
 }
 
 func (x *FileSeekResponse) GetNewOffset() uint64 {
@@ -1674,7 +1866,7 @@ type FileSyncRequest struct {
 
 func (x *FileSyncRequest) Reset() {
 	*x = FileSyncRequest{}
-	mi := &file_hostserve_v1_hostserve_proto_msgTypes[29]
+	mi := &file_hostserve_v1_hostserve_proto_msgTypes[33]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1686,7 +1878,7 @@ func (x *FileSyncRequest) String() string {
 func (*FileSyncRequest) ProtoMessage() {}
 
 func (x *FileSyncRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_hostserve_v1_hostserve_proto_msgTypes[29]
+	mi := &file_hostserve_v1_hostserve_proto_msgTypes[33]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1699,7 +1891,7 @@ func (x *FileSyncRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use FileSyncRequest.ProtoReflect.Descriptor instead.
 func (*FileSyncRequest) Descriptor() ([]byte, []int) {
-	return file_hostserve_v1_hostserve_proto_rawDescGZIP(), []int{29}
+	return file_hostserve_v1_hostserve_proto_rawDescGZIP(), []int{33}
 }
 
 func (x *FileSyncRequest) GetHandle() string {
@@ -1718,7 +1910,7 @@ type FileSyncResponse struct {
 
 func (x *FileSyncResponse) Reset() {
 	*x = FileSyncResponse{}
-	mi := &file_hostserve_v1_hostserve_proto_msgTypes[30]
+	mi := &file_hostserve_v1_hostserve_proto_msgTypes[34]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1730,7 +1922,7 @@ func (x *FileSyncResponse) String() string {
 func (*FileSyncResponse) ProtoMessage() {}
 
 func (x *FileSyncResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_hostserve_v1_hostserve_proto_msgTypes[30]
+	mi := &file_hostserve_v1_hostserve_proto_msgTypes[34]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1743,7 +1935,7 @@ func (x *FileSyncResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use FileSyncResponse.ProtoReflect.Descriptor instead.
 func (*FileSyncResponse) Descriptor() ([]byte, []int) {
-	return file_hostserve_v1_hostserve_proto_rawDescGZIP(), []int{30}
+	return file_hostserve_v1_hostserve_proto_rawDescGZIP(), []int{34}
 }
 
 func (x *FileSyncResponse) GetError() string {
@@ -1762,7 +1954,7 @@ type FileCloseRequest struct {
 
 func (x *FileCloseRequest) Reset() {
 	*x = FileCloseRequest{}
-	mi := &file_hostserve_v1_hostserve_proto_msgTypes[31]
+	mi := &file_hostserve_v1_hostserve_proto_msgTypes[35]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1774,7 +1966,7 @@ func (x *FileCloseRequest) String() string {
 func (*FileCloseRequest) ProtoMessage() {}
 
 func (x *FileCloseRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_hostserve_v1_hostserve_proto_msgTypes[31]
+	mi := &file_hostserve_v1_hostserve_proto_msgTypes[35]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1787,7 +1979,7 @@ func (x *FileCloseRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use FileCloseRequest.ProtoReflect.Descriptor instead.
 func (*FileCloseRequest) Descriptor() ([]byte, []int) {
-	return file_hostserve_v1_hostserve_proto_rawDescGZIP(), []int{31}
+	return file_hostserve_v1_hostserve_proto_rawDescGZIP(), []int{35}
 }
 
 func (x *FileCloseRequest) GetHandle() string {
@@ -1806,7 +1998,7 @@ type FileCloseResponse struct {
 
 func (x *FileCloseResponse) Reset() {
 	*x = FileCloseResponse{}
-	mi := &file_hostserve_v1_hostserve_proto_msgTypes[32]
+	mi := &file_hostserve_v1_hostserve_proto_msgTypes[36]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1818,7 +2010,7 @@ func (x *FileCloseResponse) String() string {
 func (*FileCloseResponse) ProtoMessage() {}
 
 func (x *FileCloseResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_hostserve_v1_hostserve_proto_msgTypes[32]
+	mi := &file_hostserve_v1_hostserve_proto_msgTypes[36]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1831,7 +2023,7 @@ func (x *FileCloseResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use FileCloseResponse.ProtoReflect.Descriptor instead.
 func (*FileCloseResponse) Descriptor() ([]byte, []int) {
-	return file_hostserve_v1_hostserve_proto_rawDescGZIP(), []int{32}
+	return file_hostserve_v1_hostserve_proto_rawDescGZIP(), []int{36}
 }
 
 func (x *FileCloseResponse) GetError() string {
@@ -1851,7 +2043,7 @@ type FileTruncateRequest struct {
 
 func (x *FileTruncateRequest) Reset() {
 	*x = FileTruncateRequest{}
-	mi := &file_hostserve_v1_hostserve_proto_msgTypes[33]
+	mi := &file_hostserve_v1_hostserve_proto_msgTypes[37]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1863,7 +2055,7 @@ func (x *FileTruncateRequest) String() string {
 func (*FileTruncateRequest) ProtoMessage() {}
 
 func (x *FileTruncateRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_hostserve_v1_hostserve_proto_msgTypes[33]
+	mi := &file_hostserve_v1_hostserve_proto_msgTypes[37]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1876,7 +2068,7 @@ func (x *FileTruncateRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use FileTruncateRequest.ProtoReflect.Descriptor instead.
 func (*FileTruncateRequest) Descriptor() ([]byte, []int) {
-	return file_hostserve_v1_hostserve_proto_rawDescGZIP(), []int{33}
+	return file_hostserve_v1_hostserve_proto_rawDescGZIP(), []int{37}
 }
 
 func (x *FileTruncateRequest) GetHandle() string {
@@ -1902,7 +2094,7 @@ type FileTruncateResponse struct {
 
 func (x *FileTruncateResponse) Reset() {
 	*x = FileTruncateResponse{}
-	mi := &file_hostserve_v1_hostserve_proto_msgTypes[34]
+	mi := &file_hostserve_v1_hostserve_proto_msgTypes[38]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1914,7 +2106,7 @@ func (x *FileTruncateResponse) String() string {
 func (*FileTruncateResponse) ProtoMessage() {}
 
 func (x *FileTruncateResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_hostserve_v1_hostserve_proto_msgTypes[34]
+	mi := &file_hostserve_v1_hostserve_proto_msgTypes[38]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1927,7 +2119,7 @@ func (x *FileTruncateResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use FileTruncateResponse.ProtoReflect.Descriptor instead.
 func (*FileTruncateResponse) Descriptor() ([]byte, []int) {
-	return file_hostserve_v1_hostserve_proto_rawDescGZIP(), []int{34}
+	return file_hostserve_v1_hostserve_proto_rawDescGZIP(), []int{38}
 }
 
 func (x *FileTruncateResponse) GetError() string {
@@ -1947,7 +2139,7 @@ type FileReadRequest struct {
 
 func (x *FileReadRequest) Reset() {
 	*x = FileReadRequest{}
-	mi := &file_hostserve_v1_hostserve_proto_msgTypes[35]
+	mi := &file_hostserve_v1_hostserve_proto_msgTypes[39]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1959,7 +2151,7 @@ func (x *FileReadRequest) String() string {
 func (*FileReadRequest) ProtoMessage() {}
 
 func (x *FileReadRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_hostserve_v1_hostserve_proto_msgTypes[35]
+	mi := &file_hostserve_v1_hostserve_proto_msgTypes[39]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1972,7 +2164,7 @@ func (x *FileReadRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use FileReadRequest.ProtoReflect.Descriptor instead.
 func (*FileReadRequest) Descriptor() ([]byte, []int) {
-	return file_hostserve_v1_hostserve_proto_rawDescGZIP(), []int{35}
+	return file_hostserve_v1_hostserve_proto_rawDescGZIP(), []int{39}
 }
 
 func (x *FileReadRequest) GetHandle() string {
@@ -1999,7 +2191,7 @@ type FileReadResponse struct {
 
 func (x *FileReadResponse) Reset() {
 	*x = FileReadResponse{}
-	mi := &file_hostserve_v1_hostserve_proto_msgTypes[36]
+	mi := &file_hostserve_v1_hostserve_proto_msgTypes[40]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2011,7 +2203,7 @@ func (x *FileReadResponse) String() string {
 func (*FileReadResponse) ProtoMessage() {}
 
 func (x *FileReadResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_hostserve_v1_hostserve_proto_msgTypes[36]
+	mi := &file_hostserve_v1_hostserve_proto_msgTypes[40]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2024,7 +2216,7 @@ func (x *FileReadResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use FileReadResponse.ProtoReflect.Descriptor instead.
 func (*FileReadResponse) Descriptor() ([]byte, []int) {
-	return file_hostserve_v1_hostserve_proto_rawDescGZIP(), []int{36}
+	return file_hostserve_v1_hostserve_proto_rawDescGZIP(), []int{40}
 }
 
 func (x *FileReadResponse) GetChunk() *FileChunk {
@@ -2051,7 +2243,7 @@ type FileWriteRequest struct {
 
 func (x *FileWriteRequest) Reset() {
 	*x = FileWriteRequest{}
-	mi := &file_hostserve_v1_hostserve_proto_msgTypes[37]
+	mi := &file_hostserve_v1_hostserve_proto_msgTypes[41]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2063,7 +2255,7 @@ func (x *FileWriteRequest) String() string {
 func (*FileWriteRequest) ProtoMessage() {}
 
 func (x *FileWriteRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_hostserve_v1_hostserve_proto_msgTypes[37]
+	mi := &file_hostserve_v1_hostserve_proto_msgTypes[41]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2076,7 +2268,7 @@ func (x *FileWriteRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use FileWriteRequest.ProtoReflect.Descriptor instead.
 func (*FileWriteRequest) Descriptor() ([]byte, []int) {
-	return file_hostserve_v1_hostserve_proto_rawDescGZIP(), []int{37}
+	return file_hostserve_v1_hostserve_proto_rawDescGZIP(), []int{41}
 }
 
 func (x *FileWriteRequest) GetHandle() string {
@@ -2103,7 +2295,7 @@ type FileWriteResponse struct {
 
 func (x *FileWriteResponse) Reset() {
 	*x = FileWriteResponse{}
-	mi := &file_hostserve_v1_hostserve_proto_msgTypes[38]
+	mi := &file_hostserve_v1_hostserve_proto_msgTypes[42]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2115,7 +2307,7 @@ func (x *FileWriteResponse) String() string {
 func (*FileWriteResponse) ProtoMessage() {}
 
 func (x *FileWriteResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_hostserve_v1_hostserve_proto_msgTypes[38]
+	mi := &file_hostserve_v1_hostserve_proto_msgTypes[42]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2128,7 +2320,7 @@ func (x *FileWriteResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use FileWriteResponse.ProtoReflect.Descriptor instead.
 func (*FileWriteResponse) Descriptor() ([]byte, []int) {
-	return file_hostserve_v1_hostserve_proto_rawDescGZIP(), []int{38}
+	return file_hostserve_v1_hostserve_proto_rawDescGZIP(), []int{42}
 }
 
 func (x *FileWriteResponse) GetBytesWritten() uint32 {
@@ -2145,6 +2337,446 @@ func (x *FileWriteResponse) GetError() string {
 	return ""
 }
 
+type GetuidRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetuidRequest) Reset() {
+	*x = GetuidRequest{}
+	mi := &file_hostserve_v1_hostserve_proto_msgTypes[43]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetuidRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetuidRequest) ProtoMessage() {}
+
+func (x *GetuidRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_hostserve_v1_hostserve_proto_msgTypes[43]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetuidRequest.ProtoReflect.Descriptor instead.
+func (*GetuidRequest) Descriptor() ([]byte, []int) {
+	return file_hostserve_v1_hostserve_proto_rawDescGZIP(), []int{43}
+}
+
+type GetuidResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Uid           int32                  `protobuf:"varint,1,opt,name=uid,proto3" json:"uid,omitempty"`
+	Error         *string                `protobuf:"bytes,2,opt,name=error,proto3,oneof" json:"error,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetuidResponse) Reset() {
+	*x = GetuidResponse{}
+	mi := &file_hostserve_v1_hostserve_proto_msgTypes[44]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetuidResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetuidResponse) ProtoMessage() {}
+
+func (x *GetuidResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_hostserve_v1_hostserve_proto_msgTypes[44]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetuidResponse.ProtoReflect.Descriptor instead.
+func (*GetuidResponse) Descriptor() ([]byte, []int) {
+	return file_hostserve_v1_hostserve_proto_rawDescGZIP(), []int{44}
+}
+
+func (x *GetuidResponse) GetUid() int32 {
+	if x != nil {
+		return x.Uid
+	}
+	return 0
+}
+
+func (x *GetuidResponse) GetError() string {
+	if x != nil && x.Error != nil {
+		return *x.Error
+	}
+	return ""
+}
+
+type GetgidRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetgidRequest) Reset() {
+	*x = GetgidRequest{}
+	mi := &file_hostserve_v1_hostserve_proto_msgTypes[45]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetgidRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetgidRequest) ProtoMessage() {}
+
+func (x *GetgidRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_hostserve_v1_hostserve_proto_msgTypes[45]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetgidRequest.ProtoReflect.Descriptor instead.
+func (*GetgidRequest) Descriptor() ([]byte, []int) {
+	return file_hostserve_v1_hostserve_proto_rawDescGZIP(), []int{45}
+}
+
+type GetgidResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Gid           int32                  `protobuf:"varint,1,opt,name=gid,proto3" json:"gid,omitempty"`
+	Error         *string                `protobuf:"bytes,2,opt,name=error,proto3,oneof" json:"error,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetgidResponse) Reset() {
+	*x = GetgidResponse{}
+	mi := &file_hostserve_v1_hostserve_proto_msgTypes[46]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetgidResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetgidResponse) ProtoMessage() {}
+
+func (x *GetgidResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_hostserve_v1_hostserve_proto_msgTypes[46]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetgidResponse.ProtoReflect.Descriptor instead.
+func (*GetgidResponse) Descriptor() ([]byte, []int) {
+	return file_hostserve_v1_hostserve_proto_rawDescGZIP(), []int{46}
+}
+
+func (x *GetgidResponse) GetGid() int32 {
+	if x != nil {
+		return x.Gid
+	}
+	return 0
+}
+
+func (x *GetgidResponse) GetError() string {
+	if x != nil && x.Error != nil {
+		return *x.Error
+	}
+	return ""
+}
+
+type GeteuidRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GeteuidRequest) Reset() {
+	*x = GeteuidRequest{}
+	mi := &file_hostserve_v1_hostserve_proto_msgTypes[47]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GeteuidRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GeteuidRequest) ProtoMessage() {}
+
+func (x *GeteuidRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_hostserve_v1_hostserve_proto_msgTypes[47]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GeteuidRequest.ProtoReflect.Descriptor instead.
+func (*GeteuidRequest) Descriptor() ([]byte, []int) {
+	return file_hostserve_v1_hostserve_proto_rawDescGZIP(), []int{47}
+}
+
+type GeteuidResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Euid          int32                  `protobuf:"varint,1,opt,name=euid,proto3" json:"euid,omitempty"`
+	Error         *string                `protobuf:"bytes,2,opt,name=error,proto3,oneof" json:"error,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GeteuidResponse) Reset() {
+	*x = GeteuidResponse{}
+	mi := &file_hostserve_v1_hostserve_proto_msgTypes[48]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GeteuidResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GeteuidResponse) ProtoMessage() {}
+
+func (x *GeteuidResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_hostserve_v1_hostserve_proto_msgTypes[48]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GeteuidResponse.ProtoReflect.Descriptor instead.
+func (*GeteuidResponse) Descriptor() ([]byte, []int) {
+	return file_hostserve_v1_hostserve_proto_rawDescGZIP(), []int{48}
+}
+
+func (x *GeteuidResponse) GetEuid() int32 {
+	if x != nil {
+		return x.Euid
+	}
+	return 0
+}
+
+func (x *GeteuidResponse) GetError() string {
+	if x != nil && x.Error != nil {
+		return *x.Error
+	}
+	return ""
+}
+
+type GetegidRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetegidRequest) Reset() {
+	*x = GetegidRequest{}
+	mi := &file_hostserve_v1_hostserve_proto_msgTypes[49]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetegidRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetegidRequest) ProtoMessage() {}
+
+func (x *GetegidRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_hostserve_v1_hostserve_proto_msgTypes[49]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetegidRequest.ProtoReflect.Descriptor instead.
+func (*GetegidRequest) Descriptor() ([]byte, []int) {
+	return file_hostserve_v1_hostserve_proto_rawDescGZIP(), []int{49}
+}
+
+type GetegidResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Egid          int32                  `protobuf:"varint,1,opt,name=egid,proto3" json:"egid,omitempty"`
+	Error         *string                `protobuf:"bytes,2,opt,name=error,proto3,oneof" json:"error,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetegidResponse) Reset() {
+	*x = GetegidResponse{}
+	mi := &file_hostserve_v1_hostserve_proto_msgTypes[50]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetegidResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetegidResponse) ProtoMessage() {}
+
+func (x *GetegidResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_hostserve_v1_hostserve_proto_msgTypes[50]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetegidResponse.ProtoReflect.Descriptor instead.
+func (*GetegidResponse) Descriptor() ([]byte, []int) {
+	return file_hostserve_v1_hostserve_proto_rawDescGZIP(), []int{50}
+}
+
+func (x *GetegidResponse) GetEgid() int32 {
+	if x != nil {
+		return x.Egid
+	}
+	return 0
+}
+
+func (x *GetegidResponse) GetError() string {
+	if x != nil && x.Error != nil {
+		return *x.Error
+	}
+	return ""
+}
+
+type GetGroupsRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetGroupsRequest) Reset() {
+	*x = GetGroupsRequest{}
+	mi := &file_hostserve_v1_hostserve_proto_msgTypes[51]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetGroupsRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetGroupsRequest) ProtoMessage() {}
+
+func (x *GetGroupsRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_hostserve_v1_hostserve_proto_msgTypes[51]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetGroupsRequest.ProtoReflect.Descriptor instead.
+func (*GetGroupsRequest) Descriptor() ([]byte, []int) {
+	return file_hostserve_v1_hostserve_proto_rawDescGZIP(), []int{51}
+}
+
+type GetGroupsResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Groups        []int32                `protobuf:"varint,1,rep,packed,name=groups,proto3" json:"groups,omitempty"`
+	Error         *string                `protobuf:"bytes,2,opt,name=error,proto3,oneof" json:"error,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetGroupsResponse) Reset() {
+	*x = GetGroupsResponse{}
+	mi := &file_hostserve_v1_hostserve_proto_msgTypes[52]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetGroupsResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetGroupsResponse) ProtoMessage() {}
+
+func (x *GetGroupsResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_hostserve_v1_hostserve_proto_msgTypes[52]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetGroupsResponse.ProtoReflect.Descriptor instead.
+func (*GetGroupsResponse) Descriptor() ([]byte, []int) {
+	return file_hostserve_v1_hostserve_proto_rawDescGZIP(), []int{52}
+}
+
+func (x *GetGroupsResponse) GetGroups() []int32 {
+	if x != nil {
+		return x.Groups
+	}
+	return nil
+}
+
+func (x *GetGroupsResponse) GetError() string {
+	if x != nil && x.Error != nil {
+		return *x.Error
+	}
+	return ""
+}
+
 type GetEnvRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Key           string                 `protobuf:"bytes,1,opt,name=key,proto3" json:"key,omitempty"`
@@ -2154,7 +2786,7 @@ type GetEnvRequest struct {
 
 func (x *GetEnvRequest) Reset() {
 	*x = GetEnvRequest{}
-	mi := &file_hostserve_v1_hostserve_proto_msgTypes[39]
+	mi := &file_hostserve_v1_hostserve_proto_msgTypes[53]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2166,7 +2798,7 @@ func (x *GetEnvRequest) String() string {
 func (*GetEnvRequest) ProtoMessage() {}
 
 func (x *GetEnvRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_hostserve_v1_hostserve_proto_msgTypes[39]
+	mi := &file_hostserve_v1_hostserve_proto_msgTypes[53]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2179,7 +2811,7 @@ func (x *GetEnvRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetEnvRequest.ProtoReflect.Descriptor instead.
 func (*GetEnvRequest) Descriptor() ([]byte, []int) {
-	return file_hostserve_v1_hostserve_proto_rawDescGZIP(), []int{39}
+	return file_hostserve_v1_hostserve_proto_rawDescGZIP(), []int{53}
 }
 
 func (x *GetEnvRequest) GetKey() string {
@@ -2199,7 +2831,7 @@ type GetEnvResponse struct {
 
 func (x *GetEnvResponse) Reset() {
 	*x = GetEnvResponse{}
-	mi := &file_hostserve_v1_hostserve_proto_msgTypes[40]
+	mi := &file_hostserve_v1_hostserve_proto_msgTypes[54]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2211,7 +2843,7 @@ func (x *GetEnvResponse) String() string {
 func (*GetEnvResponse) ProtoMessage() {}
 
 func (x *GetEnvResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_hostserve_v1_hostserve_proto_msgTypes[40]
+	mi := &file_hostserve_v1_hostserve_proto_msgTypes[54]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2224,7 +2856,7 @@ func (x *GetEnvResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetEnvResponse.ProtoReflect.Descriptor instead.
 func (*GetEnvResponse) Descriptor() ([]byte, []int) {
-	return file_hostserve_v1_hostserve_proto_rawDescGZIP(), []int{40}
+	return file_hostserve_v1_hostserve_proto_rawDescGZIP(), []int{54}
 }
 
 func (x *GetEnvResponse) GetVal() string {
@@ -2249,7 +2881,7 @@ type TempDirRequest struct {
 
 func (x *TempDirRequest) Reset() {
 	*x = TempDirRequest{}
-	mi := &file_hostserve_v1_hostserve_proto_msgTypes[41]
+	mi := &file_hostserve_v1_hostserve_proto_msgTypes[55]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2261,7 +2893,7 @@ func (x *TempDirRequest) String() string {
 func (*TempDirRequest) ProtoMessage() {}
 
 func (x *TempDirRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_hostserve_v1_hostserve_proto_msgTypes[41]
+	mi := &file_hostserve_v1_hostserve_proto_msgTypes[55]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2274,7 +2906,7 @@ func (x *TempDirRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TempDirRequest.ProtoReflect.Descriptor instead.
 func (*TempDirRequest) Descriptor() ([]byte, []int) {
-	return file_hostserve_v1_hostserve_proto_rawDescGZIP(), []int{41}
+	return file_hostserve_v1_hostserve_proto_rawDescGZIP(), []int{55}
 }
 
 type TempDirResponse struct {
@@ -2287,7 +2919,7 @@ type TempDirResponse struct {
 
 func (x *TempDirResponse) Reset() {
 	*x = TempDirResponse{}
-	mi := &file_hostserve_v1_hostserve_proto_msgTypes[42]
+	mi := &file_hostserve_v1_hostserve_proto_msgTypes[56]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2299,7 +2931,7 @@ func (x *TempDirResponse) String() string {
 func (*TempDirResponse) ProtoMessage() {}
 
 func (x *TempDirResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_hostserve_v1_hostserve_proto_msgTypes[42]
+	mi := &file_hostserve_v1_hostserve_proto_msgTypes[56]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2312,7 +2944,7 @@ func (x *TempDirResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TempDirResponse.ProtoReflect.Descriptor instead.
 func (*TempDirResponse) Descriptor() ([]byte, []int) {
-	return file_hostserve_v1_hostserve_proto_rawDescGZIP(), []int{42}
+	return file_hostserve_v1_hostserve_proto_rawDescGZIP(), []int{56}
 }
 
 func (x *TempDirResponse) GetDir() string {
@@ -2337,7 +2969,7 @@ type UserCacheDirRequest struct {
 
 func (x *UserCacheDirRequest) Reset() {
 	*x = UserCacheDirRequest{}
-	mi := &file_hostserve_v1_hostserve_proto_msgTypes[43]
+	mi := &file_hostserve_v1_hostserve_proto_msgTypes[57]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2349,7 +2981,7 @@ func (x *UserCacheDirRequest) String() string {
 func (*UserCacheDirRequest) ProtoMessage() {}
 
 func (x *UserCacheDirRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_hostserve_v1_hostserve_proto_msgTypes[43]
+	mi := &file_hostserve_v1_hostserve_proto_msgTypes[57]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2362,7 +2994,7 @@ func (x *UserCacheDirRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UserCacheDirRequest.ProtoReflect.Descriptor instead.
 func (*UserCacheDirRequest) Descriptor() ([]byte, []int) {
-	return file_hostserve_v1_hostserve_proto_rawDescGZIP(), []int{43}
+	return file_hostserve_v1_hostserve_proto_rawDescGZIP(), []int{57}
 }
 
 type UserCacheDirResponse struct {
@@ -2375,7 +3007,7 @@ type UserCacheDirResponse struct {
 
 func (x *UserCacheDirResponse) Reset() {
 	*x = UserCacheDirResponse{}
-	mi := &file_hostserve_v1_hostserve_proto_msgTypes[44]
+	mi := &file_hostserve_v1_hostserve_proto_msgTypes[58]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2387,7 +3019,7 @@ func (x *UserCacheDirResponse) String() string {
 func (*UserCacheDirResponse) ProtoMessage() {}
 
 func (x *UserCacheDirResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_hostserve_v1_hostserve_proto_msgTypes[44]
+	mi := &file_hostserve_v1_hostserve_proto_msgTypes[58]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2400,7 +3032,7 @@ func (x *UserCacheDirResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UserCacheDirResponse.ProtoReflect.Descriptor instead.
 func (*UserCacheDirResponse) Descriptor() ([]byte, []int) {
-	return file_hostserve_v1_hostserve_proto_rawDescGZIP(), []int{44}
+	return file_hostserve_v1_hostserve_proto_rawDescGZIP(), []int{58}
 }
 
 func (x *UserCacheDirResponse) GetDir() string {
@@ -2425,7 +3057,7 @@ type UserConfigDirRequest struct {
 
 func (x *UserConfigDirRequest) Reset() {
 	*x = UserConfigDirRequest{}
-	mi := &file_hostserve_v1_hostserve_proto_msgTypes[45]
+	mi := &file_hostserve_v1_hostserve_proto_msgTypes[59]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2437,7 +3069,7 @@ func (x *UserConfigDirRequest) String() string {
 func (*UserConfigDirRequest) ProtoMessage() {}
 
 func (x *UserConfigDirRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_hostserve_v1_hostserve_proto_msgTypes[45]
+	mi := &file_hostserve_v1_hostserve_proto_msgTypes[59]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2450,7 +3082,7 @@ func (x *UserConfigDirRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UserConfigDirRequest.ProtoReflect.Descriptor instead.
 func (*UserConfigDirRequest) Descriptor() ([]byte, []int) {
-	return file_hostserve_v1_hostserve_proto_rawDescGZIP(), []int{45}
+	return file_hostserve_v1_hostserve_proto_rawDescGZIP(), []int{59}
 }
 
 type UserConfigDirResponse struct {
@@ -2463,7 +3095,7 @@ type UserConfigDirResponse struct {
 
 func (x *UserConfigDirResponse) Reset() {
 	*x = UserConfigDirResponse{}
-	mi := &file_hostserve_v1_hostserve_proto_msgTypes[46]
+	mi := &file_hostserve_v1_hostserve_proto_msgTypes[60]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2475,7 +3107,7 @@ func (x *UserConfigDirResponse) String() string {
 func (*UserConfigDirResponse) ProtoMessage() {}
 
 func (x *UserConfigDirResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_hostserve_v1_hostserve_proto_msgTypes[46]
+	mi := &file_hostserve_v1_hostserve_proto_msgTypes[60]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2488,7 +3120,7 @@ func (x *UserConfigDirResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UserConfigDirResponse.ProtoReflect.Descriptor instead.
 func (*UserConfigDirResponse) Descriptor() ([]byte, []int) {
-	return file_hostserve_v1_hostserve_proto_rawDescGZIP(), []int{46}
+	return file_hostserve_v1_hostserve_proto_rawDescGZIP(), []int{60}
 }
 
 func (x *UserConfigDirResponse) GetDir() string {
@@ -2513,7 +3145,7 @@ type UserHomeDirRequest struct {
 
 func (x *UserHomeDirRequest) Reset() {
 	*x = UserHomeDirRequest{}
-	mi := &file_hostserve_v1_hostserve_proto_msgTypes[47]
+	mi := &file_hostserve_v1_hostserve_proto_msgTypes[61]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2525,7 +3157,7 @@ func (x *UserHomeDirRequest) String() string {
 func (*UserHomeDirRequest) ProtoMessage() {}
 
 func (x *UserHomeDirRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_hostserve_v1_hostserve_proto_msgTypes[47]
+	mi := &file_hostserve_v1_hostserve_proto_msgTypes[61]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2538,7 +3170,7 @@ func (x *UserHomeDirRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UserHomeDirRequest.ProtoReflect.Descriptor instead.
 func (*UserHomeDirRequest) Descriptor() ([]byte, []int) {
-	return file_hostserve_v1_hostserve_proto_rawDescGZIP(), []int{47}
+	return file_hostserve_v1_hostserve_proto_rawDescGZIP(), []int{61}
 }
 
 type UserHomeDirResponse struct {
@@ -2551,7 +3183,7 @@ type UserHomeDirResponse struct {
 
 func (x *UserHomeDirResponse) Reset() {
 	*x = UserHomeDirResponse{}
-	mi := &file_hostserve_v1_hostserve_proto_msgTypes[48]
+	mi := &file_hostserve_v1_hostserve_proto_msgTypes[62]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2563,7 +3195,7 @@ func (x *UserHomeDirResponse) String() string {
 func (*UserHomeDirResponse) ProtoMessage() {}
 
 func (x *UserHomeDirResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_hostserve_v1_hostserve_proto_msgTypes[48]
+	mi := &file_hostserve_v1_hostserve_proto_msgTypes[62]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2576,7 +3208,7 @@ func (x *UserHomeDirResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UserHomeDirResponse.ProtoReflect.Descriptor instead.
 func (*UserHomeDirResponse) Descriptor() ([]byte, []int) {
-	return file_hostserve_v1_hostserve_proto_rawDescGZIP(), []int{48}
+	return file_hostserve_v1_hostserve_proto_rawDescGZIP(), []int{62}
 }
 
 func (x *UserHomeDirResponse) GetDir() string {
@@ -2645,6 +3277,18 @@ const file_hostserve_v1_hostserve_proto_rawDesc = "" +
 	"\bold_name\x18\x02 \x01(\tR\aoldName\x12\x19\n" +
 	"\bnew_name\x18\x03 \x01(\tR\anewName\"5\n" +
 	"\x0eRenameResponse\x12\x19\n" +
+	"\x05error\x18\x01 \x01(\tH\x00R\x05error\x88\x01\x01B\b\n" +
+	"\x06_error\">\n" +
+	"\rRemoveRequest\x12\x19\n" +
+	"\broot_dir\x18\x01 \x01(\tR\arootDir\x12\x12\n" +
+	"\x04path\x18\x02 \x01(\tR\x04path\"5\n" +
+	"\x0eRemoveResponse\x12\x19\n" +
+	"\x05error\x18\x01 \x01(\tH\x00R\x05error\x88\x01\x01B\b\n" +
+	"\x06_error\"A\n" +
+	"\x10RemoveAllRequest\x12\x19\n" +
+	"\broot_dir\x18\x01 \x01(\tR\arootDir\x12\x12\n" +
+	"\x04path\x18\x02 \x01(\tR\x04path\"8\n" +
+	"\x11RemoveAllResponse\x12\x19\n" +
 	"\x05error\x18\x01 \x01(\tH\x00R\x05error\x88\x01\x01B\b\n" +
 	"\x06_error\"Q\n" +
 	"\fMkdirRequest\x12\x19\n" +
@@ -2737,6 +3381,31 @@ const file_hostserve_v1_hostserve_proto_rawDesc = "" +
 	"\x11FileWriteResponse\x12#\n" +
 	"\rbytes_written\x18\x01 \x01(\rR\fbytesWritten\x12\x19\n" +
 	"\x05error\x18\x02 \x01(\tH\x00R\x05error\x88\x01\x01B\b\n" +
+	"\x06_error\"\x0f\n" +
+	"\rGetuidRequest\"G\n" +
+	"\x0eGetuidResponse\x12\x10\n" +
+	"\x03uid\x18\x01 \x01(\x05R\x03uid\x12\x19\n" +
+	"\x05error\x18\x02 \x01(\tH\x00R\x05error\x88\x01\x01B\b\n" +
+	"\x06_error\"\x0f\n" +
+	"\rGetgidRequest\"G\n" +
+	"\x0eGetgidResponse\x12\x10\n" +
+	"\x03gid\x18\x01 \x01(\x05R\x03gid\x12\x19\n" +
+	"\x05error\x18\x02 \x01(\tH\x00R\x05error\x88\x01\x01B\b\n" +
+	"\x06_error\"\x10\n" +
+	"\x0eGeteuidRequest\"J\n" +
+	"\x0fGeteuidResponse\x12\x12\n" +
+	"\x04euid\x18\x01 \x01(\x05R\x04euid\x12\x19\n" +
+	"\x05error\x18\x02 \x01(\tH\x00R\x05error\x88\x01\x01B\b\n" +
+	"\x06_error\"\x10\n" +
+	"\x0eGetegidRequest\"J\n" +
+	"\x0fGetegidResponse\x12\x12\n" +
+	"\x04egid\x18\x01 \x01(\x05R\x04egid\x12\x19\n" +
+	"\x05error\x18\x02 \x01(\tH\x00R\x05error\x88\x01\x01B\b\n" +
+	"\x06_error\"\x12\n" +
+	"\x10GetGroupsRequest\"P\n" +
+	"\x11GetGroupsResponse\x12\x16\n" +
+	"\x06groups\x18\x01 \x03(\x05R\x06groups\x12\x19\n" +
+	"\x05error\x18\x02 \x01(\tH\x00R\x05error\x88\x01\x01B\b\n" +
 	"\x06_error\"!\n" +
 	"\rGetEnvRequest\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\"G\n" +
@@ -2774,13 +3443,15 @@ const file_hostserve_v1_hostserve_proto_rawDesc = "" +
 	"READ_WRITE\x10\x05\x12\x15\n" +
 	"\x11READ_WRITE_CREATE\x10\x06\x12\x17\n" +
 	"\x13READ_WRITE_TRUNCATE\x10\a\x12\x15\n" +
-	"\x11READ_WRITE_APPEND\x10\b2\xfe\r\n" +
+	"\x11READ_WRITE_APPEND\x10\b2\xf9\x11\n" +
 	"\vHostService\x12F\n" +
 	"\aReadDir\x12\x1c.hostserve.v1.ReadDirRequest\x1a\x1d.hostserve.v1.ReadDirResponse\x12I\n" +
 	"\bReadFile\x12\x1d.hostserve.v1.ReadFileRequest\x1a\x1e.hostserve.v1.ReadFileResponse\x12L\n" +
 	"\tWriteFile\x12\x1e.hostserve.v1.WriteFileRequest\x1a\x1f.hostserve.v1.WriteFileResponse\x12=\n" +
 	"\x04Stat\x12\x19.hostserve.v1.StatRequest\x1a\x1a.hostserve.v1.StatResponse\x12C\n" +
-	"\x06Rename\x12\x1b.hostserve.v1.RenameRequest\x1a\x1c.hostserve.v1.RenameResponse\x12@\n" +
+	"\x06Rename\x12\x1b.hostserve.v1.RenameRequest\x1a\x1c.hostserve.v1.RenameResponse\x12C\n" +
+	"\x06Remove\x12\x1b.hostserve.v1.RemoveRequest\x1a\x1c.hostserve.v1.RemoveResponse\x12L\n" +
+	"\tRemoveAll\x12\x1e.hostserve.v1.RemoveAllRequest\x1a\x1f.hostserve.v1.RemoveAllResponse\x12@\n" +
 	"\x05Mkdir\x12\x1a.hostserve.v1.MkdirRequest\x1a\x1b.hostserve.v1.MkdirResponse\x12I\n" +
 	"\bMkdirAll\x12\x1d.hostserve.v1.MkdirAllRequest\x1a\x1e.hostserve.v1.MkdirAllResponse\x12L\n" +
 	"\tMkdirTemp\x12\x1e.hostserve.v1.MkdirTempRequest\x1a\x1f.hostserve.v1.MkdirTempResponse\x12O\n" +
@@ -2797,6 +3468,11 @@ const file_hostserve_v1_hostserve_proto_rawDesc = "" +
 	"FileReader\x12\x1d.hostserve.v1.FileReadRequest\x1a\x1e.hostserve.v1.FileReadResponse0\x01\x12O\n" +
 	"\n" +
 	"FileWriter\x12\x1e.hostserve.v1.FileWriteRequest\x1a\x1f.hostserve.v1.FileWriteResponse(\x01\x12C\n" +
+	"\x06Getuid\x12\x1b.hostserve.v1.GetuidRequest\x1a\x1c.hostserve.v1.GetuidResponse\x12C\n" +
+	"\x06Getgid\x12\x1b.hostserve.v1.GetgidRequest\x1a\x1c.hostserve.v1.GetgidResponse\x12F\n" +
+	"\aGeteuid\x12\x1c.hostserve.v1.GeteuidRequest\x1a\x1d.hostserve.v1.GeteuidResponse\x12F\n" +
+	"\aGetegid\x12\x1c.hostserve.v1.GetegidRequest\x1a\x1d.hostserve.v1.GetegidResponse\x12L\n" +
+	"\tGetGroups\x12\x1e.hostserve.v1.GetGroupsRequest\x1a\x1f.hostserve.v1.GetGroupsResponse\x12C\n" +
 	"\x06GetEnv\x12\x1b.hostserve.v1.GetEnvRequest\x1a\x1c.hostserve.v1.GetEnvResponse\x12F\n" +
 	"\aTempDir\x12\x1c.hostserve.v1.TempDirRequest\x1a\x1d.hostserve.v1.TempDirResponse\x12U\n" +
 	"\fUserCacheDir\x12!.hostserve.v1.UserCacheDirRequest\x1a\".hostserve.v1.UserCacheDirResponse\x12X\n" +
@@ -2817,7 +3493,7 @@ func file_hostserve_v1_hostserve_proto_rawDescGZIP() []byte {
 }
 
 var file_hostserve_v1_hostserve_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_hostserve_v1_hostserve_proto_msgTypes = make([]protoimpl.MessageInfo, 49)
+var file_hostserve_v1_hostserve_proto_msgTypes = make([]protoimpl.MessageInfo, 63)
 var file_hostserve_v1_hostserve_proto_goTypes = []any{
 	(OpenFileMode)(0),              // 0: hostserve.v1.OpenFileMode
 	(*DirEntry)(nil),               // 1: hostserve.v1.DirEntry
@@ -2833,46 +3509,60 @@ var file_hostserve_v1_hostserve_proto_goTypes = []any{
 	(*StatResponse)(nil),           // 11: hostserve.v1.StatResponse
 	(*RenameRequest)(nil),          // 12: hostserve.v1.RenameRequest
 	(*RenameResponse)(nil),         // 13: hostserve.v1.RenameResponse
-	(*MkdirRequest)(nil),           // 14: hostserve.v1.MkdirRequest
-	(*MkdirResponse)(nil),          // 15: hostserve.v1.MkdirResponse
-	(*MkdirAllRequest)(nil),        // 16: hostserve.v1.MkdirAllRequest
-	(*MkdirAllResponse)(nil),       // 17: hostserve.v1.MkdirAllResponse
-	(*MkdirTempRequest)(nil),       // 18: hostserve.v1.MkdirTempRequest
-	(*MkdirTempResponse)(nil),      // 19: hostserve.v1.MkdirTempResponse
-	(*FileCreateRequest)(nil),      // 20: hostserve.v1.FileCreateRequest
-	(*FileCreateResponse)(nil),     // 21: hostserve.v1.FileCreateResponse
-	(*FileCreateTempRequest)(nil),  // 22: hostserve.v1.FileCreateTempRequest
-	(*FileCreateTempResponse)(nil), // 23: hostserve.v1.FileCreateTempResponse
-	(*FileOpenRequest)(nil),        // 24: hostserve.v1.FileOpenRequest
-	(*FileOpenResponse)(nil),       // 25: hostserve.v1.FileOpenResponse
-	(*FileStatRequest)(nil),        // 26: hostserve.v1.FileStatRequest
-	(*FileStatResponse)(nil),       // 27: hostserve.v1.FileStatResponse
-	(*FileSeekRequest)(nil),        // 28: hostserve.v1.FileSeekRequest
-	(*FileSeekResponse)(nil),       // 29: hostserve.v1.FileSeekResponse
-	(*FileSyncRequest)(nil),        // 30: hostserve.v1.FileSyncRequest
-	(*FileSyncResponse)(nil),       // 31: hostserve.v1.FileSyncResponse
-	(*FileCloseRequest)(nil),       // 32: hostserve.v1.FileCloseRequest
-	(*FileCloseResponse)(nil),      // 33: hostserve.v1.FileCloseResponse
-	(*FileTruncateRequest)(nil),    // 34: hostserve.v1.FileTruncateRequest
-	(*FileTruncateResponse)(nil),   // 35: hostserve.v1.FileTruncateResponse
-	(*FileReadRequest)(nil),        // 36: hostserve.v1.FileReadRequest
-	(*FileReadResponse)(nil),       // 37: hostserve.v1.FileReadResponse
-	(*FileWriteRequest)(nil),       // 38: hostserve.v1.FileWriteRequest
-	(*FileWriteResponse)(nil),      // 39: hostserve.v1.FileWriteResponse
-	(*GetEnvRequest)(nil),          // 40: hostserve.v1.GetEnvRequest
-	(*GetEnvResponse)(nil),         // 41: hostserve.v1.GetEnvResponse
-	(*TempDirRequest)(nil),         // 42: hostserve.v1.TempDirRequest
-	(*TempDirResponse)(nil),        // 43: hostserve.v1.TempDirResponse
-	(*UserCacheDirRequest)(nil),    // 44: hostserve.v1.UserCacheDirRequest
-	(*UserCacheDirResponse)(nil),   // 45: hostserve.v1.UserCacheDirResponse
-	(*UserConfigDirRequest)(nil),   // 46: hostserve.v1.UserConfigDirRequest
-	(*UserConfigDirResponse)(nil),  // 47: hostserve.v1.UserConfigDirResponse
-	(*UserHomeDirRequest)(nil),     // 48: hostserve.v1.UserHomeDirRequest
-	(*UserHomeDirResponse)(nil),    // 49: hostserve.v1.UserHomeDirResponse
-	(*timestamppb.Timestamp)(nil),  // 50: google.protobuf.Timestamp
+	(*RemoveRequest)(nil),          // 14: hostserve.v1.RemoveRequest
+	(*RemoveResponse)(nil),         // 15: hostserve.v1.RemoveResponse
+	(*RemoveAllRequest)(nil),       // 16: hostserve.v1.RemoveAllRequest
+	(*RemoveAllResponse)(nil),      // 17: hostserve.v1.RemoveAllResponse
+	(*MkdirRequest)(nil),           // 18: hostserve.v1.MkdirRequest
+	(*MkdirResponse)(nil),          // 19: hostserve.v1.MkdirResponse
+	(*MkdirAllRequest)(nil),        // 20: hostserve.v1.MkdirAllRequest
+	(*MkdirAllResponse)(nil),       // 21: hostserve.v1.MkdirAllResponse
+	(*MkdirTempRequest)(nil),       // 22: hostserve.v1.MkdirTempRequest
+	(*MkdirTempResponse)(nil),      // 23: hostserve.v1.MkdirTempResponse
+	(*FileCreateRequest)(nil),      // 24: hostserve.v1.FileCreateRequest
+	(*FileCreateResponse)(nil),     // 25: hostserve.v1.FileCreateResponse
+	(*FileCreateTempRequest)(nil),  // 26: hostserve.v1.FileCreateTempRequest
+	(*FileCreateTempResponse)(nil), // 27: hostserve.v1.FileCreateTempResponse
+	(*FileOpenRequest)(nil),        // 28: hostserve.v1.FileOpenRequest
+	(*FileOpenResponse)(nil),       // 29: hostserve.v1.FileOpenResponse
+	(*FileStatRequest)(nil),        // 30: hostserve.v1.FileStatRequest
+	(*FileStatResponse)(nil),       // 31: hostserve.v1.FileStatResponse
+	(*FileSeekRequest)(nil),        // 32: hostserve.v1.FileSeekRequest
+	(*FileSeekResponse)(nil),       // 33: hostserve.v1.FileSeekResponse
+	(*FileSyncRequest)(nil),        // 34: hostserve.v1.FileSyncRequest
+	(*FileSyncResponse)(nil),       // 35: hostserve.v1.FileSyncResponse
+	(*FileCloseRequest)(nil),       // 36: hostserve.v1.FileCloseRequest
+	(*FileCloseResponse)(nil),      // 37: hostserve.v1.FileCloseResponse
+	(*FileTruncateRequest)(nil),    // 38: hostserve.v1.FileTruncateRequest
+	(*FileTruncateResponse)(nil),   // 39: hostserve.v1.FileTruncateResponse
+	(*FileReadRequest)(nil),        // 40: hostserve.v1.FileReadRequest
+	(*FileReadResponse)(nil),       // 41: hostserve.v1.FileReadResponse
+	(*FileWriteRequest)(nil),       // 42: hostserve.v1.FileWriteRequest
+	(*FileWriteResponse)(nil),      // 43: hostserve.v1.FileWriteResponse
+	(*GetuidRequest)(nil),          // 44: hostserve.v1.GetuidRequest
+	(*GetuidResponse)(nil),         // 45: hostserve.v1.GetuidResponse
+	(*GetgidRequest)(nil),          // 46: hostserve.v1.GetgidRequest
+	(*GetgidResponse)(nil),         // 47: hostserve.v1.GetgidResponse
+	(*GeteuidRequest)(nil),         // 48: hostserve.v1.GeteuidRequest
+	(*GeteuidResponse)(nil),        // 49: hostserve.v1.GeteuidResponse
+	(*GetegidRequest)(nil),         // 50: hostserve.v1.GetegidRequest
+	(*GetegidResponse)(nil),        // 51: hostserve.v1.GetegidResponse
+	(*GetGroupsRequest)(nil),       // 52: hostserve.v1.GetGroupsRequest
+	(*GetGroupsResponse)(nil),      // 53: hostserve.v1.GetGroupsResponse
+	(*GetEnvRequest)(nil),          // 54: hostserve.v1.GetEnvRequest
+	(*GetEnvResponse)(nil),         // 55: hostserve.v1.GetEnvResponse
+	(*TempDirRequest)(nil),         // 56: hostserve.v1.TempDirRequest
+	(*TempDirResponse)(nil),        // 57: hostserve.v1.TempDirResponse
+	(*UserCacheDirRequest)(nil),    // 58: hostserve.v1.UserCacheDirRequest
+	(*UserCacheDirResponse)(nil),   // 59: hostserve.v1.UserCacheDirResponse
+	(*UserConfigDirRequest)(nil),   // 60: hostserve.v1.UserConfigDirRequest
+	(*UserConfigDirResponse)(nil),  // 61: hostserve.v1.UserConfigDirResponse
+	(*UserHomeDirRequest)(nil),     // 62: hostserve.v1.UserHomeDirRequest
+	(*UserHomeDirResponse)(nil),    // 63: hostserve.v1.UserHomeDirResponse
+	(*timestamppb.Timestamp)(nil),  // 64: google.protobuf.Timestamp
 }
 var file_hostserve_v1_hostserve_proto_depIdxs = []int32{
-	50, // 0: hostserve.v1.FileInfo.mod_time:type_name -> google.protobuf.Timestamp
+	64, // 0: hostserve.v1.FileInfo.mod_time:type_name -> google.protobuf.Timestamp
 	1,  // 1: hostserve.v1.ReadDirResponse.entries:type_name -> hostserve.v1.DirEntry
 	3,  // 2: hostserve.v1.StatResponse.info:type_name -> hostserve.v1.FileInfo
 	0,  // 3: hostserve.v1.FileOpenRequest.mode:type_name -> hostserve.v1.OpenFileMode
@@ -2884,49 +3574,63 @@ var file_hostserve_v1_hostserve_proto_depIdxs = []int32{
 	8,  // 9: hostserve.v1.HostService.WriteFile:input_type -> hostserve.v1.WriteFileRequest
 	10, // 10: hostserve.v1.HostService.Stat:input_type -> hostserve.v1.StatRequest
 	12, // 11: hostserve.v1.HostService.Rename:input_type -> hostserve.v1.RenameRequest
-	14, // 12: hostserve.v1.HostService.Mkdir:input_type -> hostserve.v1.MkdirRequest
-	16, // 13: hostserve.v1.HostService.MkdirAll:input_type -> hostserve.v1.MkdirAllRequest
-	18, // 14: hostserve.v1.HostService.MkdirTemp:input_type -> hostserve.v1.MkdirTempRequest
-	20, // 15: hostserve.v1.HostService.FileCreate:input_type -> hostserve.v1.FileCreateRequest
-	22, // 16: hostserve.v1.HostService.FileCreateTemp:input_type -> hostserve.v1.FileCreateTempRequest
-	24, // 17: hostserve.v1.HostService.FileOpen:input_type -> hostserve.v1.FileOpenRequest
-	26, // 18: hostserve.v1.HostService.FileStat:input_type -> hostserve.v1.FileStatRequest
-	28, // 19: hostserve.v1.HostService.FileSeek:input_type -> hostserve.v1.FileSeekRequest
-	30, // 20: hostserve.v1.HostService.FileSync:input_type -> hostserve.v1.FileSyncRequest
-	32, // 21: hostserve.v1.HostService.FileClose:input_type -> hostserve.v1.FileCloseRequest
-	34, // 22: hostserve.v1.HostService.FileTruncate:input_type -> hostserve.v1.FileTruncateRequest
-	36, // 23: hostserve.v1.HostService.FileReader:input_type -> hostserve.v1.FileReadRequest
-	38, // 24: hostserve.v1.HostService.FileWriter:input_type -> hostserve.v1.FileWriteRequest
-	40, // 25: hostserve.v1.HostService.GetEnv:input_type -> hostserve.v1.GetEnvRequest
-	42, // 26: hostserve.v1.HostService.TempDir:input_type -> hostserve.v1.TempDirRequest
-	44, // 27: hostserve.v1.HostService.UserCacheDir:input_type -> hostserve.v1.UserCacheDirRequest
-	46, // 28: hostserve.v1.HostService.UserConfigDir:input_type -> hostserve.v1.UserConfigDirRequest
-	48, // 29: hostserve.v1.HostService.UserHomeDir:input_type -> hostserve.v1.UserHomeDirRequest
-	5,  // 30: hostserve.v1.HostService.ReadDir:output_type -> hostserve.v1.ReadDirResponse
-	7,  // 31: hostserve.v1.HostService.ReadFile:output_type -> hostserve.v1.ReadFileResponse
-	9,  // 32: hostserve.v1.HostService.WriteFile:output_type -> hostserve.v1.WriteFileResponse
-	11, // 33: hostserve.v1.HostService.Stat:output_type -> hostserve.v1.StatResponse
-	13, // 34: hostserve.v1.HostService.Rename:output_type -> hostserve.v1.RenameResponse
-	15, // 35: hostserve.v1.HostService.Mkdir:output_type -> hostserve.v1.MkdirResponse
-	17, // 36: hostserve.v1.HostService.MkdirAll:output_type -> hostserve.v1.MkdirAllResponse
-	19, // 37: hostserve.v1.HostService.MkdirTemp:output_type -> hostserve.v1.MkdirTempResponse
-	21, // 38: hostserve.v1.HostService.FileCreate:output_type -> hostserve.v1.FileCreateResponse
-	23, // 39: hostserve.v1.HostService.FileCreateTemp:output_type -> hostserve.v1.FileCreateTempResponse
-	25, // 40: hostserve.v1.HostService.FileOpen:output_type -> hostserve.v1.FileOpenResponse
-	27, // 41: hostserve.v1.HostService.FileStat:output_type -> hostserve.v1.FileStatResponse
-	29, // 42: hostserve.v1.HostService.FileSeek:output_type -> hostserve.v1.FileSeekResponse
-	31, // 43: hostserve.v1.HostService.FileSync:output_type -> hostserve.v1.FileSyncResponse
-	33, // 44: hostserve.v1.HostService.FileClose:output_type -> hostserve.v1.FileCloseResponse
-	35, // 45: hostserve.v1.HostService.FileTruncate:output_type -> hostserve.v1.FileTruncateResponse
-	37, // 46: hostserve.v1.HostService.FileReader:output_type -> hostserve.v1.FileReadResponse
-	39, // 47: hostserve.v1.HostService.FileWriter:output_type -> hostserve.v1.FileWriteResponse
-	41, // 48: hostserve.v1.HostService.GetEnv:output_type -> hostserve.v1.GetEnvResponse
-	43, // 49: hostserve.v1.HostService.TempDir:output_type -> hostserve.v1.TempDirResponse
-	45, // 50: hostserve.v1.HostService.UserCacheDir:output_type -> hostserve.v1.UserCacheDirResponse
-	47, // 51: hostserve.v1.HostService.UserConfigDir:output_type -> hostserve.v1.UserConfigDirResponse
-	49, // 52: hostserve.v1.HostService.UserHomeDir:output_type -> hostserve.v1.UserHomeDirResponse
-	30, // [30:53] is the sub-list for method output_type
-	7,  // [7:30] is the sub-list for method input_type
+	14, // 12: hostserve.v1.HostService.Remove:input_type -> hostserve.v1.RemoveRequest
+	16, // 13: hostserve.v1.HostService.RemoveAll:input_type -> hostserve.v1.RemoveAllRequest
+	18, // 14: hostserve.v1.HostService.Mkdir:input_type -> hostserve.v1.MkdirRequest
+	20, // 15: hostserve.v1.HostService.MkdirAll:input_type -> hostserve.v1.MkdirAllRequest
+	22, // 16: hostserve.v1.HostService.MkdirTemp:input_type -> hostserve.v1.MkdirTempRequest
+	24, // 17: hostserve.v1.HostService.FileCreate:input_type -> hostserve.v1.FileCreateRequest
+	26, // 18: hostserve.v1.HostService.FileCreateTemp:input_type -> hostserve.v1.FileCreateTempRequest
+	28, // 19: hostserve.v1.HostService.FileOpen:input_type -> hostserve.v1.FileOpenRequest
+	30, // 20: hostserve.v1.HostService.FileStat:input_type -> hostserve.v1.FileStatRequest
+	32, // 21: hostserve.v1.HostService.FileSeek:input_type -> hostserve.v1.FileSeekRequest
+	34, // 22: hostserve.v1.HostService.FileSync:input_type -> hostserve.v1.FileSyncRequest
+	36, // 23: hostserve.v1.HostService.FileClose:input_type -> hostserve.v1.FileCloseRequest
+	38, // 24: hostserve.v1.HostService.FileTruncate:input_type -> hostserve.v1.FileTruncateRequest
+	40, // 25: hostserve.v1.HostService.FileReader:input_type -> hostserve.v1.FileReadRequest
+	42, // 26: hostserve.v1.HostService.FileWriter:input_type -> hostserve.v1.FileWriteRequest
+	44, // 27: hostserve.v1.HostService.Getuid:input_type -> hostserve.v1.GetuidRequest
+	46, // 28: hostserve.v1.HostService.Getgid:input_type -> hostserve.v1.GetgidRequest
+	48, // 29: hostserve.v1.HostService.Geteuid:input_type -> hostserve.v1.GeteuidRequest
+	50, // 30: hostserve.v1.HostService.Getegid:input_type -> hostserve.v1.GetegidRequest
+	52, // 31: hostserve.v1.HostService.GetGroups:input_type -> hostserve.v1.GetGroupsRequest
+	54, // 32: hostserve.v1.HostService.GetEnv:input_type -> hostserve.v1.GetEnvRequest
+	56, // 33: hostserve.v1.HostService.TempDir:input_type -> hostserve.v1.TempDirRequest
+	58, // 34: hostserve.v1.HostService.UserCacheDir:input_type -> hostserve.v1.UserCacheDirRequest
+	60, // 35: hostserve.v1.HostService.UserConfigDir:input_type -> hostserve.v1.UserConfigDirRequest
+	62, // 36: hostserve.v1.HostService.UserHomeDir:input_type -> hostserve.v1.UserHomeDirRequest
+	5,  // 37: hostserve.v1.HostService.ReadDir:output_type -> hostserve.v1.ReadDirResponse
+	7,  // 38: hostserve.v1.HostService.ReadFile:output_type -> hostserve.v1.ReadFileResponse
+	9,  // 39: hostserve.v1.HostService.WriteFile:output_type -> hostserve.v1.WriteFileResponse
+	11, // 40: hostserve.v1.HostService.Stat:output_type -> hostserve.v1.StatResponse
+	13, // 41: hostserve.v1.HostService.Rename:output_type -> hostserve.v1.RenameResponse
+	15, // 42: hostserve.v1.HostService.Remove:output_type -> hostserve.v1.RemoveResponse
+	17, // 43: hostserve.v1.HostService.RemoveAll:output_type -> hostserve.v1.RemoveAllResponse
+	19, // 44: hostserve.v1.HostService.Mkdir:output_type -> hostserve.v1.MkdirResponse
+	21, // 45: hostserve.v1.HostService.MkdirAll:output_type -> hostserve.v1.MkdirAllResponse
+	23, // 46: hostserve.v1.HostService.MkdirTemp:output_type -> hostserve.v1.MkdirTempResponse
+	25, // 47: hostserve.v1.HostService.FileCreate:output_type -> hostserve.v1.FileCreateResponse
+	27, // 48: hostserve.v1.HostService.FileCreateTemp:output_type -> hostserve.v1.FileCreateTempResponse
+	29, // 49: hostserve.v1.HostService.FileOpen:output_type -> hostserve.v1.FileOpenResponse
+	31, // 50: hostserve.v1.HostService.FileStat:output_type -> hostserve.v1.FileStatResponse
+	33, // 51: hostserve.v1.HostService.FileSeek:output_type -> hostserve.v1.FileSeekResponse
+	35, // 52: hostserve.v1.HostService.FileSync:output_type -> hostserve.v1.FileSyncResponse
+	37, // 53: hostserve.v1.HostService.FileClose:output_type -> hostserve.v1.FileCloseResponse
+	39, // 54: hostserve.v1.HostService.FileTruncate:output_type -> hostserve.v1.FileTruncateResponse
+	41, // 55: hostserve.v1.HostService.FileReader:output_type -> hostserve.v1.FileReadResponse
+	43, // 56: hostserve.v1.HostService.FileWriter:output_type -> hostserve.v1.FileWriteResponse
+	45, // 57: hostserve.v1.HostService.Getuid:output_type -> hostserve.v1.GetuidResponse
+	47, // 58: hostserve.v1.HostService.Getgid:output_type -> hostserve.v1.GetgidResponse
+	49, // 59: hostserve.v1.HostService.Geteuid:output_type -> hostserve.v1.GeteuidResponse
+	51, // 60: hostserve.v1.HostService.Getegid:output_type -> hostserve.v1.GetegidResponse
+	53, // 61: hostserve.v1.HostService.GetGroups:output_type -> hostserve.v1.GetGroupsResponse
+	55, // 62: hostserve.v1.HostService.GetEnv:output_type -> hostserve.v1.GetEnvResponse
+	57, // 63: hostserve.v1.HostService.TempDir:output_type -> hostserve.v1.TempDirResponse
+	59, // 64: hostserve.v1.HostService.UserCacheDir:output_type -> hostserve.v1.UserCacheDirResponse
+	61, // 65: hostserve.v1.HostService.UserConfigDir:output_type -> hostserve.v1.UserConfigDirResponse
+	63, // 66: hostserve.v1.HostService.UserHomeDir:output_type -> hostserve.v1.UserHomeDirResponse
+	37, // [37:67] is the sub-list for method output_type
+	7,  // [7:37] is the sub-list for method input_type
 	7,  // [7:7] is the sub-list for extension type_name
 	7,  // [7:7] is the sub-list for extension extendee
 	0,  // [0:7] is the sub-list for field type_name
@@ -2960,13 +3664,20 @@ func file_hostserve_v1_hostserve_proto_init() {
 	file_hostserve_v1_hostserve_proto_msgTypes[44].OneofWrappers = []any{}
 	file_hostserve_v1_hostserve_proto_msgTypes[46].OneofWrappers = []any{}
 	file_hostserve_v1_hostserve_proto_msgTypes[48].OneofWrappers = []any{}
+	file_hostserve_v1_hostserve_proto_msgTypes[50].OneofWrappers = []any{}
+	file_hostserve_v1_hostserve_proto_msgTypes[52].OneofWrappers = []any{}
+	file_hostserve_v1_hostserve_proto_msgTypes[54].OneofWrappers = []any{}
+	file_hostserve_v1_hostserve_proto_msgTypes[56].OneofWrappers = []any{}
+	file_hostserve_v1_hostserve_proto_msgTypes[58].OneofWrappers = []any{}
+	file_hostserve_v1_hostserve_proto_msgTypes[60].OneofWrappers = []any{}
+	file_hostserve_v1_hostserve_proto_msgTypes[62].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_hostserve_v1_hostserve_proto_rawDesc), len(file_hostserve_v1_hostserve_proto_rawDesc)),
 			NumEnums:      1,
-			NumMessages:   49,
+			NumMessages:   63,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

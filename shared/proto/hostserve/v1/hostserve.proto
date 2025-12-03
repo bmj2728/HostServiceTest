@@ -39,6 +39,8 @@ service HostService {
 
   rpc Stat(StatRequest) returns (StatResponse); // convenience for open->stat->close
   rpc Rename(RenameRequest) returns (RenameResponse);
+  rpc Remove(RemoveRequest) returns (RemoveResponse);
+  rpc RemoveAll(RemoveAllRequest) returns (RemoveAllResponse);
 
   rpc Mkdir(MkdirRequest) returns (MkdirResponse);
   rpc MkdirAll(MkdirAllRequest) returns (MkdirAllResponse);
@@ -59,6 +61,11 @@ service HostService {
   rpc FileWriter(stream FileWriteRequest) returns (FileWriteResponse);
 
   // Env Endpoints
+  rpc Getuid(GetuidRequest) returns (GetuidResponse);
+  rpc Getgid(GetgidRequest) returns (GetgidResponse);
+  rpc Geteuid(GeteuidRequest) returns (GeteuidResponse);
+  rpc Getegid(GetegidRequest) returns (GetegidResponse);
+  rpc GetGroups(GetGroupsRequest) returns (GetGroupsResponse);
   rpc GetEnv(GetEnvRequest) returns (GetEnvResponse);
   rpc TempDir(TempDirRequest) returns (TempDirResponse);
   rpc UserCacheDir(UserCacheDirRequest) returns (UserCacheDirResponse);
@@ -142,6 +149,24 @@ message  RenameRequest {
 }
 
 message RenameResponse {
+  optional string error = 1;
+}
+
+message RemoveRequest {
+  string root_dir = 1;
+  string path = 2;
+}
+
+message RemoveResponse {
+  optional string error = 1;
+}
+
+message RemoveAllRequest {
+  string root_dir = 1;
+  string path = 2;
+}
+
+message RemoveAllResponse {
   optional string error = 1;
 }
 
@@ -276,6 +301,51 @@ message FileWriteResponse {
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////Env Service Messages////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+message GetuidRequest {
+
+}
+
+message GetuidResponse {
+  int32 uid = 1;
+  optional string error =2;
+}
+
+message GetgidRequest {
+
+}
+
+message GetgidResponse {
+  int32 gid = 1;
+  optional string error =2;
+}
+
+message GeteuidRequest {
+
+}
+
+message GeteuidResponse {
+  int32 euid = 1;
+  optional string error =2;
+}
+
+message GetegidRequest {
+
+}
+
+message GetegidResponse {
+  int32 egid = 1;
+  optional string error =2;
+}
+
+message GetGroupsRequest {
+
+}
+
+message GetGroupsResponse {
+  repeated int32 groups = 1;
+  optional string error = 2;
+}
 
 message GetEnvRequest {
   string key = 1;

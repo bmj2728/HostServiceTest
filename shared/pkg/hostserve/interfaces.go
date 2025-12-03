@@ -38,6 +38,12 @@ type IHostFS interface {
 	// Rename renames a file or directory from oldPath to newPath within the specified rootDir. Returns an error if the operation fails.
 	Rename(ctx context.Context, rootDir, oldPath, newPath string) error
 
+	// Remove deletes the file or empty directory specified by the given path. The path cannot escape the root directory.
+	Remove(ctx context.Context, rootDir, path string) error
+
+	// RemoveAll recursively removes the specified directory or file at the given path. The path cannot escape the root directory.
+	RemoveAll(ctx context.Context, rootDir, path string) error
+
 	// Mkdir creates a new directory with the specified name and permissions at the given root directory.
 	Mkdir(ctx context.Context, rootDir string, name string, perm os.FileMode) error
 
@@ -84,6 +90,21 @@ type IHostFS interface {
 
 // IHostEnv defines a contract for interacting with environment variables in the host system.
 type IHostEnv interface {
+
+	// Getuid retrieves the user ID of the current process as an integer. Returns an error if the operation fails.
+	Getuid(ctx context.Context) (int32, error)
+
+	// Getgid retrieves the group ID of the current user and returns it as an int32 along with an error, if any occurs.
+	Getgid(ctx context.Context) (int32, error)
+
+	// Geteuid retrieves the effective user ID of the calling process and returns it as an int32.
+	Geteuid(ctx context.Context) (int32, error)
+
+	// Getegid retrieves the effective group ID of the calling process as an integer.
+	Getegid(ctx context.Context) (int32, error)
+
+	// GetGroups retrieves the list of group IDs associated with the current user context.
+	GetGroups(ctx context.Context) ([]int32, error)
 
 	// GetEnv fetches the value of an environment variable by its key and returns it as a string.
 	GetEnv(ctx context.Context, key string) (string, error)

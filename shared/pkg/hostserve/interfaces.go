@@ -5,6 +5,7 @@ import (
 	"io"
 	"io/fs"
 	"os"
+	"time"
 )
 
 // IHostServices is an interface that combines IHostFS and IHostEnv to provide file system and environment services.
@@ -56,6 +57,13 @@ type IHostFS interface {
 
 	// Chmod updates the permissions of a file or directory at the specified path relative to the root directory.
 	Chmod(ctx context.Context, rootDir, path string, mode os.FileMode) error
+
+	// Chown changes the ownership of the specified file or directory at path to the given user ID (uid) and group ID (gid).
+	// Requires root privileges to execute.
+	Chown(ctx context.Context, rootDir, path string, uid, gid int) error
+
+	// Chtimes updates the access and modification times of a file or directory specified by path in the rootDir context.
+	Chtimes(ctx context.Context, rootDir, path string, atime, mtime time.Time) error
 
 	// FileCreate creates a new file at the specified path within the root directory and returns a unique FileHandle.
 	FileCreate(ctx context.Context, rootDir, path string) (FileHandle, error)

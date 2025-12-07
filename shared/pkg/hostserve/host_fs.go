@@ -8,6 +8,7 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"time"
 
 	"github.com/hashicorp/go-hclog"
 )
@@ -324,6 +325,58 @@ func (hf *HostFS) Chmod(ctx context.Context, rootDir, path string, mode os.FileM
 	err = r.Chmod(rel, mode)
 	if err != nil {
 		hclog.Default().Error("Failed to chmod", "root", rootDir, "path", path, "err", err)
+		return err
+	}
+	return nil
+}
+
+// Chown changes the ownership of the specified file or directory to the given UID and GID within the provided root directory.
+// It ensures that the path is resolved relative to the rootDir and validates permissions during execution.
+// Logging is performed in case of errors during root resolution, path conversion, or ownership change.
+// Returns an error if any step of the operation fails, including invalid paths or insufficient permissions.
+func (hf *HostFS) Chown(ctx context.Context, rootDir, path string, uid, gid int) error {
+	clientID := getClientIDFromContext(ctx)
+	hclog.Default().Debug("Placeholder Pseudo Cap Check...", "clientID", clientID, "root", rootDir, "path", path, "uid", uid, "gid", gid)
+
+	r, err := getRoot(rootDir)
+	if err != nil {
+		hclog.Default().Error("Failed to get root", "rootDir", rootDir, "err", err)
+		return err
+	}
+	defer closeRoot(r)
+	rel, err := absToRel(rootDir, path)
+	if err != nil {
+		hclog.Default().Error("Failed to get relative path", "rootDir", rootDir, "path", path, "err", err)
+		return err
+	}
+
+	err = r.Chown(rel, uid, gid)
+	if err != nil {
+		hclog.Default().Error("Failed to chown", "root", rootDir, "path", path, "uid", uid, "gid", gid, "err", err)
+		return err
+	}
+	return nil
+}
+
+// Chtimes changes the access and modification times of the file at the specified path within the rooted filesystem.
+func (hf *HostFS) Chtimes(ctx context.Context, rootDir, path string, atime, mtime time.Time) error {
+	clientID := getClientIDFromContext(ctx)
+	hclog.Default().Debug("Placeholder Pseudo Cap Check...", "clientID", clientID, "root", rootDir, "path", path, "atime", atime, "mtime", mtime)
+	r, err := getRoot(rootDir)
+	if err != nil {
+		hclog.Default().Error("Failed to get root", "rootDir", rootDir, "err", err)
+		return err
+	}
+	defer closeRoot(r)
+	rel, err := absToRel(rootDir, path)
+	if err != nil {
+		hclog.Default().Error("Failed to get relative path", "rootDir", rootDir, "path", path, "err", err)
+		return err
+	}
+
+	err = r.Chtimes(rel, atime, mtime)
+	if err != nil {
+		hclog.Default().Error("Failed to chtimes", "root", rootDir, "path", path, "atime", atime, "mtime", mtime, "err", err)
 		return err
 	}
 	return nil

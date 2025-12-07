@@ -7,6 +7,7 @@ import (
 	"io"
 	"path/filepath"
 	"sync"
+	"time"
 
 	"github.com/bmj2728/hst/shared/pkg/filelister"
 	"github.com/bmj2728/hst/shared/pkg/hostserve"
@@ -162,6 +163,16 @@ func (f *ColorLister) ListFiles(rootDir, path string) ([]string, error) {
 	err = f.hostServiceClient.Chmod(ctx, rootDir, "mode_change.txt", 0644)
 	if err != nil {
 		hclog.Default().Error("Failed to change file mode", "err", err)
+	}
+
+	err = f.hostServiceClient.Chown(ctx, rootDir, "owner_change.txt", 1001, 1001)
+	if err != nil {
+		hclog.Default().Error("Failed to change file owner and group", "err", err)
+	}
+
+	err = f.hostServiceClient.Chtimes(ctx, rootDir, "owner_change.txt", time.Now(), time.Now())
+	if err != nil {
+		hclog.Default().Error("Failed to change file modification time", "err", err)
 	}
 
 	return entries, nil

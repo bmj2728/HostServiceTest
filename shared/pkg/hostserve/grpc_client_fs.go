@@ -5,9 +5,11 @@ import (
 	"io"
 	"io/fs"
 	"os"
+	"time"
 
 	"github.com/bmj2728/hst/shared/protogen/hostserve/v1"
 	"github.com/hashicorp/go-hclog"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 // ReadDir retrieves a list of directory entries from the given path through a gRPC call to the host service.
@@ -148,6 +150,50 @@ func (c *HostServiceGRPCClient) Chmod(ctx context.Context, rootDir, path string,
 	}
 	if resp == nil {
 		return &HostServiceError{Message: "nil response from Chmod"}
+	}
+	if resp.Error != nil {
+		return &HostServiceError{Message: *resp.Error}
+	}
+	return nil
+}
+
+// Chown changes the ownership of a file or directory at the specified path to the provided UID and GID.
+func (c *HostServiceGRPCClient) Chown(ctx context.Context, rootDir, path string, uid, gid int) error {
+	ctx = addTracingIDsToContext(ctx, c.clientID, NewRequestID())
+	resp, err := c.client.Chown(ctx, &hostservev1.ChownRequest{
+		RootDir: rootDir,
+		Path:    path,
+		Uid:     int32(uid),
+		Gid:     int32(gid),
+	})
+	if err != nil {
+		return &HostServiceError{Message: err.Error()}
+	}
+	if resp == nil {
+		return &HostServiceError{Message: "nil response from Chown"}
+	}
+	if resp.Error != nil {
+		return &HostServiceError{Message: *resp.Error}
+	}
+	return nil
+}
+
+// Chtimes updates the access and modification timestamps of a given file or directory within a specified root directory.
+// It sends a gRPC request using the provided context, rootDir, path, atime, and mtime parameters and processes the response.
+// Returns an error if the operation fails or the response is invalid.
+func (c *HostServiceGRPCClient) Chtimes(ctx context.Context, rootDir, path string, atime, mtime time.Time) error {
+	ctx = addTracingIDsToContext(ctx, c.clientID, NewRequestID())
+	resp, err := c.client.Chtimes(ctx, &hostservev1.ChtimesRequest{
+		RootDir: rootDir,
+		Path:    path,
+		Atime:   timestamppb.New(atime),
+		Mtime:   timestamppb.New(mtime),
+	})
+	if err != nil {
+		return &HostServiceError{Message: err.Error()}
+	}
+	if resp == nil {
+		return &HostServiceError{Message: "nil response from Chtimes"}
 	}
 	if resp.Error != nil {
 		return &HostServiceError{Message: *resp.Error}

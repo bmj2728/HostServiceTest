@@ -48,8 +48,9 @@ service HostService {
   rpc MkdirAll(MkdirAllRequest) returns (MkdirAllResponse);
   rpc MkdirTemp(MkdirTempRequest) returns (MkdirTempResponse);
   rpc Chmod(ChmodRequest) returns (ChmodResponse);
+  rpc Chown(ChownRequest) returns (ChownResponse);
+
   // TODO
-  rpc Chown(ChownRequest) returns (ChownRequest);
   rpc Chtimes(ChtimesRequest) returns (ChtimesResponse);
   rpc Lchown(LchownRequest) returns (LchownResponse);
   rpc Lstat(LstatRequest) returns (LstatResponse);

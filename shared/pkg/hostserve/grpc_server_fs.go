@@ -423,6 +423,85 @@ func (s *HostServiceGRPCServer) Chmod(ctx context.Context, request *hostservev1.
 	return &hostservev1.ChmodResponse{}, nil
 }
 
+// Chown changes the owner and group of a specified file or directory to the provided UID and GID.
+// It processes request context information such as client ID and request ID for logging and validation.
+// Returns a ChownResponse with an error message in case of failure or an empty response on success.
+func (s *HostServiceGRPCServer) Chown(ctx context.Context, request *hostservev1.ChownRequest) (*hostservev1.ChownResponse, error) {
+	ctx, clientID, reqID, owner, err := s.processRequestContext(ctx)
+	if err != nil {
+		hclog.Default().Info("Chown bad request from client",
+			ctxClientIDKey, clientID,
+			ctxClientOwner, owner,
+			ctxHostRequestIDKey, reqID,
+			"rootDir", request.RootDir,
+			"path", request.Path,
+			"error", err,
+		)
+		return &hostservev1.ChownResponse{
+			Error: proto.String(err.Error()),
+		}, nil
+	}
+
+	hclog.Default().Info("Chown request from client",
+		ctxClientIDKey, clientID,
+		ctxClientOwner, owner,
+		ctxHostRequestIDKey, reqID,
+		"rootDir", request.RootDir,
+		"path", request.Path,
+	)
+
+	err = s.Impl.Chown(ctx, request.RootDir, request.Path, int(request.Uid), int(request.Gid))
+	if err != nil {
+		return &hostservev1.ChownResponse{
+			Error: proto.String(err.Error()),
+		}, nil
+	}
+	return &hostservev1.ChownResponse{}, nil
+}
+
+// Chtimes handles a request to change the access and modification times of a file at the given path within the specified root directory.
+// It takes a context, a request containing the root directory, file path, and new timestamps, and returns a response or an error.
+// Logs details about the incoming request including client ID, owner, request ID, and timestamps.
+// Processes the request using the underlying implementation and returns a response indicating success or the encountered error.
+func (s *HostServiceGRPCServer) Chtimes(ctx context.Context, request *hostservev1.ChtimesRequest) (*hostservev1.ChtimesResponse, error) {
+
+	ctx, clientID, reqID, owner, err := s.processRequestContext(ctx)
+	if err != nil {
+		hclog.Default().Info("Chtimes bad request from client",
+			ctxClientIDKey, clientID,
+			ctxClientOwner, owner,
+			ctxHostRequestIDKey, reqID,
+			"rootDir", request.RootDir,
+			"path", request.Path,
+			"atime", request.Atime.AsTime().String(),
+			"mtime", request.Mtime.AsTime().String(),
+			"error", err,
+		)
+		return &hostservev1.ChtimesResponse{
+			Error: proto.String(err.Error()),
+		}, nil
+	}
+
+	hclog.Default().Info("Chtimes request from client",
+		ctxClientIDKey, clientID,
+		ctxClientOwner, owner,
+		ctxHostRequestIDKey, reqID,
+		"rootDir", request.RootDir,
+		"path", request.Path,
+		"atime", request.Atime.AsTime().String(),
+		"mtime", request.Mtime.AsTime().String(),
+	)
+
+	err = s.Impl.Chtimes(ctx, request.RootDir, request.Path, request.Atime.AsTime(), request.Mtime.AsTime())
+	if err != nil {
+		return &hostservev1.ChtimesResponse{
+			Error: proto.String(err.Error()),
+		}, nil
+	}
+	return &hostservev1.ChtimesResponse{}, nil
+
+}
+
 // FileCreate is a method that processes a request to create a new file with the specified path and returns its handle.
 func (s *HostServiceGRPCServer) FileCreate(ctx context.Context,
 	request *hostservev1.FileCreateRequest) (response *hostservev1.FileCreateResponse, err error) {

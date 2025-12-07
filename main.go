@@ -249,5 +249,7 @@ func main() {
 	hfs.Cleanup()
 	hostServices.ActiveClients().Clear()
 
+	plugin.CleanupClients() //make sure we actually shutdown the plugins
+
 	os.Exit(0)
 }

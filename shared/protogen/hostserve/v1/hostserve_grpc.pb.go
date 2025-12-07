@@ -81,9 +81,9 @@ type HostServiceClient interface {
 	Mkdir(ctx context.Context, in *MkdirRequest, opts ...grpc.CallOption) (*MkdirResponse, error)
 	MkdirAll(ctx context.Context, in *MkdirAllRequest, opts ...grpc.CallOption) (*MkdirAllResponse, error)
 	MkdirTemp(ctx context.Context, in *MkdirTempRequest, opts ...grpc.CallOption) (*MkdirTempResponse, error)
-	// TODO
 	Chmod(ctx context.Context, in *ChmodRequest, opts ...grpc.CallOption) (*ChmodResponse, error)
-	Chown(ctx context.Context, in *ChownRequest, opts ...grpc.CallOption) (*ChownRequest, error)
+	Chown(ctx context.Context, in *ChownRequest, opts ...grpc.CallOption) (*ChownResponse, error)
+	// TODO
 	Chtimes(ctx context.Context, in *ChtimesRequest, opts ...grpc.CallOption) (*ChtimesResponse, error)
 	Lchown(ctx context.Context, in *LchownRequest, opts ...grpc.CallOption) (*LchownResponse, error)
 	Lstat(ctx context.Context, in *LstatRequest, opts ...grpc.CallOption) (*LstatResponse, error)
@@ -238,9 +238,9 @@ func (c *hostServiceClient) Chmod(ctx context.Context, in *ChmodRequest, opts ..
 	return out, nil
 }
 
-func (c *hostServiceClient) Chown(ctx context.Context, in *ChownRequest, opts ...grpc.CallOption) (*ChownRequest, error) {
+func (c *hostServiceClient) Chown(ctx context.Context, in *ChownRequest, opts ...grpc.CallOption) (*ChownResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(ChownRequest)
+	out := new(ChownResponse)
 	err := c.cc.Invoke(ctx, HostService_Chown_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
@@ -578,9 +578,9 @@ type HostServiceServer interface {
 	Mkdir(context.Context, *MkdirRequest) (*MkdirResponse, error)
 	MkdirAll(context.Context, *MkdirAllRequest) (*MkdirAllResponse, error)
 	MkdirTemp(context.Context, *MkdirTempRequest) (*MkdirTempResponse, error)
-	// TODO
 	Chmod(context.Context, *ChmodRequest) (*ChmodResponse, error)
-	Chown(context.Context, *ChownRequest) (*ChownRequest, error)
+	Chown(context.Context, *ChownRequest) (*ChownResponse, error)
+	// TODO
 	Chtimes(context.Context, *ChtimesRequest) (*ChtimesResponse, error)
 	Lchown(context.Context, *LchownRequest) (*LchownResponse, error)
 	Lstat(context.Context, *LstatRequest) (*LstatResponse, error)
@@ -658,7 +658,7 @@ func (UnimplementedHostServiceServer) MkdirTemp(context.Context, *MkdirTempReque
 func (UnimplementedHostServiceServer) Chmod(context.Context, *ChmodRequest) (*ChmodResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Chmod not implemented")
 }
-func (UnimplementedHostServiceServer) Chown(context.Context, *ChownRequest) (*ChownRequest, error) {
+func (UnimplementedHostServiceServer) Chown(context.Context, *ChownRequest) (*ChownResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Chown not implemented")
 }
 func (UnimplementedHostServiceServer) Chtimes(context.Context, *ChtimesRequest) (*ChtimesResponse, error) {

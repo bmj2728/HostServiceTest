@@ -4757,7 +4757,7 @@ const file_hostserve_v1_hostserve_proto_rawDesc = "" +
 	"READ_WRITE\x10\x05\x12\x15\n" +
 	"\x11READ_WRITE_CREATE\x10\x06\x12\x17\n" +
 	"\x13READ_WRITE_TRUNCATE\x10\a\x12\x15\n" +
-	"\x11READ_WRITE_APPEND\x10\b2\xc6\x18\n" +
+	"\x11READ_WRITE_APPEND\x10\b2\xc7\x18\n" +
 	"\vHostService\x12F\n" +
 	"\aReadDir\x12\x1c.hostserve.v1.ReadDirRequest\x1a\x1d.hostserve.v1.ReadDirResponse\x12I\n" +
 	"\bReadFile\x12\x1d.hostserve.v1.ReadFileRequest\x1a\x1e.hostserve.v1.ReadFileResponse\x12L\n" +
@@ -4769,8 +4769,8 @@ const file_hostserve_v1_hostserve_proto_rawDesc = "" +
 	"\x05Mkdir\x12\x1a.hostserve.v1.MkdirRequest\x1a\x1b.hostserve.v1.MkdirResponse\x12I\n" +
 	"\bMkdirAll\x12\x1d.hostserve.v1.MkdirAllRequest\x1a\x1e.hostserve.v1.MkdirAllResponse\x12L\n" +
 	"\tMkdirTemp\x12\x1e.hostserve.v1.MkdirTempRequest\x1a\x1f.hostserve.v1.MkdirTempResponse\x12@\n" +
-	"\x05Chmod\x12\x1a.hostserve.v1.ChmodRequest\x1a\x1b.hostserve.v1.ChmodResponse\x12?\n" +
-	"\x05Chown\x12\x1a.hostserve.v1.ChownRequest\x1a\x1a.hostserve.v1.ChownRequest\x12F\n" +
+	"\x05Chmod\x12\x1a.hostserve.v1.ChmodRequest\x1a\x1b.hostserve.v1.ChmodResponse\x12@\n" +
+	"\x05Chown\x12\x1a.hostserve.v1.ChownRequest\x1a\x1b.hostserve.v1.ChownResponse\x12F\n" +
 	"\aChtimes\x12\x1c.hostserve.v1.ChtimesRequest\x1a\x1d.hostserve.v1.ChtimesResponse\x12C\n" +
 	"\x06Lchown\x12\x1b.hostserve.v1.LchownRequest\x1a\x1c.hostserve.v1.LchownResponse\x12@\n" +
 	"\x05Lstat\x12\x1a.hostserve.v1.LstatRequest\x1a\x1b.hostserve.v1.LstatResponse\x12I\n" +
@@ -4975,7 +4975,7 @@ var file_hostserve_v1_hostserve_proto_depIdxs = []int32{
 	21, // 60: hostserve.v1.HostService.MkdirAll:output_type -> hostserve.v1.MkdirAllResponse
 	23, // 61: hostserve.v1.HostService.MkdirTemp:output_type -> hostserve.v1.MkdirTempResponse
 	25, // 62: hostserve.v1.HostService.Chmod:output_type -> hostserve.v1.ChmodResponse
-	26, // 63: hostserve.v1.HostService.Chown:output_type -> hostserve.v1.ChownRequest
+	27, // 63: hostserve.v1.HostService.Chown:output_type -> hostserve.v1.ChownResponse
 	29, // 64: hostserve.v1.HostService.Chtimes:output_type -> hostserve.v1.ChtimesResponse
 	31, // 65: hostserve.v1.HostService.Lchown:output_type -> hostserve.v1.LchownResponse
 	33, // 66: hostserve.v1.HostService.Lstat:output_type -> hostserve.v1.LstatResponse

@@ -52,12 +52,6 @@ func (s *HostServiceGRPCServer) ReadDir(ctx context.Context,
 		}, nil
 	}
 
-	// 11/30/25 - remove abs call from code
-	//ap, err := filepath.Abs(request.Path)
-	//if err != nil {
-	//	ap = request.Path
-	//}
-
 	hclog.Default().Info("ReadDir request from client",
 		ctxClientIDKey, clientID,
 		ctxClientOwner, owner,
@@ -173,6 +167,8 @@ func (s *HostServiceGRPCServer) WriteFile(ctx context.Context,
 	return &hostservev1.WriteFileResponse{}, nil
 }
 
+// Stat handles a request to retrieve file information for a specified path and root directory from the host system.
+// Returns a StatResponse containing file information or an error message. Accepts context and StatRequest as parameters.
 func (s *HostServiceGRPCServer) Stat(ctx context.Context, request *hostservev1.StatRequest) (*hostservev1.StatResponse, error) {
 
 	ctx, clientID, reqID, owner, err := s.processRequestContext(ctx)
@@ -202,6 +198,7 @@ func (s *HostServiceGRPCServer) Stat(ctx context.Context, request *hostservev1.S
 	return &hostservev1.StatResponse{Info: fileInfoToProtoFileInfo(info)}, nil
 }
 
+// Rename handles renaming of a resource by processing the context and forwarding the request to the underlying implementation.
 func (s *HostServiceGRPCServer) Rename(ctx context.Context, request *hostservev1.RenameRequest) (*hostservev1.RenameResponse, error) {
 	ctx, clientID, reqID, owner, err := s.processRequestContext(ctx)
 	if err != nil {
@@ -392,6 +389,40 @@ func (s *HostServiceGRPCServer) MkdirTemp(ctx context.Context, request *hostserv
 	return &hostservev1.MkdirTempResponse{Path: dir}, nil
 }
 
+// Chmod modifies the permissions of a file or directory specified in the request using the provided mode.
+func (s *HostServiceGRPCServer) Chmod(ctx context.Context, request *hostservev1.ChmodRequest) (*hostservev1.ChmodResponse, error) {
+	ctx, clientID, reqID, owner, err := s.processRequestContext(ctx)
+	if err != nil {
+		hclog.Default().Info("Chmod bad request from client",
+			ctxClientIDKey, clientID,
+			ctxClientOwner, owner,
+			ctxHostRequestIDKey, reqID,
+			"rootDir", request.RootDir,
+			"path", request.Path,
+			"error", err,
+		)
+		return &hostservev1.ChmodResponse{
+			Error: proto.String(err.Error()),
+		}, nil
+	}
+
+	hclog.Default().Info("Chmod request from client",
+		ctxClientIDKey, clientID,
+		ctxClientOwner, owner,
+		ctxHostRequestIDKey, reqID,
+		"rootDir", request.RootDir,
+		"path", request.Path,
+	)
+
+	err = s.Impl.Chmod(ctx, request.RootDir, request.Path, os.FileMode(request.Mode))
+	if err != nil {
+		return &hostservev1.ChmodResponse{
+			Error: proto.String(err.Error()),
+		}, nil
+	}
+	return &hostservev1.ChmodResponse{}, nil
+}
+
 // FileCreate is a method that processes a request to create a new file with the specified path and returns its handle.
 func (s *HostServiceGRPCServer) FileCreate(ctx context.Context,
 	request *hostservev1.FileCreateRequest) (response *hostservev1.FileCreateResponse, err error) {
@@ -491,10 +522,10 @@ func (s *HostServiceGRPCServer) FileOpen(ctx context.Context,
 		ctxHostRequestIDKey, reqID,
 		"rootDir", request.RootDir,
 		"path", request.Path,
-		"mode", request.Mode,
+		"flags", request.Flags,
 		"perm", request.Perm)
 
-	fh, size, err := s.Impl.FileOpen(ctx, request.RootDir, request.Path, openFileModeToFlags(request.Mode), os.FileMode(request.Perm))
+	fh, size, err := s.Impl.FileOpen(ctx, request.RootDir, request.Path, fromOpenFileFLags(request.Flags), os.FileMode(request.Perm))
 	if err != nil {
 		return &hostservev1.FileOpenResponse{Error: proto.String(err.Error())}, nil
 	}
@@ -505,13 +536,14 @@ func (s *HostServiceGRPCServer) FileOpen(ctx context.Context,
 		ctxHostRequestIDKey, reqID,
 		"rootDir", request.RootDir,
 		"path", request.Path,
-		"mode", request.Mode,
+		"flags", request.Flags,
 		"perm", request.Perm,
 		"handle", fh,
 		"size", size)
 	return &hostservev1.FileOpenResponse{Handle: fh.String(), Size: size}, nil
 }
 
+// FileStat handles a request to retrieve metadata for a file identified by a handle and responds with file information.
 func (s *HostServiceGRPCServer) FileStat(ctx context.Context, request *hostservev1.FileStatRequest) (*hostservev1.FileStatResponse, error) {
 
 	fh := FileHandle(request.Handle)
@@ -649,6 +681,7 @@ func (s *HostServiceGRPCServer) FileClose(ctx context.Context,
 	return &hostservev1.FileCloseResponse{}, nil
 }
 
+// FileTruncate processes a request to truncate a file to the specified size and returns an error if the operation fails.
 func (s *HostServiceGRPCServer) FileTruncate(ctx context.Context, request *hostservev1.FileTruncateRequest) (*hostservev1.FileTruncateResponse, error) {
 
 	fh := FileHandle(request.Handle)

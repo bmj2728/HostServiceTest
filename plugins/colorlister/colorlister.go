@@ -159,6 +159,11 @@ func (f *ColorLister) ListFiles(rootDir, path string) ([]string, error) {
 	}
 	hclog.Default().Info("File stat", "file", convRFI.Name(), "size", convRFI.Size(), "mode", convRFI.Mode(), "modTime", convRFI.ModTime(), "isDir", convRFI.IsDir())
 
+	err = f.hostServiceClient.Chmod(ctx, rootDir, "mode_change.txt", 0644)
+	if err != nil {
+		hclog.Default().Error("Failed to change file mode", "err", err)
+	}
+
 	return entries, nil
 }
 

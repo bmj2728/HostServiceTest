@@ -117,6 +117,8 @@ func (he *HostEnv) GetEnv(ctx context.Context, key string) (string, error) {
 	return val, nil
 }
 
+// TempDir retrieves the system's temporary directory for the current user and returns it as a string.
+// Returns an error if the client ID is not found in the provided context.
 func (he *HostEnv) TempDir(ctx context.Context) (string, error) {
 	clientID := getClientIDFromContext(ctx)
 	hclog.Default().Debug("Pseudocode cap check - TEMP_DIR", "clientID", clientID)
@@ -126,6 +128,8 @@ func (he *HostEnv) TempDir(ctx context.Context) (string, error) {
 	return os.TempDir(), nil
 }
 
+// UserCacheDir retrieves the user cache directory path for the current system environment.
+// Returns an error if the client ID is missing in the context or the directory retrieval fails.
 func (he *HostEnv) UserCacheDir(ctx context.Context) (string, error) {
 	clientID := getClientIDFromContext(ctx)
 	hclog.Default().Debug("Pseudocode cap check - USER_CACHE_DIR", "clientID", clientID)
@@ -139,6 +143,7 @@ func (he *HostEnv) UserCacheDir(ctx context.Context) (string, error) {
 	return dir, nil
 }
 
+// UserConfigDir retrieves the user-specific configuration directory based on the context's client ID. Returns an error if the client ID is missing or the directory cannot be determined.
 func (he *HostEnv) UserConfigDir(ctx context.Context) (string, error) {
 	clientID := getClientIDFromContext(ctx)
 	hclog.Default().Debug("Pseudocode cap check - USER_CONFIG_DIR", "clientID", clientID)
@@ -152,6 +157,8 @@ func (he *HostEnv) UserConfigDir(ctx context.Context) (string, error) {
 	return dir, nil
 }
 
+// UserHomeDir retrieves the home directory path of the current user from the environment.
+// Returns an error if the client ID is not found in the context or if the home directory retrieval fails.
 func (he *HostEnv) UserHomeDir(ctx context.Context) (string, error) {
 	clientID := getClientIDFromContext(ctx)
 	hclog.Default().Debug("Pseudocode cap check - USER_HOME_DIR", "clientID", clientID)

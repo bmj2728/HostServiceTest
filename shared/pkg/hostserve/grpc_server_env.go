@@ -273,6 +273,7 @@ func (s *HostServiceGRPCServer) GetEnv(ctx context.Context,
 	}, nil
 }
 
+// TempDir handles a client request to retrieve the temporary directory path on the server. Returns the path or an error.
 func (s *HostServiceGRPCServer) TempDir(ctx context.Context, _ *hostservev1.TempDirRequest) (*hostservev1.TempDirResponse, error) {
 
 	ctx, clientID, reqID, owner, err := s.processRequestContext(ctx)
@@ -305,6 +306,7 @@ func (s *HostServiceGRPCServer) TempDir(ctx context.Context, _ *hostservev1.Temp
 	}, nil
 }
 
+// UserCacheDir handles client requests to fetch the user's cache directory, returning its path or an error.
 func (s *HostServiceGRPCServer) UserCacheDir(ctx context.Context, _ *hostservev1.UserCacheDirRequest) (*hostservev1.UserCacheDirResponse, error) {
 
 	ctx, clientID, reqID, owner, err := s.processRequestContext(ctx)
@@ -337,6 +339,7 @@ func (s *HostServiceGRPCServer) UserCacheDir(ctx context.Context, _ *hostservev1
 	}, nil
 }
 
+// UserConfigDir handles the request to retrieve the user-specific configuration directory path and returns it to the caller.
 func (s *HostServiceGRPCServer) UserConfigDir(ctx context.Context, _ *hostservev1.UserConfigDirRequest) (*hostservev1.UserConfigDirResponse, error) {
 
 	ctx, clientID, reqID, owner, err := s.processRequestContext(ctx)
@@ -369,6 +372,8 @@ func (s *HostServiceGRPCServer) UserConfigDir(ctx context.Context, _ *hostservev
 	}, nil
 }
 
+// UserHomeDir handles a request to retrieve the user's home directory path and returns it in a response.
+// It processes the request context for logging and error handling, and invokes the underlying implementation.
 func (s *HostServiceGRPCServer) UserHomeDir(ctx context.Context, _ *hostservev1.UserHomeDirRequest) (*hostservev1.UserHomeDirResponse, error) {
 
 	ctx, clientID, reqID, owner, err := s.processRequestContext(ctx)

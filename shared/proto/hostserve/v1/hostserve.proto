@@ -6,7 +6,7 @@ import "google/protobuf/timestamp.proto";
 
 //////////////////////////////////////ENUMs////////////////////////////////////////////////////////////////////////////
 
-enum OpenFileMode {
+enum OpenFileFlags {
   OPEN_FILE_MODE_UNSPECIFIED = 0;
 
   // Read modes
@@ -32,7 +32,9 @@ enum OpenFileMode {
 // access to the plugin process
 service HostService {
 
-  // TODO Chmod(unary + handle), Chown(unary + handle), Chtimes(unary + handle), Lchown, Link, Lstat, Readlink, Symlink, Getpid, Getppid, ReadAt(unary + stream), WriteAt(unary + stream)
+  // TODO Chmod(unary + handle), Chown(unary + handle) -- pb done, needs implemented
+  // TODO Chtimes, Lchown, Lstat, Readlink, Link, Symlink
+  // TODO ReadAt(unary + stream), WriteAt(unary + stream)
 
   // FS Endpoints - Unary Calls
   rpc ReadDir(ReadDirRequest) returns (ReadDirResponse);
@@ -45,6 +47,15 @@ service HostService {
   rpc Mkdir(MkdirRequest) returns (MkdirResponse);
   rpc MkdirAll(MkdirAllRequest) returns (MkdirAllResponse);
   rpc MkdirTemp(MkdirTempRequest) returns (MkdirTempResponse);
+  rpc Chmod(ChmodRequest) returns (ChmodResponse);
+  // TODO
+  rpc Chown(ChownRequest) returns (ChownRequest);
+  rpc Chtimes(ChtimesRequest) returns (ChtimesResponse);
+  rpc Lchown(LchownRequest) returns (LchownResponse);
+  rpc Lstat(LstatRequest) returns (LstatResponse);
+  rpc Readlink(ReadlinkRequest) returns (ReadlinkResponse);
+  rpc Link(LinkRequest) returns (LstatResponse);
+  rpc Symlink(SymlinkRequest) returns (SymlinkResponse);
 
   // FS - File Handle Endpoints
   rpc FileCreate(FileCreateRequest) returns (FileCreateResponse);
@@ -55,6 +66,9 @@ service HostService {
   rpc FileSync(FileSyncRequest) returns (FileSyncResponse);
   rpc FileClose(FileCloseRequest) returns (FileCloseResponse);
   rpc FileTruncate(FileTruncateRequest) returns (FileTruncateResponse);
+  // TODO
+  rpc FileChmod(FileChmodRequest) returns (FileChmodResponse);
+  rpc FileChown(FileChownRequest) returns (FileChownRequest);
 
   // FS - Streaming File Ops
   rpc FileReader(FileReadRequest) returns (stream FileReadResponse);
@@ -202,6 +216,92 @@ message MkdirTempResponse {
   optional string error = 2;
 }
 
+message ChmodRequest {
+  string root_dir = 1;
+  string path = 2;
+  uint32 mode =3;
+}
+
+message ChmodResponse {
+  optional string error = 1;
+}
+
+message ChownRequest {
+  string root_dir = 1;
+  string path = 2;
+  int32 uid = 3;
+  int32 gid = 4;
+}
+
+message ChownResponse {
+  optional string error = 1;
+}
+
+message ChtimesRequest {
+  string root_dir = 1;
+  string path = 2;
+  google.protobuf.Timestamp atime = 3;
+  google.protobuf.Timestamp mtime = 4;
+
+}
+
+message ChtimesResponse {
+  optional string error = 1;
+}
+
+message LchownRequest {
+  string root_dir = 1;
+  string path = 2;
+  int32 uid = 3;
+  int32 gid = 4;
+}
+
+message LchownResponse {
+  optional string error = 1;
+}
+
+message LstatRequest {
+  string root_dir = 1;
+  string path = 2;
+}
+
+message LstatResponse {
+  FileInfo info = 1;
+  optional string error = 2;
+}
+
+message ReadlinkRequest {
+  string root_dir = 1;
+  string path = 2;
+}
+
+message ReadlinkResponse {
+  string destination = 1;
+  optional string error = 2;
+}
+
+message LinkRequest {
+  string root_dir = 1;
+  string old_path = 2;
+  string new_path = 3;
+}
+
+message LinkResponse {
+  optional string error = 1;
+}
+
+message SymlinkRequest {
+  string root_dir = 1;
+  string old_path = 2;
+  string new_path = 3;
+}
+
+message SymlinkResponse {
+  optional string error = 1;
+}
+
+// Handle Related
+
 message FileCreateRequest {
   string root_dir =1;
   string path = 2;
@@ -225,7 +325,7 @@ message FileCreateTempResponse {
 message FileOpenRequest {
   string root_dir = 1;
   string path = 2;
-  OpenFileMode mode = 3;
+  OpenFileFlags flags = 3;
   uint32 perm = 4;
 }
 
@@ -279,6 +379,27 @@ message FileTruncateRequest {
 message FileTruncateResponse {
   optional string error = 1;
 }
+
+message FileChmodRequest {
+  string handle = 1;
+  uint32 mode = 2;
+}
+
+message FileChmodResponse {
+  optional string error = 1;
+}
+
+message FileChownRequest {
+  string handle = 1;
+  int32 uid = 2;
+  int32 gid = 3;
+}
+
+message FileChownResponse {
+  optional string error = 1;
+}
+
+// STREAMING OPS
 
 message FileReadRequest {
   string handle = 1;

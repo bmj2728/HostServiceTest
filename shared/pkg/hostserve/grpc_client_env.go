@@ -140,6 +140,7 @@ func (c *HostServiceGRPCClient) GetEnv(ctx context.Context, key string) (string,
 	return resp.Val, nil
 }
 
+// TempDir retrieves the temporary directory path from the host service via a gRPC call, returning the path or an error.
 func (c *HostServiceGRPCClient) TempDir(ctx context.Context) (string, error) {
 	ctx = addTracingIDsToContext(ctx, c.clientID, NewRequestID())
 	resp, err := c.client.TempDir(ctx, &hostservev1.TempDirRequest{})
@@ -155,6 +156,7 @@ func (c *HostServiceGRPCClient) TempDir(ctx context.Context) (string, error) {
 	return resp.Dir, nil
 }
 
+// UserCacheDir retrieves the user's cache directory path from the host service via a gRPC call. Returns the directory or an error.
 func (c *HostServiceGRPCClient) UserCacheDir(ctx context.Context) (string, error) {
 	ctx = addTracingIDsToContext(ctx, c.clientID, NewRequestID())
 	resp, err := c.client.UserCacheDir(ctx, &hostservev1.UserCacheDirRequest{})
@@ -170,6 +172,7 @@ func (c *HostServiceGRPCClient) UserCacheDir(ctx context.Context) (string, error
 	return resp.Dir, nil
 }
 
+// UserConfigDir retrieves the user's configuration directory path from the host service via a gRPC call.
 func (c *HostServiceGRPCClient) UserConfigDir(ctx context.Context) (string, error) {
 	ctx = addTracingIDsToContext(ctx, c.clientID, NewRequestID())
 	resp, err := c.client.UserConfigDir(ctx, &hostservev1.UserConfigDirRequest{})
@@ -185,6 +188,7 @@ func (c *HostServiceGRPCClient) UserConfigDir(ctx context.Context) (string, erro
 	return resp.Dir, nil
 }
 
+// UserHomeDir retrieves the home directory of the current user by making a gRPC call and returns it as a string.
 func (c *HostServiceGRPCClient) UserHomeDir(ctx context.Context) (string, error) {
 	ctx = addTracingIDsToContext(ctx, c.clientID, NewRequestID())
 	resp, err := c.client.UserHomeDir(ctx, &hostservev1.UserHomeDirRequest{})

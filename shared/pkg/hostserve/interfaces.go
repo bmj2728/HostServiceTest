@@ -54,6 +54,9 @@ type IHostFS interface {
 	// It returns the full path of the created temporary directory or an error if the operation fails.
 	MkdirTemp(ctx context.Context, rootDir string, pattern string) (string, error)
 
+	// Chmod updates the permissions of a file or directory at the specified path relative to the root directory.
+	Chmod(ctx context.Context, rootDir, path string, mode os.FileMode) error
+
 	// FileCreate creates a new file at the specified path within the root directory and returns a unique FileHandle.
 	FileCreate(ctx context.Context, rootDir, path string) (FileHandle, error)
 

@@ -12,51 +12,51 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-// openFileModeToFlags converts the OpenFileMode enum to appropriate file flags for use with os package operations.
-func openFileModeToFlags(mode hostservev1.OpenFileMode) int {
+// fromOpenFileFLags converts the OpenFileFlags enum to appropriate file flags for use with os package operations.
+func fromOpenFileFLags(mode hostservev1.OpenFileFlags) int {
 	switch mode {
-	case hostservev1.OpenFileMode_READ_ONLY:
+	case hostservev1.OpenFileFlags_READ_ONLY:
 		return os.O_RDONLY
-	case hostservev1.OpenFileMode_WRITE_TRUNCATE:
+	case hostservev1.OpenFileFlags_WRITE_TRUNCATE:
 		return os.O_WRONLY | os.O_CREATE | os.O_TRUNC
-	case hostservev1.OpenFileMode_WRITE_APPEND:
+	case hostservev1.OpenFileFlags_WRITE_APPEND:
 		return os.O_WRONLY | os.O_CREATE | os.O_APPEND
-	case hostservev1.OpenFileMode_WRITE_EXCLUSIVE:
+	case hostservev1.OpenFileFlags_WRITE_EXCLUSIVE:
 		return os.O_WRONLY | os.O_CREATE | os.O_EXCL
-	case hostservev1.OpenFileMode_READ_WRITE:
+	case hostservev1.OpenFileFlags_READ_WRITE:
 		return os.O_RDWR
-	case hostservev1.OpenFileMode_READ_WRITE_CREATE:
+	case hostservev1.OpenFileFlags_READ_WRITE_CREATE:
 		return os.O_RDWR | os.O_CREATE
-	case hostservev1.OpenFileMode_READ_WRITE_TRUNCATE:
+	case hostservev1.OpenFileFlags_READ_WRITE_TRUNCATE:
 		return os.O_RDWR | os.O_CREATE | os.O_TRUNC
-	case hostservev1.OpenFileMode_READ_WRITE_APPEND:
+	case hostservev1.OpenFileFlags_READ_WRITE_APPEND:
 		return os.O_RDWR | os.O_CREATE | os.O_APPEND
 	default:
 		return os.O_RDONLY
 	}
 }
 
-// flagsToOpenFileMode converts os package file flags to the OpenFileMode enum.
-func flagsToOpenFileMode(flags int) hostservev1.OpenFileMode {
+// toOpenFileFlags converts integer file open flags into hostservev1.OpenFileFlags enumeration values.
+func toOpenFileFlags(flags int) hostservev1.OpenFileFlags {
 	switch flags {
 	case os.O_RDONLY:
-		return hostservev1.OpenFileMode_READ_ONLY
+		return hostservev1.OpenFileFlags_READ_ONLY
 	case os.O_WRONLY | os.O_CREATE | os.O_TRUNC:
-		return hostservev1.OpenFileMode_WRITE_TRUNCATE
+		return hostservev1.OpenFileFlags_WRITE_TRUNCATE
 	case os.O_WRONLY | os.O_CREATE | os.O_APPEND:
-		return hostservev1.OpenFileMode_WRITE_APPEND
+		return hostservev1.OpenFileFlags_WRITE_APPEND
 	case os.O_WRONLY | os.O_CREATE | os.O_EXCL:
-		return hostservev1.OpenFileMode_WRITE_EXCLUSIVE
+		return hostservev1.OpenFileFlags_WRITE_EXCLUSIVE
 	case os.O_RDWR:
-		return hostservev1.OpenFileMode_READ_WRITE
+		return hostservev1.OpenFileFlags_READ_WRITE
 	case os.O_RDWR | os.O_CREATE:
-		return hostservev1.OpenFileMode_READ_WRITE_CREATE
+		return hostservev1.OpenFileFlags_READ_WRITE_CREATE
 	case os.O_RDWR | os.O_CREATE | os.O_TRUNC:
-		return hostservev1.OpenFileMode_READ_WRITE_TRUNCATE
+		return hostservev1.OpenFileFlags_READ_WRITE_TRUNCATE
 	case os.O_RDWR | os.O_CREATE | os.O_APPEND:
-		return hostservev1.OpenFileMode_READ_WRITE_APPEND
+		return hostservev1.OpenFileFlags_READ_WRITE_APPEND
 	default:
-		return hostservev1.OpenFileMode_READ_ONLY
+		return hostservev1.OpenFileFlags_READ_ONLY
 	}
 }
 

@@ -29,6 +29,14 @@ const (
 	HostService_Mkdir_FullMethodName          = "/hostserve.v1.HostService/Mkdir"
 	HostService_MkdirAll_FullMethodName       = "/hostserve.v1.HostService/MkdirAll"
 	HostService_MkdirTemp_FullMethodName      = "/hostserve.v1.HostService/MkdirTemp"
+	HostService_Chmod_FullMethodName          = "/hostserve.v1.HostService/Chmod"
+	HostService_Chown_FullMethodName          = "/hostserve.v1.HostService/Chown"
+	HostService_Chtimes_FullMethodName        = "/hostserve.v1.HostService/Chtimes"
+	HostService_Lchown_FullMethodName         = "/hostserve.v1.HostService/Lchown"
+	HostService_Lstat_FullMethodName          = "/hostserve.v1.HostService/Lstat"
+	HostService_Readlink_FullMethodName       = "/hostserve.v1.HostService/Readlink"
+	HostService_Link_FullMethodName           = "/hostserve.v1.HostService/Link"
+	HostService_Symlink_FullMethodName        = "/hostserve.v1.HostService/Symlink"
 	HostService_FileCreate_FullMethodName     = "/hostserve.v1.HostService/FileCreate"
 	HostService_FileCreateTemp_FullMethodName = "/hostserve.v1.HostService/FileCreateTemp"
 	HostService_FileOpen_FullMethodName       = "/hostserve.v1.HostService/FileOpen"
@@ -37,6 +45,8 @@ const (
 	HostService_FileSync_FullMethodName       = "/hostserve.v1.HostService/FileSync"
 	HostService_FileClose_FullMethodName      = "/hostserve.v1.HostService/FileClose"
 	HostService_FileTruncate_FullMethodName   = "/hostserve.v1.HostService/FileTruncate"
+	HostService_FileChmod_FullMethodName      = "/hostserve.v1.HostService/FileChmod"
+	HostService_FileChown_FullMethodName      = "/hostserve.v1.HostService/FileChown"
 	HostService_FileReader_FullMethodName     = "/hostserve.v1.HostService/FileReader"
 	HostService_FileWriter_FullMethodName     = "/hostserve.v1.HostService/FileWriter"
 	HostService_Getuid_FullMethodName         = "/hostserve.v1.HostService/Getuid"
@@ -71,6 +81,15 @@ type HostServiceClient interface {
 	Mkdir(ctx context.Context, in *MkdirRequest, opts ...grpc.CallOption) (*MkdirResponse, error)
 	MkdirAll(ctx context.Context, in *MkdirAllRequest, opts ...grpc.CallOption) (*MkdirAllResponse, error)
 	MkdirTemp(ctx context.Context, in *MkdirTempRequest, opts ...grpc.CallOption) (*MkdirTempResponse, error)
+	// TODO
+	Chmod(ctx context.Context, in *ChmodRequest, opts ...grpc.CallOption) (*ChmodResponse, error)
+	Chown(ctx context.Context, in *ChownRequest, opts ...grpc.CallOption) (*ChownRequest, error)
+	Chtimes(ctx context.Context, in *ChtimesRequest, opts ...grpc.CallOption) (*ChtimesResponse, error)
+	Lchown(ctx context.Context, in *LchownRequest, opts ...grpc.CallOption) (*LchownResponse, error)
+	Lstat(ctx context.Context, in *LstatRequest, opts ...grpc.CallOption) (*LstatResponse, error)
+	Readlink(ctx context.Context, in *ReadlinkRequest, opts ...grpc.CallOption) (*ReadlinkResponse, error)
+	Link(ctx context.Context, in *LinkRequest, opts ...grpc.CallOption) (*LstatResponse, error)
+	Symlink(ctx context.Context, in *SymlinkRequest, opts ...grpc.CallOption) (*SymlinkResponse, error)
 	// FS - File Handle Endpoints
 	FileCreate(ctx context.Context, in *FileCreateRequest, opts ...grpc.CallOption) (*FileCreateResponse, error)
 	FileCreateTemp(ctx context.Context, in *FileCreateTempRequest, opts ...grpc.CallOption) (*FileCreateTempResponse, error)
@@ -80,6 +99,9 @@ type HostServiceClient interface {
 	FileSync(ctx context.Context, in *FileSyncRequest, opts ...grpc.CallOption) (*FileSyncResponse, error)
 	FileClose(ctx context.Context, in *FileCloseRequest, opts ...grpc.CallOption) (*FileCloseResponse, error)
 	FileTruncate(ctx context.Context, in *FileTruncateRequest, opts ...grpc.CallOption) (*FileTruncateResponse, error)
+	// TODO
+	FileChmod(ctx context.Context, in *FileChmodRequest, opts ...grpc.CallOption) (*FileChmodResponse, error)
+	FileChown(ctx context.Context, in *FileChownRequest, opts ...grpc.CallOption) (*FileChownRequest, error)
 	// FS - Streaming File Ops
 	FileReader(ctx context.Context, in *FileReadRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[FileReadResponse], error)
 	FileWriter(ctx context.Context, opts ...grpc.CallOption) (grpc.ClientStreamingClient[FileWriteRequest, FileWriteResponse], error)
@@ -206,6 +228,86 @@ func (c *hostServiceClient) MkdirTemp(ctx context.Context, in *MkdirTempRequest,
 	return out, nil
 }
 
+func (c *hostServiceClient) Chmod(ctx context.Context, in *ChmodRequest, opts ...grpc.CallOption) (*ChmodResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ChmodResponse)
+	err := c.cc.Invoke(ctx, HostService_Chmod_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *hostServiceClient) Chown(ctx context.Context, in *ChownRequest, opts ...grpc.CallOption) (*ChownRequest, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ChownRequest)
+	err := c.cc.Invoke(ctx, HostService_Chown_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *hostServiceClient) Chtimes(ctx context.Context, in *ChtimesRequest, opts ...grpc.CallOption) (*ChtimesResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ChtimesResponse)
+	err := c.cc.Invoke(ctx, HostService_Chtimes_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *hostServiceClient) Lchown(ctx context.Context, in *LchownRequest, opts ...grpc.CallOption) (*LchownResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(LchownResponse)
+	err := c.cc.Invoke(ctx, HostService_Lchown_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *hostServiceClient) Lstat(ctx context.Context, in *LstatRequest, opts ...grpc.CallOption) (*LstatResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(LstatResponse)
+	err := c.cc.Invoke(ctx, HostService_Lstat_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *hostServiceClient) Readlink(ctx context.Context, in *ReadlinkRequest, opts ...grpc.CallOption) (*ReadlinkResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ReadlinkResponse)
+	err := c.cc.Invoke(ctx, HostService_Readlink_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *hostServiceClient) Link(ctx context.Context, in *LinkRequest, opts ...grpc.CallOption) (*LstatResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(LstatResponse)
+	err := c.cc.Invoke(ctx, HostService_Link_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *hostServiceClient) Symlink(ctx context.Context, in *SymlinkRequest, opts ...grpc.CallOption) (*SymlinkResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(SymlinkResponse)
+	err := c.cc.Invoke(ctx, HostService_Symlink_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *hostServiceClient) FileCreate(ctx context.Context, in *FileCreateRequest, opts ...grpc.CallOption) (*FileCreateResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(FileCreateResponse)
@@ -280,6 +382,26 @@ func (c *hostServiceClient) FileTruncate(ctx context.Context, in *FileTruncateRe
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(FileTruncateResponse)
 	err := c.cc.Invoke(ctx, HostService_FileTruncate_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *hostServiceClient) FileChmod(ctx context.Context, in *FileChmodRequest, opts ...grpc.CallOption) (*FileChmodResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(FileChmodResponse)
+	err := c.cc.Invoke(ctx, HostService_FileChmod_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *hostServiceClient) FileChown(ctx context.Context, in *FileChownRequest, opts ...grpc.CallOption) (*FileChownRequest, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(FileChownRequest)
+	err := c.cc.Invoke(ctx, HostService_FileChown_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -456,6 +578,15 @@ type HostServiceServer interface {
 	Mkdir(context.Context, *MkdirRequest) (*MkdirResponse, error)
 	MkdirAll(context.Context, *MkdirAllRequest) (*MkdirAllResponse, error)
 	MkdirTemp(context.Context, *MkdirTempRequest) (*MkdirTempResponse, error)
+	// TODO
+	Chmod(context.Context, *ChmodRequest) (*ChmodResponse, error)
+	Chown(context.Context, *ChownRequest) (*ChownRequest, error)
+	Chtimes(context.Context, *ChtimesRequest) (*ChtimesResponse, error)
+	Lchown(context.Context, *LchownRequest) (*LchownResponse, error)
+	Lstat(context.Context, *LstatRequest) (*LstatResponse, error)
+	Readlink(context.Context, *ReadlinkRequest) (*ReadlinkResponse, error)
+	Link(context.Context, *LinkRequest) (*LstatResponse, error)
+	Symlink(context.Context, *SymlinkRequest) (*SymlinkResponse, error)
 	// FS - File Handle Endpoints
 	FileCreate(context.Context, *FileCreateRequest) (*FileCreateResponse, error)
 	FileCreateTemp(context.Context, *FileCreateTempRequest) (*FileCreateTempResponse, error)
@@ -465,6 +596,9 @@ type HostServiceServer interface {
 	FileSync(context.Context, *FileSyncRequest) (*FileSyncResponse, error)
 	FileClose(context.Context, *FileCloseRequest) (*FileCloseResponse, error)
 	FileTruncate(context.Context, *FileTruncateRequest) (*FileTruncateResponse, error)
+	// TODO
+	FileChmod(context.Context, *FileChmodRequest) (*FileChmodResponse, error)
+	FileChown(context.Context, *FileChownRequest) (*FileChownRequest, error)
 	// FS - Streaming File Ops
 	FileReader(*FileReadRequest, grpc.ServerStreamingServer[FileReadResponse]) error
 	FileWriter(grpc.ClientStreamingServer[FileWriteRequest, FileWriteResponse]) error
@@ -521,6 +655,30 @@ func (UnimplementedHostServiceServer) MkdirAll(context.Context, *MkdirAllRequest
 func (UnimplementedHostServiceServer) MkdirTemp(context.Context, *MkdirTempRequest) (*MkdirTempResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method MkdirTemp not implemented")
 }
+func (UnimplementedHostServiceServer) Chmod(context.Context, *ChmodRequest) (*ChmodResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Chmod not implemented")
+}
+func (UnimplementedHostServiceServer) Chown(context.Context, *ChownRequest) (*ChownRequest, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Chown not implemented")
+}
+func (UnimplementedHostServiceServer) Chtimes(context.Context, *ChtimesRequest) (*ChtimesResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Chtimes not implemented")
+}
+func (UnimplementedHostServiceServer) Lchown(context.Context, *LchownRequest) (*LchownResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Lchown not implemented")
+}
+func (UnimplementedHostServiceServer) Lstat(context.Context, *LstatRequest) (*LstatResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Lstat not implemented")
+}
+func (UnimplementedHostServiceServer) Readlink(context.Context, *ReadlinkRequest) (*ReadlinkResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Readlink not implemented")
+}
+func (UnimplementedHostServiceServer) Link(context.Context, *LinkRequest) (*LstatResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Link not implemented")
+}
+func (UnimplementedHostServiceServer) Symlink(context.Context, *SymlinkRequest) (*SymlinkResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Symlink not implemented")
+}
 func (UnimplementedHostServiceServer) FileCreate(context.Context, *FileCreateRequest) (*FileCreateResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method FileCreate not implemented")
 }
@@ -544,6 +702,12 @@ func (UnimplementedHostServiceServer) FileClose(context.Context, *FileCloseReque
 }
 func (UnimplementedHostServiceServer) FileTruncate(context.Context, *FileTruncateRequest) (*FileTruncateResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method FileTruncate not implemented")
+}
+func (UnimplementedHostServiceServer) FileChmod(context.Context, *FileChmodRequest) (*FileChmodResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method FileChmod not implemented")
+}
+func (UnimplementedHostServiceServer) FileChown(context.Context, *FileChownRequest) (*FileChownRequest, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method FileChown not implemented")
 }
 func (UnimplementedHostServiceServer) FileReader(*FileReadRequest, grpc.ServerStreamingServer[FileReadResponse]) error {
 	return status.Errorf(codes.Unimplemented, "method FileReader not implemented")
@@ -788,6 +952,150 @@ func _HostService_MkdirTemp_Handler(srv interface{}, ctx context.Context, dec fu
 	return interceptor(ctx, in, info, handler)
 }
 
+func _HostService_Chmod_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ChmodRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(HostServiceServer).Chmod(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: HostService_Chmod_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(HostServiceServer).Chmod(ctx, req.(*ChmodRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _HostService_Chown_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ChownRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(HostServiceServer).Chown(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: HostService_Chown_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(HostServiceServer).Chown(ctx, req.(*ChownRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _HostService_Chtimes_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ChtimesRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(HostServiceServer).Chtimes(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: HostService_Chtimes_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(HostServiceServer).Chtimes(ctx, req.(*ChtimesRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _HostService_Lchown_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(LchownRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(HostServiceServer).Lchown(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: HostService_Lchown_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(HostServiceServer).Lchown(ctx, req.(*LchownRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _HostService_Lstat_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(LstatRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(HostServiceServer).Lstat(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: HostService_Lstat_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(HostServiceServer).Lstat(ctx, req.(*LstatRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _HostService_Readlink_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ReadlinkRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(HostServiceServer).Readlink(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: HostService_Readlink_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(HostServiceServer).Readlink(ctx, req.(*ReadlinkRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _HostService_Link_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(LinkRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(HostServiceServer).Link(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: HostService_Link_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(HostServiceServer).Link(ctx, req.(*LinkRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _HostService_Symlink_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SymlinkRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(HostServiceServer).Symlink(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: HostService_Symlink_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(HostServiceServer).Symlink(ctx, req.(*SymlinkRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _HostService_FileCreate_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(FileCreateRequest)
 	if err := dec(in); err != nil {
@@ -928,6 +1236,42 @@ func _HostService_FileTruncate_Handler(srv interface{}, ctx context.Context, dec
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(HostServiceServer).FileTruncate(ctx, req.(*FileTruncateRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _HostService_FileChmod_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(FileChmodRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(HostServiceServer).FileChmod(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: HostService_FileChmod_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(HostServiceServer).FileChmod(ctx, req.(*FileChmodRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _HostService_FileChown_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(FileChownRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(HostServiceServer).FileChown(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: HostService_FileChown_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(HostServiceServer).FileChown(ctx, req.(*FileChownRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -1214,6 +1558,38 @@ var HostService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _HostService_MkdirTemp_Handler,
 		},
 		{
+			MethodName: "Chmod",
+			Handler:    _HostService_Chmod_Handler,
+		},
+		{
+			MethodName: "Chown",
+			Handler:    _HostService_Chown_Handler,
+		},
+		{
+			MethodName: "Chtimes",
+			Handler:    _HostService_Chtimes_Handler,
+		},
+		{
+			MethodName: "Lchown",
+			Handler:    _HostService_Lchown_Handler,
+		},
+		{
+			MethodName: "Lstat",
+			Handler:    _HostService_Lstat_Handler,
+		},
+		{
+			MethodName: "Readlink",
+			Handler:    _HostService_Readlink_Handler,
+		},
+		{
+			MethodName: "Link",
+			Handler:    _HostService_Link_Handler,
+		},
+		{
+			MethodName: "Symlink",
+			Handler:    _HostService_Symlink_Handler,
+		},
+		{
 			MethodName: "FileCreate",
 			Handler:    _HostService_FileCreate_Handler,
 		},
@@ -1244,6 +1620,14 @@ var HostService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "FileTruncate",
 			Handler:    _HostService_FileTruncate_Handler,
+		},
+		{
+			MethodName: "FileChmod",
+			Handler:    _HostService_FileChmod_Handler,
+		},
+		{
+			MethodName: "FileChown",
+			Handler:    _HostService_FileChown_Handler,
 		},
 		{
 			MethodName: "Getuid",

@@ -109,7 +109,9 @@ func (c *HostServiceGRPCClient) Mkdir(ctx context.Context, rootDir string, name 
 // MkdirAll creates all necessary directories along the specified path with the provided permissions.
 // It operates relative to the given rootDir and uses the optional context for tracing and logging.
 func (c *HostServiceGRPCClient) MkdirAll(ctx context.Context, rootDir string, path string, perm os.FileMode) error {
+
 	ctx = addTracingIDsToContext(ctx, c.clientID, NewRequestID())
+
 	if perm == 0 {
 		perm = standardPermissions
 	}
@@ -123,6 +125,29 @@ func (c *HostServiceGRPCClient) MkdirAll(ctx context.Context, rootDir string, pa
 	}
 	if resp == nil {
 		return &HostServiceError{Message: "nil response from MkdirAll"}
+	}
+	if resp.Error != nil {
+		return &HostServiceError{Message: *resp.Error}
+	}
+	return nil
+}
+
+// Chmod updates the file permissions for a specific path within the root directory using the provided mode.
+func (c *HostServiceGRPCClient) Chmod(ctx context.Context, rootDir, path string, mode os.FileMode) error {
+	ctx = addTracingIDsToContext(ctx, c.clientID, NewRequestID())
+	if mode == 0 {
+		return &HostServiceError{Message: "invalid mode provided"}
+	}
+	resp, err := c.client.Chmod(ctx, &hostservev1.ChmodRequest{
+		RootDir: rootDir,
+		Path:    path,
+		Mode:    uint32(mode),
+	})
+	if err != nil {
+		return &HostServiceError{Message: err.Error()}
+	}
+	if resp == nil {
+		return &HostServiceError{Message: "nil response from Chmod"}
 	}
 	if resp.Error != nil {
 		return &HostServiceError{Message: *resp.Error}
@@ -231,13 +256,13 @@ func (c *HostServiceGRPCClient) FileCreate(ctx context.Context, rootDir, path st
 	return FileHandle(resp.Handle), nil
 }
 
-// FileOpen opens a file on the host, given the path, flag, and permissions, and returns a file handle, size, and error if any.
+// FileOpen opens a file on the host, given the path, flags, and permissions, and returns a file handle, size, and error if any.
 func (c *HostServiceGRPCClient) FileOpen(ctx context.Context, rootDir, path string, flag int, perm os.FileMode) (FileHandle, uint64, error) {
 	ctx = addTracingIDsToContext(ctx, c.clientID, NewRequestID())
 	resp, err := c.client.FileOpen(ctx, &hostservev1.FileOpenRequest{
 		RootDir: rootDir,
 		Path:    path,
-		Mode:    flagsToOpenFileMode(flag),
+		Flags:   toOpenFileFlags(flag),
 		Perm:    uint32(perm),
 	})
 	if err != nil {
@@ -252,6 +277,7 @@ func (c *HostServiceGRPCClient) FileOpen(ctx context.Context, rootDir, path stri
 	return FileHandle(resp.Handle), resp.Size, nil
 }
 
+// FileStat retrieves file information for a given handle from the remote host and returns it as fs.FileInfo.
 func (c *HostServiceGRPCClient) FileStat(ctx context.Context, handle FileHandle) (fs.FileInfo, error) {
 	ctx = addTracingIDsToContext(ctx, c.clientID, NewRequestID())
 	resp, err := c.client.FileStat(ctx, &hostservev1.FileStatRequest{

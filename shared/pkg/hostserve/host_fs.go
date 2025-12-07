@@ -30,6 +30,7 @@ var (
 	ErrInvalidPath = errors.New("invalid path")
 )
 
+// Cleanup releases all resources associated with HostFS, including closing open files and removing temporary paths.
 func (hf *HostFS) Cleanup() {
 	hclog.Default().Info("Cleaning up HostFS resources")
 	hf.getOpenFiles().CloseAll()
@@ -186,6 +187,7 @@ func (hf *HostFS) Rename(ctx context.Context, rootDir, oldPath, newPath string) 
 	return r.Rename(oldRel, newRel)
 }
 
+// Remove deletes the specified path relative to the given root directory within the HostFS context.
 func (hf *HostFS) Remove(ctx context.Context, rootDir, path string) error {
 	clientID := getClientIDFromContext(ctx)
 	hclog.Default().Debug("Placeholder Pseudo Cap Check...", "clientID", clientID, "root", rootDir, "path", path)
@@ -206,6 +208,8 @@ func (hf *HostFS) Remove(ctx context.Context, rootDir, path string) error {
 	return r.Remove(rel)
 }
 
+// RemoveAll removes all contents under the specified path inside the root directory, relative to the provided rootDir.
+// Ensures paths are normalized and resolved relative to rootDir. Returns an error if path resolution or operation fails.
 func (hf *HostFS) RemoveAll(ctx context.Context, rootDir, path string) error {
 	clientID := getClientIDFromContext(ctx)
 	hclog.Default().Debug("Placeholder Pseudo Cap Check...", "clientID", clientID, "root", rootDir, "path", path)
@@ -287,6 +291,39 @@ func (hf *HostFS) MkdirAll(ctx context.Context, rootDir string, path string, per
 	err = r.MkdirAll(rel, perm)
 	if err != nil {
 		hclog.Default().Error("Failed to create directory", "root", rootDir, "path", path, "err", err)
+		return err
+	}
+	return nil
+}
+
+// Chmod changes the file mode of the specified path under rootDir to the given mode using the HostFS system.
+// It validates the permissions mask, resolves the root directory, and logs any errors encountered during the operation.
+// Returns an error if the operation fails or if the provided mode is invalid.
+func (hf *HostFS) Chmod(ctx context.Context, rootDir, path string, mode os.FileMode) error {
+	clientID := getClientIDFromContext(ctx)
+	hclog.Default().Debug("Placeholder Pseudo Cap Check...", "clientID", clientID, "root", rootDir, "path", path)
+
+	if mode&permissionsMask == 0 {
+		hclog.Default().Warn("Invalid permissions mask", "permissionsMask", mode)
+		return fmt.Errorf("invalid mode: %v", mode)
+	}
+
+	r, err := getRoot(rootDir)
+	if err != nil {
+		hclog.Default().Error("Failed to get root", "rootDir", rootDir, "err", err)
+		return err
+	}
+	defer closeRoot(r)
+
+	rel, err := absToRel(rootDir, path)
+	if err != nil {
+		hclog.Default().Error("Failed to get relative path", "rootDir", rootDir, "path", path, "err", err)
+		return err
+	}
+
+	err = r.Chmod(rel, mode)
+	if err != nil {
+		hclog.Default().Error("Failed to chmod", "root", rootDir, "path", path, "err", err)
 		return err
 	}
 	return nil

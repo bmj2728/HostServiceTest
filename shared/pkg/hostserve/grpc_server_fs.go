@@ -435,6 +435,8 @@ func (s *HostServiceGRPCServer) Chown(ctx context.Context, request *hostservev1.
 			ctxHostRequestIDKey, reqID,
 			"rootDir", request.RootDir,
 			"path", request.Path,
+			"uid", request.Uid,
+			"gid", request.Gid,
 			"error", err,
 		)
 		return &hostservev1.ChownResponse{
@@ -448,6 +450,8 @@ func (s *HostServiceGRPCServer) Chown(ctx context.Context, request *hostservev1.
 		ctxHostRequestIDKey, reqID,
 		"rootDir", request.RootDir,
 		"path", request.Path,
+		"uid", request.Uid,
+		"gid", request.Gid,
 	)
 
 	err = s.Impl.Chown(ctx, request.RootDir, request.Path, int(request.Uid), int(request.Gid))
@@ -500,6 +504,181 @@ func (s *HostServiceGRPCServer) Chtimes(ctx context.Context, request *hostservev
 	}
 	return &hostservev1.ChtimesResponse{}, nil
 
+}
+
+func (s *HostServiceGRPCServer) Lchown(ctx context.Context, request *hostservev1.LchownRequest) (*hostservev1.LchownResponse, error) {
+	ctx, clientID, reqID, owner, err := s.processRequestContext(ctx)
+	if err != nil {
+		hclog.Default().Info("Lchown bad request from client",
+			ctxClientIDKey, clientID,
+			ctxClientOwner, owner,
+			ctxHostRequestIDKey, reqID,
+			"rootDir", request.RootDir,
+			"path", request.Path,
+			"uid", request.Uid,
+			"gid", request.Gid,
+			"error", err,
+		)
+		return &hostservev1.LchownResponse{
+			Error: proto.String(err.Error()),
+		}, nil
+	}
+
+	hclog.Default().Info("Lchown request from client",
+		ctxClientIDKey, clientID,
+		ctxClientOwner, owner,
+		ctxHostRequestIDKey, reqID,
+		"rootDir", request.RootDir,
+		"path", request.Path,
+		"uid", request.Uid,
+		"gid", request.Gid,
+	)
+
+	err = s.Impl.Lchown(ctx, request.RootDir, request.Path, int(request.Uid), int(request.Gid))
+	if err != nil {
+		return &hostservev1.LchownResponse{
+			Error: proto.String(err.Error()),
+		}, nil
+	}
+	return &hostservev1.LchownResponse{}, nil
+}
+
+// Lstat handles a request to retrieve file or directory metadata based on a specified root directory and path.
+// It validates the context, processes the request parameters, and invokes the underlying implementation of Lstat.
+// Returns metadata in an LstatResponse or an error message if the operation fails.
+func (s *HostServiceGRPCServer) Lstat(ctx context.Context, request *hostservev1.LstatRequest) (*hostservev1.LstatResponse, error) {
+
+	ctx, clientID, reqID, owner, err := s.processRequestContext(ctx)
+	if err != nil {
+		hclog.Default().Info("Lstat bad request from client",
+			ctxClientIDKey, clientID,
+			ctxClientOwner, owner,
+			ctxHostRequestIDKey, reqID,
+			"error", err,
+		)
+		return &hostservev1.LstatResponse{
+			Error: proto.String(err.Error()),
+		}, nil
+	}
+
+	hclog.Default().Info("Lstat request from client",
+		ctxClientIDKey, clientID,
+		ctxClientOwner, owner,
+		ctxHostRequestIDKey, reqID,
+		"rootDir", request.RootDir,
+		"path", request.Path)
+
+	info, err := s.Impl.Lstat(ctx, request.RootDir, request.Path)
+	if err != nil {
+		return &hostservev1.LstatResponse{Error: proto.String(err.Error())}, nil
+	}
+	return &hostservev1.LstatResponse{Info: fileInfoToProtoFileInfo(info)}, nil
+}
+
+// Readlink processes a request to resolve a symbolic link at the specified path relative to the given root directory.
+// Returns the resolved destination of the symbolic link or an error if the operation fails.
+func (s *HostServiceGRPCServer) Readlink(ctx context.Context, request *hostservev1.ReadlinkRequest) (*hostservev1.ReadlinkResponse, error) {
+	ctx, clientID, reqID, owner, err := s.processRequestContext(ctx)
+	if err != nil {
+		hclog.Default().Info("Readlink bad request from client",
+			ctxClientIDKey, clientID,
+			ctxClientOwner, owner,
+			ctxHostRequestIDKey, reqID,
+			"rootDir", request.RootDir,
+			"path", request.Path,
+			"error", err,
+		)
+		return &hostservev1.ReadlinkResponse{
+			Error: proto.String(err.Error()),
+		}, nil
+	}
+	hclog.Default().Info("Readlink request from client",
+		ctxClientIDKey, clientID,
+		ctxClientOwner, owner,
+		ctxHostRequestIDKey, reqID,
+		"rootDir", request.RootDir,
+		"path", request.Path,
+	)
+
+	link, err := s.Impl.Readlink(ctx, request.RootDir, request.Path)
+	if err != nil {
+		return &hostservev1.ReadlinkResponse{
+			Error: proto.String(err.Error()),
+		}, nil
+	}
+
+	return &hostservev1.ReadlinkResponse{
+		Destination: link,
+	}, nil
+}
+
+// Link processes a request to create a link between an old and a new path within a specified root directory.
+// It handles the request context, logs relevant data, and delegates the operation to the underlying service implementation.
+// Returns a LinkResponse indicating success or an error message if the operation fails.
+func (s *HostServiceGRPCServer) Link(ctx context.Context, request *hostservev1.LinkRequest) (*hostservev1.LinkResponse, error) {
+	ctx, clientID, reqID, owner, err := s.processRequestContext(ctx)
+	if err != nil {
+		hclog.Default().Info("Link bad request from client",
+			ctxClientIDKey, clientID,
+			ctxClientOwner, owner,
+			ctxHostRequestIDKey, reqID,
+			"rootDir", request.RootDir,
+			"oldPath", request.OldPath,
+			"newPath", request.NewPath,
+		)
+		return &hostservev1.LinkResponse{
+			Error: proto.String(err.Error()),
+		}, nil
+	}
+	hclog.Default().Info("Link request from client",
+		ctxClientIDKey, clientID,
+		ctxClientOwner, owner,
+		ctxHostRequestIDKey, reqID,
+		"rootDir", request.RootDir,
+		"oldPath", request.OldPath,
+		"newPath", request.NewPath,
+	)
+	err = s.Impl.Link(ctx, request.RootDir, request.OldPath, request.NewPath)
+	if err != nil {
+		return &hostservev1.LinkResponse{
+			Error: proto.String(err.Error()),
+		}, nil
+	}
+	return &hostservev1.LinkResponse{}, nil
+}
+
+// Symlink handles a request to create a symbolic link from OldPath to NewPath within the specified RootDir.
+// Returns a response containing an error message if the operation fails.
+func (s *HostServiceGRPCServer) Symlink(ctx context.Context, request *hostservev1.SymlinkRequest) (*hostservev1.SymlinkResponse, error) {
+	ctx, clientID, reqID, owner, err := s.processRequestContext(ctx)
+	if err != nil {
+		hclog.Default().Info("Symlink bad request from client",
+			ctxClientIDKey, clientID,
+			ctxClientOwner, owner,
+			ctxHostRequestIDKey, reqID,
+			"rootDir", request.RootDir,
+			"oldPath", request.OldPath,
+			"newPath", request.NewPath,
+		)
+		return &hostservev1.SymlinkResponse{
+			Error: proto.String(err.Error()),
+		}, nil
+	}
+	hclog.Default().Info("Symlink request from client",
+		ctxClientIDKey, clientID,
+		ctxClientOwner, owner,
+		ctxHostRequestIDKey, reqID,
+		"rootDir", request.RootDir,
+		"oldPath", request.OldPath,
+		"newPath", request.NewPath,
+	)
+	err = s.Impl.Symlink(ctx, request.RootDir, request.OldPath, request.NewPath)
+	if err != nil {
+		return &hostservev1.SymlinkResponse{
+			Error: proto.String(err.Error()),
+		}, nil
+	}
+	return &hostservev1.SymlinkResponse{}, nil
 }
 
 // FileCreate is a method that processes a request to create a new file with the specified path and returns its handle.

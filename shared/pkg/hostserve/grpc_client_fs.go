@@ -201,6 +201,108 @@ func (c *HostServiceGRPCClient) Chtimes(ctx context.Context, rootDir, path strin
 	return nil
 }
 
+// Lchown changes the ownership of a file at the specified path within the given root directory to the provided UID and GID.
+// It performs the operation through a gRPC client, handling tracing metadata and errors.
+// Returns an error if the operation fails or the response is invalid.
+func (c *HostServiceGRPCClient) Lchown(ctx context.Context, rootDir, path string, uid, gid int) error {
+	ctx = addTracingIDsToContext(ctx, c.clientID, NewRequestID())
+	resp, err := c.client.Lchown(ctx, &hostservev1.LchownRequest{
+		RootDir: rootDir,
+		Path:    path,
+		Uid:     int32(uid),
+		Gid:     int32(gid),
+	})
+	if err != nil {
+		return &HostServiceError{Message: err.Error()}
+	}
+	if resp == nil {
+		return &HostServiceError{Message: "nil response from Lchown"}
+	}
+	if resp.Error != nil {
+		return &HostServiceError{Message: *resp.Error}
+	}
+	return nil
+}
+
+// Lstat retrieves file or directory information from a remote host at the specified path within the provided root directory.
+func (c *HostServiceGRPCClient) Lstat(ctx context.Context, rootDir, path string) (fs.FileInfo, error) {
+	ctx = addTracingIDsToContext(ctx, c.clientID, NewRequestID())
+	resp, err := c.client.Lstat(ctx, &hostservev1.LstatRequest{
+		RootDir: rootDir,
+		Path:    path,
+	})
+	if err != nil {
+		return nil, &HostServiceError{Message: err.Error()}
+	}
+	if resp == nil {
+		return nil, &HostServiceError{Message: "nil response from Lstat"}
+	}
+	if resp.Error != nil {
+		return nil, &HostServiceError{Message: *resp.Error}
+	}
+	return protoFileInfoToRemoteFileInfo(resp.Info), nil
+}
+
+// Readlink resolves the target of a symbolic link identified by rootDir and path, returning the destination or an error.
+func (c *HostServiceGRPCClient) Readlink(ctx context.Context, rootDir, path string) (string, error) {
+	ctx = addTracingIDsToContext(ctx, c.clientID, NewRequestID())
+	resp, err := c.client.Readlink(ctx, &hostservev1.ReadlinkRequest{
+		RootDir: rootDir,
+		Path:    path,
+	})
+	if err != nil {
+		return "", &HostServiceError{Message: err.Error()}
+	}
+	if resp == nil {
+		return "", &HostServiceError{Message: "nil response from Readlink"}
+	}
+	if resp.Error != nil {
+		return "", &HostServiceError{Message: *resp.Error}
+	}
+	return resp.Destination, nil
+}
+
+// Link creates a new link from oldpath to newpath within the specified rootDir using a gRPC service call.
+// It attaches tracing identifiers to the context and returns an error if the operation fails.
+func (c *HostServiceGRPCClient) Link(ctx context.Context, rootDir, oldpath, newpath string) error {
+	ctx = addTracingIDsToContext(ctx, c.clientID, NewRequestID())
+	resp, err := c.client.Link(ctx, &hostservev1.LinkRequest{
+		RootDir: rootDir,
+		OldPath: oldpath,
+		NewPath: newpath,
+	})
+	if err != nil {
+		return &HostServiceError{Message: err.Error()}
+	}
+	if resp == nil {
+		return &HostServiceError{Message: "nil response from Link"}
+	}
+	if resp.Error != nil {
+		return &HostServiceError{Message: *resp.Error}
+	}
+	return nil
+}
+
+// Symlink creates a symbolic link from oldpath to newpath within the specified rootDir and returns an error if any occurs.
+func (c *HostServiceGRPCClient) Symlink(ctx context.Context, rootDir, oldpath, newpath string) error {
+	ctx = addTracingIDsToContext(ctx, c.clientID, NewRequestID())
+	resp, err := c.client.Symlink(ctx, &hostservev1.SymlinkRequest{
+		RootDir: rootDir,
+		OldPath: oldpath,
+		NewPath: newpath,
+	})
+	if err != nil {
+		return &HostServiceError{Message: err.Error()}
+	}
+	if resp == nil {
+		return &HostServiceError{Message: "nil response from Symlink"}
+	}
+	if resp.Error != nil {
+		return &HostServiceError{Message: *resp.Error}
+	}
+	return nil
+}
+
 // Stat retrieves file or directory information from the remote host based on the provided path.
 // Returns fs.FileInfo for the requested path or an error if the operation fails.
 // Uses gRPC to communicate with the remote service and adds tracing metadata to the context.

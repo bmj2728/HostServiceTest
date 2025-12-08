@@ -65,6 +65,17 @@ type IHostFS interface {
 	// Chtimes updates the access and modification times of a file or directory specified by path in the rootDir context.
 	Chtimes(ctx context.Context, rootDir, path string, atime, mtime time.Time) error
 
+	// Lchown changes the ownership of a symbolic link at the specified path without following it. Returns an error if failed.
+	Lchown(ctx context.Context, rootDir, path string, uid, gid int) error
+
+	Lstat(ctx context.Context, rootDir, path string) (fs.FileInfo, error)
+
+	Readlink(ctx context.Context, rootDir, path string) (string, error)
+
+	Link(ctx context.Context, rootDir, oldpath, newpath string) error
+
+	Symlink(ctx context.Context, rootDir, oldpath, newpath string) error
+
 	// FileCreate creates a new file at the specified path within the root directory and returns a unique FileHandle.
 	FileCreate(ctx context.Context, rootDir, path string) (FileHandle, error)
 
@@ -92,8 +103,10 @@ type IHostFS interface {
 	// FileTruncate truncates the file identified by the given FileHandle to the specified size in bytes. Returns an error if fails.
 	FileTruncate(ctx context.Context, handle FileHandle, size int64) error
 
+	// FileChmod changes the file mode of the given file handle based on the specified permissions in the `mode` parameter.
 	FileChmod(ctx context.Context, handle FileHandle, mode os.FileMode) error
 
+	// FileChown changes the ownership of the file associated with the given handle to the specified UID and GID.
 	FileChown(ctx context.Context, handle FileHandle, uid, gid int) error
 
 	// FileReader returns an io.Reader for sequentially reading data from an open file handle in chunks of the specified size.

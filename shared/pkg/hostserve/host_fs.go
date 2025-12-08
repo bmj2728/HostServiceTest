@@ -382,6 +382,113 @@ func (hf *HostFS) Chtimes(ctx context.Context, rootDir, path string, atime, mtim
 	return nil
 }
 
+// Lchown changes the ownership of a symbolic link specified by the path to the provided user ID (uid) and group ID (gid).
+// Takes a context to extract client-specific information and validates the path relative to the given root directory.
+// Returns an error if the operation fails due to invalid paths, resolution errors, or permission issues.
+func (hf *HostFS) Lchown(ctx context.Context, rootDir, path string, uid, gid int) error {
+	clientID := getClientIDFromContext(ctx)
+	hclog.Default().Debug("Placeholder Pseudo Cap Check...", "clientID", clientID, "root", rootDir, "path", path, "uid", uid, "gid", gid)
+
+	r, err := getRoot(rootDir)
+	if err != nil {
+		hclog.Default().Error("Failed to get root", "rootDir", rootDir, "err", err)
+		return err
+	}
+	defer closeRoot(r)
+	rel, err := absToRel(rootDir, path)
+	if err != nil {
+		hclog.Default().Error("Failed to convert absolute path to relative", "rootDir", rootDir, "path", path, "err", err)
+		return err
+	}
+	return r.Lchown(rel, uid, gid)
+}
+
+// Lstat retrieves the file information of a given path relative to the specified root directory without following symlinks.
+// It uses the provided gRPC context for contextual information, including client ID.
+// Returns an error if the root or path is invalid or inaccessible.
+func (hf *HostFS) Lstat(ctx context.Context, rootDir, path string) (fs.FileInfo, error) {
+	clientID := getClientIDFromContext(ctx)
+	hclog.Default().Debug("Placeholder Pseudo Cap Check...", "clientID", clientID, "root", rootDir, "path", path)
+	r, err := getRoot(rootDir)
+	if err != nil {
+		hclog.Default().Error("Failed to get root", "rootDir", rootDir, "err", err)
+		return nil, err
+	}
+	defer closeRoot(r)
+	rel, err := absToRel(rootDir, path)
+	if err != nil {
+		hclog.Default().Error("Failed to convert absolute path to relative", "rootDir", rootDir, "path", path, "err", err)
+		return nil, err
+	}
+	return r.Lstat(rel)
+}
+
+// Readlink resolves and returns the destination of the symbolic link at the specified path within the root directory.
+func (hf *HostFS) Readlink(ctx context.Context, rootDir, path string) (string, error) {
+	clientID := getClientIDFromContext(ctx)
+	hclog.Default().Debug("Placeholder Pseudo Cap Check...", "clientID", clientID, "root", rootDir, "path", path)
+	r, err := getRoot(rootDir)
+	if err != nil {
+		hclog.Default().Error("Failed to get root", "rootDir", rootDir, "err", err)
+		return "", err
+	}
+	defer closeRoot(r)
+	rel, err := absToRel(rootDir, path)
+	if err != nil {
+		hclog.Default().Error("Failed to convert absolute path to relative", "rootDir", rootDir, "path", path, "err", err)
+		return "", err
+	}
+	return r.Readlink(rel)
+}
+
+// Link creates a new hard link for an existing file from oldpath to newpath relative to the given rootDir.
+func (hf *HostFS) Link(ctx context.Context, rootDir, oldpath, newpath string) error {
+	clientID := getClientIDFromContext(ctx)
+	hclog.Default().Debug("Placeholder Pseudo Cap Check...", "clientID", clientID, "root", rootDir, "oldpath", oldpath, "newpath", newpath)
+	r, err := getRoot(rootDir)
+	if err != nil {
+		hclog.Default().Error("Failed to get root", "rootDir", rootDir, "err", err)
+		return err
+	}
+	defer closeRoot(r)
+	relOld, err := absToRel(rootDir, oldpath)
+	if err != nil {
+		hclog.Default().Error("Failed to convert absolute path to relative", "rootDir", rootDir, "oldpath", oldpath, "err", err)
+		return err
+	}
+	relNew, err := absToRel(rootDir, newpath)
+	if err != nil {
+		hclog.Default().Error("Failed to convert absolute path to relative", "rootDir", rootDir, "newpath", newpath, "err", err)
+		return err
+	}
+	return r.Link(relOld, relNew)
+}
+
+// Symlink creates a symbolic link in the filesystem from oldpath to newpath within the rootDir context.
+// It converts absolute paths to relative paths before invoking the operation.
+// Returns an error if the operation fails, or if the provided paths are invalid or inaccessible.
+func (hf *HostFS) Symlink(ctx context.Context, rootDir, oldpath, newpath string) error {
+	clientID := getClientIDFromContext(ctx)
+	hclog.Default().Debug("Placeholder Pseudo Cap Check...", "clientID", clientID, "root", rootDir, "oldpath", oldpath, "newpath", newpath)
+	r, err := getRoot(rootDir)
+	if err != nil {
+		hclog.Default().Error("Failed to get root", "rootDir", rootDir, "err", err)
+		return err
+	}
+	defer closeRoot(r)
+	relOld, err := absToRel(rootDir, oldpath)
+	if err != nil {
+		hclog.Default().Error("Failed to convert absolute path to relative", "rootDir", rootDir, "oldpath", oldpath, "err", err)
+		return err
+	}
+	relNew, err := absToRel(rootDir, newpath)
+	if err != nil {
+		hclog.Default().Error("Failed to convert absolute path to relative", "rootDir", rootDir, "newpath", newpath, "err", err)
+		return err
+	}
+	return r.Symlink(relOld, relNew)
+}
+
 // FileCreate creates a new file at the specified path within the host file system and returns a FileHandle or an error.
 func (hf *HostFS) FileCreate(ctx context.Context, rootDir, path string) (FileHandle, error) {
 	clientID := getClientIDFromContext(ctx)

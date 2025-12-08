@@ -155,6 +155,10 @@ This is the foundation for building plugin systems users can trust.
 
 **Latest improvements to the architecture:**
 
+- **Symbolic links and hard links**: Full support for creating, reading, and managing symbolic and hard links via `Symlink`, `Link`, `Readlink`, and `Lstat` operations. Essential for configuration management and shared resources.
+- **File permissions and ownership**: Comprehensive permission management with both path-based (`Chmod`, `Chown`, `Lchown`, `Chtimes`) and handle-based (`FileChmod`, `FileChown`) operations. Change permissions, ownership, and timestamps with fine-grained control.
+- **File handle operations**: Added `FileSync` for explicit disk synchronization and `FileTruncate` for resizing files - essential for reliable file operations and data integrity.
+- **Process identification**: Added `Getpid` and `Getppid` methods to retrieve process identifiers, enabling better logging, tracking, and process management.
 - **File and directory management**: Added `Rename`, `Remove`, and `RemoveAll` operations for comprehensive file system management. These destructive operations follow the same security model and path confinement as other operations - use responsibly!
 - **User and group identification**: Added `Getuid`, `Getgid`, `Geteuid`, `Getegid`, and `GetGroups` methods to retrieve user and group identifiers from the host system, enabling plugins to make security-aware decisions without direct system access
 - **Consistent rootDir + path API pattern**: Refactored all file operations (`ReadDir`, `ReadFile`, `WriteFile`, `FileOpen`, `FileCreate`, `Stat`) to consistently accept a `rootDir` (must be absolute) and a `path` (absolute or relative, must not escape rootDir) instead of attempting to identify this data manually. This provides clearer security boundaries and better path confinement. See the [API Design Patterns](#api-design-patterns) section for details.
@@ -201,20 +205,23 @@ You'll see:
 ## Architecture: The Big Picture
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                        Host Process                          │
-│                                                               │
-│  ┌─────────────────────────────────────────────────────┐    │
-│  │         Shared Host Service Implementation          │    │
-│  │         (ReadDir, ReadFile, WriteFile, GetEnv)      │    │
-│  └──────────────────┬──────────────┬───────────────────┘    │
-│                     │              │                         │
-│       ┌─────────────┴──────┐  ┌───┴──────────────┐          │
-│       │  Broker 1          │  │  Broker 2        │          │
-│       │  (multiplexer)     │  │  (multiplexer)   │          │
-│       └─────────┬──────────┘  └──────┬───────────┘          │
-│                 │                    │                       │
-└─────────────────┼────────────────────┼───────────────────────┘
+┌───────────────────────────────────────────────────────────────────────────┐
+│                            Host Process                                    │
+│                                                                            │
+│  ┌──────────────────────────────────────────────────────────────────┐    │
+│  │         Shared Host Service Implementation                       │    │
+│  │  File I/O: ReadDir, ReadFile, WriteFile, FileOpen, FileClose... │    │
+│  │  Links: Symlink, Link, Readlink, Lstat                          │    │
+│  │  Permissions: Chmod, Chown, Chtimes                             │    │
+│  │  Process: Getpid, Getuid, GetGroups, GetEnv                     │    │
+│  └──────────────────┬───────────────┬───────────────────────────────┘    │
+│                     │               │                                     │
+│       ┌─────────────┴─────┐  ┌──────┴────────────┐                       │
+│       │  Broker 1         │  │  Broker 2         │                       │
+│       │  (multiplexer)    │  │  (multiplexer)    │                       │
+│       └─────────┬─────────┘  └──────┬────────────┘                       │
+│                 │                    │                                    │
+└─────────────────┼────────────────────┼────────────────────────────────────┘
                   │                    │
         ┌─────────┴──────────┐  ┌──────┴─────────┐
         │                    │  │                │
@@ -222,7 +229,8 @@ You'll see:
 │   Plugin 1       │  │   Plugin 2      │       │
 │   (isolated)     │  │   (isolated)    │       │
 │                  │  │                 │       │
-│  Calls ReadDir() │  │ Calls ReadFile()│       │
+│  Calls ReadDir() │  │ Calls Chmod()   │       │
+│  Calls Symlink() │  │ Calls Getpid()  │       │
 └──────────────────┘  └─────────────────┘       │
         Both plugins securely call host services
         with their own capabilities/permissions
@@ -245,6 +253,7 @@ This demo includes:
 - `ReadFile(rootDir, path)`: Read file contents (unary RPC)
 - `WriteFile(rootDir, path, data, perm)`: Write file (unary RPC)
 - `Stat(rootDir, path)`: Get file information (size, mode, modification time) for a path - convenience method that doesn't require file handle operations
+- `Lstat(rootDir, path)`: Get file information without following symbolic links - returns info about the link itself
 - `Rename(rootDir, oldPath, newPath)`: Rename or move a file or directory (unary RPC)
 - `Remove(rootDir, path)`: Delete a file or empty directory (unary RPC)
 - `RemoveAll(rootDir, path)`: Recursively delete a directory and its contents (unary RPC) - **use with caution!**
@@ -252,6 +261,13 @@ This demo includes:
 - `MkdirAll(rootDir, path, perm)`: Create directory and all necessary parents (unary RPC)
 - `MkdirTemp(rootDir, pattern)`: Create temporary directory with server-side tracking for automatic cleanup (unary RPC)
 - `FileCreate(rootDir, path)`: Create or truncate a file (unary RPC)
+- `Chmod(rootDir, path, mode)`: Change file mode/permissions (unary RPC)
+- `Chown(rootDir, path, uid, gid)`: Change file ownership (unary RPC)
+- `Lchown(rootDir, path, uid, gid)`: Change file ownership without following symbolic links
+- `Chtimes(rootDir, path, atime, mtime)`: Change file access and modification times (unary RPC)
+- `Readlink(rootDir, path)`: Read the target of a symbolic link (unary RPC)
+- `Link(rootDir, oldPath, newPath)`: Create a hard link (unary RPC)
+- `Symlink(rootDir, oldPath, newPath)`: Create a symbolic link (unary RPC)
 - `GetEnv(key)`: Get environment variable
 - `TempDir()`: Get system temporary directory path
 - `UserCacheDir()`: Get user-specific cache directory (mirrors `os.UserCacheDir`)
@@ -262,12 +278,18 @@ This demo includes:
 - `Geteuid()`: Get the effective user ID of the current process
 - `Getegid()`: Get the effective group ID of the current process
 - `GetGroups()`: Get the list of supplementary group IDs for the current process
+- `Getpid()`: Get the process ID of the current process
+- `Getppid()`: Get the parent process ID of the current process
 
 *File Handle Operations (for larger files and streaming):*
 - `FileOpen(rootDir, path, mode, perm)`: Open file and return handle
 - `FileCreateTemp(rootDir, pattern)`: Create temporary file with server-side tracking for automatic cleanup, returns handle
 - `FileSeek(handle, offset, whence)`: Seek to position in file (similar to `os.File.Seek`)
 - `FileStat(handle)`: Get file information (size, mode, modification time) for an open file handle - returns an `fs.FileInfo`-compatible object that always returns nil for `Sys()`
+- `FileSync(handle)`: Sync file contents to disk (similar to `os.File.Sync`)
+- `FileTruncate(handle, size)`: Truncate or extend file to specified size
+- `FileChmod(handle, mode)`: Change permissions on an open file handle
+- `FileChown(handle, uid, gid)`: Change ownership on an open file handle
 - `FileClose(handle)`: Close file handle
 - `FileReader(handle, chunk_size)`: Read file in chunks via server streaming (fully implemented)
   - Requires `chunk_size` between 8KB and ~3.81MB
@@ -580,6 +602,12 @@ groups, err := hostServiceClient.GetGroups(ctx) // Supplementary group IDs
 
 log.Printf("Running as UID %d (effective: %d), GID %d (effective: %d)", uid, euid, gid, egid)
 log.Printf("Supplementary groups: %v", groups)
+
+// Get process IDs
+pid, err := hostServiceClient.Getpid(ctx)      // Current process ID
+ppid, err := hostServiceClient.Getppid(ctx)    // Parent process ID
+
+log.Printf("Process ID: %d, Parent Process ID: %d", pid, ppid)
 ```
 
 These methods mirror the standard Unix system calls and are useful for:
@@ -587,8 +615,128 @@ These methods mirror the standard Unix system calls and are useful for:
 - Making security decisions based on the executing user
 - Logging and audit trails with user context
 - Cross-platform user identification (returns appropriate values on Windows)
+- Process tracking and management
 
 **Note:** These return the IDs of the **host process**, not the plugin process, since plugins are isolated and shouldn't need direct system access.
+
+### Symbolic Links and Hard Links
+
+The host service provides full support for working with symbolic and hard links:
+
+```go
+// Create a symbolic link
+err := hostServiceClient.Symlink(ctx, "/home/user", "original.txt", "link-to-original.txt")
+if err != nil {
+    log.Printf("Failed to create symlink: %v", err)
+}
+
+// Read the target of a symbolic link
+target, err := hostServiceClient.Readlink(ctx, "/home/user", "link-to-original.txt")
+if err != nil {
+    log.Printf("Failed to read symlink: %v", err)
+}
+log.Printf("Symbolic link points to: %s", target)
+
+// Get info about the link itself (not the target)
+linkInfo, err := hostServiceClient.Lstat(ctx, "/home/user", "link-to-original.txt")
+if err != nil {
+    log.Printf("Failed to stat symlink: %v", err)
+}
+log.Printf("Link info: Size=%d, Mode=%v", linkInfo.Size(), linkInfo.Mode())
+
+// Create a hard link
+err = hostServiceClient.Link(ctx, "/home/user", "original.txt", "hardlink-to-original.txt")
+if err != nil {
+    log.Printf("Failed to create hard link: %v", err)
+}
+```
+
+**Key Differences:**
+
+- **Symbolic Links (Symlinks)**: Reference another file by path. Can cross filesystem boundaries and can point to non-existent targets.
+- **Hard Links**: Reference the same inode as the original file. Cannot cross filesystem boundaries and always point to existing data.
+
+**Use Cases:**
+
+- **Configuration management**: Create symlinks to active configuration versions
+- **Shared resources**: Hard links for shared data without duplication
+- **Path abstraction**: Symlinks to hide implementation details from plugins
+
+### File Permissions and Ownership Operations
+
+The host service provides comprehensive file permission and ownership management:
+
+**Unary Operations (path-based):**
+
+```go
+// Change file permissions
+err := hostServiceClient.Chmod(ctx, "/home/user", "script.sh", 0755)
+if err != nil {
+    log.Printf("Failed to chmod: %v", err)
+}
+
+// Change file ownership
+err = hostServiceClient.Chown(ctx, "/home/user", "data.txt", 1000, 1000)
+if err != nil {
+    log.Printf("Failed to chown: %v", err)
+}
+
+// Change ownership of a symlink itself (not its target)
+err = hostServiceClient.Lchown(ctx, "/home/user", "link.txt", 1000, 1000)
+if err != nil {
+    log.Printf("Failed to lchown: %v", err)
+}
+
+// Change file access and modification times
+atime := time.Now()
+mtime := time.Now().Add(-24 * time.Hour)
+err = hostServiceClient.Chtimes(ctx, "/home/user", "file.txt", atime, mtime)
+if err != nil {
+    log.Printf("Failed to change times: %v", err)
+}
+```
+
+**Handle-based Operations (for open files):**
+
+```go
+// Open a file
+handle, _, err := hostServiceClient.FileOpen(ctx, "/home/user", "document.txt", READ_WRITE, 0644)
+if err != nil {
+    log.Fatal(err)
+}
+defer hostServiceClient.FileClose(ctx, handle)
+
+// Change permissions on the open file
+err = hostServiceClient.FileChmod(ctx, handle, 0600)
+if err != nil {
+    log.Printf("Failed to chmod file handle: %v", err)
+}
+
+// Change ownership on the open file
+err = hostServiceClient.FileChown(ctx, handle, 1000, 1000)
+if err != nil {
+    log.Printf("Failed to chown file handle: %v", err)
+}
+
+// Truncate or extend the file
+err = hostServiceClient.FileTruncate(ctx, handle, 1024)
+if err != nil {
+    log.Printf("Failed to truncate: %v", err)
+}
+
+// Ensure data is written to disk
+err = hostServiceClient.FileSync(ctx, handle)
+if err != nil {
+    log.Printf("Failed to sync: %v", err)
+}
+```
+
+**When to Use Which:**
+
+- **Path-based operations**: Use when you don't have the file open or need to operate on multiple files efficiently
+- **Handle-based operations**: Use when you're already working with an open file handle for read/write operations
+
+**Security Note:** All permission and ownership operations respect the same `rootDir` confinement as other operations and can be controlled through the capability system.
 
 ### API Design Patterns
 

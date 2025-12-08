@@ -92,6 +92,10 @@ type IHostFS interface {
 	// FileTruncate truncates the file identified by the given FileHandle to the specified size in bytes. Returns an error if fails.
 	FileTruncate(ctx context.Context, handle FileHandle, size int64) error
 
+	FileChmod(ctx context.Context, handle FileHandle, mode os.FileMode) error
+
+	FileChown(ctx context.Context, handle FileHandle, uid, gid int) error
+
 	// FileReader returns an io.Reader for sequentially reading data from an open file handle in chunks of the specified size.
 	FileReader(ctx context.Context, handle FileHandle, chunkSize uint32) (io.Reader, error)
 

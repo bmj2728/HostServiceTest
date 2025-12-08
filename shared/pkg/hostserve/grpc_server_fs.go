@@ -792,6 +792,76 @@ func (s *HostServiceGRPCServer) FileTruncate(ctx context.Context, request *hosts
 	return &hostservev1.FileTruncateResponse{}, nil
 }
 
+// FileChmod processes a file mode change request by applying the specified permissions to the identified file handle.
+func (s *HostServiceGRPCServer) FileChmod(ctx context.Context, request *hostservev1.FileChmodRequest) (*hostservev1.FileChmodResponse, error) {
+
+	fh := FileHandle(request.Handle)
+	ctx, clientID, reqID, owner, err := s.processRequestContext(ctx)
+	if err != nil {
+		hclog.Default().Info("FileChmod bad request from client",
+			ctxClientIDKey, clientID,
+			ctxClientOwner, owner,
+			ctxHostRequestIDKey, reqID,
+			"handle", fh,
+			"mode", request.Mode,
+			"error", err,
+		)
+		return &hostservev1.FileChmodResponse{
+			Error: proto.String(err.Error()),
+		}, nil
+	}
+
+	hclog.Default().Info("FileChmod request from client",
+		ctxClientIDKey, clientID,
+		ctxClientOwner, owner,
+		ctxHostRequestIDKey, reqID,
+		"handle", fh,
+		"mode", request.Mode)
+	err = s.Impl.FileChmod(ctx, fh, os.FileMode(request.Mode))
+	if err != nil {
+		return &hostservev1.FileChmodResponse{
+			Error: proto.String(err.Error()),
+		}, nil
+	}
+	return &hostservev1.FileChmodResponse{}, nil
+}
+
+// FileChown handles a request to change the ownership of a file identified by its handle, using supplied UID and GID.
+func (s *HostServiceGRPCServer) FileChown(ctx context.Context, request *hostservev1.FileChownRequest) (*hostservev1.FileChownResponse, error) {
+
+	fh := FileHandle(request.Handle)
+	ctx, clientID, reqID, owner, err := s.processRequestContext(ctx)
+	if err != nil {
+		hclog.Default().Info("FileChown bad request from client",
+			ctxClientIDKey, clientID,
+			ctxClientOwner, owner,
+			ctxHostRequestIDKey, reqID,
+			"handle", fh,
+			"uid", request.Uid,
+			"gid", request.Gid,
+			"error", err,
+		)
+		return &hostservev1.FileChownResponse{
+			Error: proto.String(err.Error()),
+		}, nil
+	}
+
+	hclog.Default().Info("FileChown request from client",
+		ctxClientIDKey, clientID,
+		ctxClientOwner, owner,
+		ctxHostRequestIDKey, reqID,
+		"handle", fh,
+		"uid", request.Uid,
+		"gid", request.Gid)
+	err = s.Impl.FileChown(ctx, fh, int(request.Uid), int(request.Gid))
+	if err != nil {
+		return &hostservev1.FileChownResponse{
+			Error: proto.String(err.Error()),
+		}, nil
+	}
+	return &hostservev1.FileChownResponse{}, nil
+}
+
 // FileReader streams chunks of a file to the client based on the given file handle and chunk size in the request.
 // The method validates client metadata, fetches the file, reads it in chunks, and streams the data until EOF or error.
 // It sends an error response back to the client if any issues occur during validation, reading, or streaming.

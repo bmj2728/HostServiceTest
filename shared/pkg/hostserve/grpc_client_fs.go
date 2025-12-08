@@ -421,6 +421,46 @@ func (c *HostServiceGRPCClient) FileTruncate(ctx context.Context, handle FileHan
 	return nil
 }
 
+// FileChmod changes the permissions of a file identified by the given FileHandle to the specified mode.
+func (c *HostServiceGRPCClient) FileChmod(ctx context.Context, handle FileHandle, mode os.FileMode) error {
+	ctx = addTracingIDsToContext(ctx, c.clientID, NewRequestID())
+	resp, err := c.client.FileChmod(ctx, &hostservev1.FileChmodRequest{
+		Handle: string(handle),
+		Mode:   uint32(mode),
+	})
+	if err != nil {
+		return &HostServiceError{Message: err.Error()}
+	}
+	if resp == nil {
+		return &HostServiceError{Message: "nil response from FileChmod"}
+	}
+	if resp.Error != nil {
+		return &HostServiceError{Message: *resp.Error}
+	}
+	return nil
+}
+
+// FileChown updates the ownership of a file identified by the handle to the given user ID (uid) and group ID (gid).
+// It communicates with the host service via gRPC and returns an error if the operation fails.
+func (c *HostServiceGRPCClient) FileChown(ctx context.Context, handle FileHandle, uid, gid int) error {
+	ctx = addTracingIDsToContext(ctx, c.clientID, NewRequestID())
+	resp, err := c.client.FileChown(ctx, &hostservev1.FileChownRequest{
+		Handle: string(handle),
+		Uid:    int32(uid),
+		Gid:    int32(gid),
+	})
+	if err != nil {
+		return &HostServiceError{Message: err.Error()}
+	}
+	if resp == nil {
+		return &HostServiceError{Message: "nil response from FileChown"}
+	}
+	if resp.Error != nil {
+		return &HostServiceError{Message: *resp.Error}
+	}
+	return nil
+}
+
 // FileReader provides a gRPC client-side implementation to read files in chunks via a streaming connection.
 func (c *HostServiceGRPCClient) FileReader(ctx context.Context, handle FileHandle, chunkSize uint32) (io.Reader, error) {
 	ctx = addTracingIDsToContext(ctx, c.clientID, NewRequestID())

@@ -531,6 +531,33 @@ func (hf *HostFS) FileTruncate(ctx context.Context, handle FileHandle, size int6
 	return file.Truncate(size)
 }
 
+// FileChmod changes the permissions of a file identified by the given FileHandle to the specified os.FileMode.
+func (hf *HostFS) FileChmod(ctx context.Context, handle FileHandle, mode os.FileMode) error {
+	clientID := getClientIDFromContext(ctx)
+	hclog.Default().Debug("Placeholder Pseudo Cap Check...", "clientID", clientID, "handle", handle, "mode", mode)
+
+	file, err := hf.retrieveOpenFile(ctx, handle)
+	if err != nil {
+		return err
+	}
+
+	return file.Chmod(mode)
+}
+
+// FileChown changes the ownership of the specified file to the provided user ID (uid) and group ID (gid).
+// Requires a file handle and a valid context; returns an error if the operation fails.
+func (hf *HostFS) FileChown(ctx context.Context, handle FileHandle, uid, gid int) error {
+	clientID := getClientIDFromContext(ctx)
+	hclog.Default().Debug("Placeholder Pseudo Cap Check...", "clientID", clientID, "handle", handle, "uid", uid, "gid", gid)
+
+	file, err := hf.retrieveOpenFile(ctx, handle)
+	if err != nil {
+		return err
+	}
+
+	return file.Chown(uid, gid)
+}
+
 // FileReader returns a reader for the specified file handle, typically os.File/fs.File.
 // This implementation contains pseudocode for suggested security checks.
 func (hf *HostFS) FileReader(ctx context.Context, handle FileHandle, chunkSize uint32) (io.Reader, error) {

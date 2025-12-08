@@ -32,8 +32,8 @@ enum OpenFileFlags {
 // access to the plugin process
 service HostService {
 
-  // TODO Chmod(unary + handle), Chown(unary + handle) -- pb done, needs implemented
-  // TODO Chtimes, Lchown, Lstat, Readlink, Link, Symlink
+  // TODO Chmod(handle), Chown(handle)
+  // TODO Lchown, Lstat, Readlink, Link, Symlink
   // TODO ReadAt(unary + stream), WriteAt(unary + stream)
 
   // FS Endpoints - Unary Calls
@@ -49,9 +49,9 @@ service HostService {
   rpc MkdirTemp(MkdirTempRequest) returns (MkdirTempResponse);
   rpc Chmod(ChmodRequest) returns (ChmodResponse);
   rpc Chown(ChownRequest) returns (ChownResponse);
+  rpc Chtimes(ChtimesRequest) returns (ChtimesResponse);
 
   // TODO
-  rpc Chtimes(ChtimesRequest) returns (ChtimesResponse);
   rpc Lchown(LchownRequest) returns (LchownResponse);
   rpc Lstat(LstatRequest) returns (LstatResponse);
   rpc Readlink(ReadlinkRequest) returns (ReadlinkResponse);
@@ -69,7 +69,7 @@ service HostService {
   rpc FileTruncate(FileTruncateRequest) returns (FileTruncateResponse);
   // TODO
   rpc FileChmod(FileChmodRequest) returns (FileChmodResponse);
-  rpc FileChown(FileChownRequest) returns (FileChownRequest);
+  rpc FileChown(FileChownRequest) returns (FileChownResponse);
 
   // FS - Streaming File Ops
   rpc FileReader(FileReadRequest) returns (stream FileReadResponse);

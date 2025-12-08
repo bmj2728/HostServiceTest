@@ -4757,7 +4757,7 @@ const file_hostserve_v1_hostserve_proto_rawDesc = "" +
 	"READ_WRITE\x10\x05\x12\x15\n" +
 	"\x11READ_WRITE_CREATE\x10\x06\x12\x17\n" +
 	"\x13READ_WRITE_TRUNCATE\x10\a\x12\x15\n" +
-	"\x11READ_WRITE_APPEND\x10\b2\xc7\x18\n" +
+	"\x11READ_WRITE_APPEND\x10\b2\xc8\x18\n" +
 	"\vHostService\x12F\n" +
 	"\aReadDir\x12\x1c.hostserve.v1.ReadDirRequest\x1a\x1d.hostserve.v1.ReadDirResponse\x12I\n" +
 	"\bReadFile\x12\x1d.hostserve.v1.ReadFileRequest\x1a\x1e.hostserve.v1.ReadFileResponse\x12L\n" +
@@ -4786,8 +4786,8 @@ const file_hostserve_v1_hostserve_proto_rawDesc = "" +
 	"\bFileSync\x12\x1d.hostserve.v1.FileSyncRequest\x1a\x1e.hostserve.v1.FileSyncResponse\x12L\n" +
 	"\tFileClose\x12\x1e.hostserve.v1.FileCloseRequest\x1a\x1f.hostserve.v1.FileCloseResponse\x12U\n" +
 	"\fFileTruncate\x12!.hostserve.v1.FileTruncateRequest\x1a\".hostserve.v1.FileTruncateResponse\x12L\n" +
-	"\tFileChmod\x12\x1e.hostserve.v1.FileChmodRequest\x1a\x1f.hostserve.v1.FileChmodResponse\x12K\n" +
-	"\tFileChown\x12\x1e.hostserve.v1.FileChownRequest\x1a\x1e.hostserve.v1.FileChownRequest\x12M\n" +
+	"\tFileChmod\x12\x1e.hostserve.v1.FileChmodRequest\x1a\x1f.hostserve.v1.FileChmodResponse\x12L\n" +
+	"\tFileChown\x12\x1e.hostserve.v1.FileChownRequest\x1a\x1f.hostserve.v1.FileChownResponse\x12M\n" +
 	"\n" +
 	"FileReader\x12\x1d.hostserve.v1.FileReadRequest\x1a\x1e.hostserve.v1.FileReadResponse0\x01\x12O\n" +
 	"\n" +
@@ -4991,7 +4991,7 @@ var file_hostserve_v1_hostserve_proto_depIdxs = []int32{
 	53, // 76: hostserve.v1.HostService.FileClose:output_type -> hostserve.v1.FileCloseResponse
 	55, // 77: hostserve.v1.HostService.FileTruncate:output_type -> hostserve.v1.FileTruncateResponse
 	57, // 78: hostserve.v1.HostService.FileChmod:output_type -> hostserve.v1.FileChmodResponse
-	58, // 79: hostserve.v1.HostService.FileChown:output_type -> hostserve.v1.FileChownRequest
+	59, // 79: hostserve.v1.HostService.FileChown:output_type -> hostserve.v1.FileChownResponse
 	61, // 80: hostserve.v1.HostService.FileReader:output_type -> hostserve.v1.FileReadResponse
 	63, // 81: hostserve.v1.HostService.FileWriter:output_type -> hostserve.v1.FileWriteResponse
 	65, // 82: hostserve.v1.HostService.Getuid:output_type -> hostserve.v1.GetuidResponse

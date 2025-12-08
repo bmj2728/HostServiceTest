@@ -83,8 +83,8 @@ type HostServiceClient interface {
 	MkdirTemp(ctx context.Context, in *MkdirTempRequest, opts ...grpc.CallOption) (*MkdirTempResponse, error)
 	Chmod(ctx context.Context, in *ChmodRequest, opts ...grpc.CallOption) (*ChmodResponse, error)
 	Chown(ctx context.Context, in *ChownRequest, opts ...grpc.CallOption) (*ChownResponse, error)
-	// TODO
 	Chtimes(ctx context.Context, in *ChtimesRequest, opts ...grpc.CallOption) (*ChtimesResponse, error)
+	// TODO
 	Lchown(ctx context.Context, in *LchownRequest, opts ...grpc.CallOption) (*LchownResponse, error)
 	Lstat(ctx context.Context, in *LstatRequest, opts ...grpc.CallOption) (*LstatResponse, error)
 	Readlink(ctx context.Context, in *ReadlinkRequest, opts ...grpc.CallOption) (*ReadlinkResponse, error)
@@ -101,7 +101,7 @@ type HostServiceClient interface {
 	FileTruncate(ctx context.Context, in *FileTruncateRequest, opts ...grpc.CallOption) (*FileTruncateResponse, error)
 	// TODO
 	FileChmod(ctx context.Context, in *FileChmodRequest, opts ...grpc.CallOption) (*FileChmodResponse, error)
-	FileChown(ctx context.Context, in *FileChownRequest, opts ...grpc.CallOption) (*FileChownRequest, error)
+	FileChown(ctx context.Context, in *FileChownRequest, opts ...grpc.CallOption) (*FileChownResponse, error)
 	// FS - Streaming File Ops
 	FileReader(ctx context.Context, in *FileReadRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[FileReadResponse], error)
 	FileWriter(ctx context.Context, opts ...grpc.CallOption) (grpc.ClientStreamingClient[FileWriteRequest, FileWriteResponse], error)
@@ -398,9 +398,9 @@ func (c *hostServiceClient) FileChmod(ctx context.Context, in *FileChmodRequest,
 	return out, nil
 }
 
-func (c *hostServiceClient) FileChown(ctx context.Context, in *FileChownRequest, opts ...grpc.CallOption) (*FileChownRequest, error) {
+func (c *hostServiceClient) FileChown(ctx context.Context, in *FileChownRequest, opts ...grpc.CallOption) (*FileChownResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(FileChownRequest)
+	out := new(FileChownResponse)
 	err := c.cc.Invoke(ctx, HostService_FileChown_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
@@ -580,8 +580,8 @@ type HostServiceServer interface {
 	MkdirTemp(context.Context, *MkdirTempRequest) (*MkdirTempResponse, error)
 	Chmod(context.Context, *ChmodRequest) (*ChmodResponse, error)
 	Chown(context.Context, *ChownRequest) (*ChownResponse, error)
-	// TODO
 	Chtimes(context.Context, *ChtimesRequest) (*ChtimesResponse, error)
+	// TODO
 	Lchown(context.Context, *LchownRequest) (*LchownResponse, error)
 	Lstat(context.Context, *LstatRequest) (*LstatResponse, error)
 	Readlink(context.Context, *ReadlinkRequest) (*ReadlinkResponse, error)
@@ -598,7 +598,7 @@ type HostServiceServer interface {
 	FileTruncate(context.Context, *FileTruncateRequest) (*FileTruncateResponse, error)
 	// TODO
 	FileChmod(context.Context, *FileChmodRequest) (*FileChmodResponse, error)
-	FileChown(context.Context, *FileChownRequest) (*FileChownRequest, error)
+	FileChown(context.Context, *FileChownRequest) (*FileChownResponse, error)
 	// FS - Streaming File Ops
 	FileReader(*FileReadRequest, grpc.ServerStreamingServer[FileReadResponse]) error
 	FileWriter(grpc.ClientStreamingServer[FileWriteRequest, FileWriteResponse]) error
@@ -706,7 +706,7 @@ func (UnimplementedHostServiceServer) FileTruncate(context.Context, *FileTruncat
 func (UnimplementedHostServiceServer) FileChmod(context.Context, *FileChmodRequest) (*FileChmodResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method FileChmod not implemented")
 }
-func (UnimplementedHostServiceServer) FileChown(context.Context, *FileChownRequest) (*FileChownRequest, error) {
+func (UnimplementedHostServiceServer) FileChown(context.Context, *FileChownRequest) (*FileChownResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method FileChown not implemented")
 }
 func (UnimplementedHostServiceServer) FileReader(*FileReadRequest, grpc.ServerStreamingServer[FileReadResponse]) error {

@@ -112,6 +112,8 @@ type IHostFS interface {
 	// FileReader returns an io.Reader for sequentially reading data from an open file handle in chunks of the specified size.
 	FileReader(ctx context.Context, handle FileHandle, chunkSize uint32) (io.Reader, error)
 
+	//FileReaderAt(ctx context.Context, handle FileHandle, offset int64, chunkSize uint32) (io.ReaderAt, error)
+
 	// FileWriter returns an io.WriteCloser to write data to the file identified by the given FileHandle.
 	FileWriter(ctx context.Context, handle FileHandle) (io.WriteCloser, error)
 }

@@ -15,6 +15,7 @@ import (
 // final is a flag indicating whether the last data chunk was the final one in the stream.
 type grpcFileStreamReader struct {
 	stream grpc.ServerStreamingClient[hostservev1.FileReadResponse]
+	offset uint64
 	buffer []byte
 	final  bool
 }
@@ -83,6 +84,10 @@ func (g *grpcFileStreamReader) Read(p []byte) (n int, err error) {
 	return 0, &HostServiceError{Message: "empty response from stream"}
 }
 
+func (g *grpcFileStreamReader) ReadAt(p []byte, off int64) (n int, err error) {
+	panic("not implemented")
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 type grpcFileStreamWriter struct {
@@ -116,6 +121,10 @@ func (w *grpcFileStreamWriter) Write(p []byte) (n int, err error) {
 	}
 
 	return totalWritten, nil
+}
+
+func (w *grpcFileStreamWriter) WriteAt(p []byte, off int64) (n int, err error) {
+	panic("not implemented")
 }
 
 func (w *grpcFileStreamWriter) sendChunk(data []byte, isFinal bool) error {

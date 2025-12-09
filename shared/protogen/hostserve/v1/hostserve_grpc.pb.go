@@ -21,7 +21,9 @@ const _ = grpc.SupportPackageIsVersion9
 const (
 	HostService_ReadDir_FullMethodName        = "/hostserve.v1.HostService/ReadDir"
 	HostService_ReadFile_FullMethodName       = "/hostserve.v1.HostService/ReadFile"
+	HostService_ReadFileAt_FullMethodName     = "/hostserve.v1.HostService/ReadFileAt"
 	HostService_WriteFile_FullMethodName      = "/hostserve.v1.HostService/WriteFile"
+	HostService_WriteFileAt_FullMethodName    = "/hostserve.v1.HostService/WriteFileAt"
 	HostService_Stat_FullMethodName           = "/hostserve.v1.HostService/Stat"
 	HostService_Rename_FullMethodName         = "/hostserve.v1.HostService/Rename"
 	HostService_Remove_FullMethodName         = "/hostserve.v1.HostService/Remove"
@@ -48,7 +50,9 @@ const (
 	HostService_FileChmod_FullMethodName      = "/hostserve.v1.HostService/FileChmod"
 	HostService_FileChown_FullMethodName      = "/hostserve.v1.HostService/FileChown"
 	HostService_FileReader_FullMethodName     = "/hostserve.v1.HostService/FileReader"
+	HostService_FileReaderAt_FullMethodName   = "/hostserve.v1.HostService/FileReaderAt"
 	HostService_FileWriter_FullMethodName     = "/hostserve.v1.HostService/FileWriter"
+	HostService_FileWriterAt_FullMethodName   = "/hostserve.v1.HostService/FileWriterAt"
 	HostService_Getuid_FullMethodName         = "/hostserve.v1.HostService/Getuid"
 	HostService_Getgid_FullMethodName         = "/hostserve.v1.HostService/Getgid"
 	HostService_Geteuid_FullMethodName        = "/hostserve.v1.HostService/Geteuid"
@@ -73,7 +77,9 @@ type HostServiceClient interface {
 	// FS Endpoints - Unary Calls
 	ReadDir(ctx context.Context, in *ReadDirRequest, opts ...grpc.CallOption) (*ReadDirResponse, error)
 	ReadFile(ctx context.Context, in *ReadFileRequest, opts ...grpc.CallOption) (*ReadFileResponse, error)
+	ReadFileAt(ctx context.Context, in *ReadFileAtRequest, opts ...grpc.CallOption) (*ReadFileAtResponse, error)
 	WriteFile(ctx context.Context, in *WriteFileRequest, opts ...grpc.CallOption) (*WriteFileResponse, error)
+	WriteFileAt(ctx context.Context, in *WriteFileAtRequest, opts ...grpc.CallOption) (*WriteFileAtResponse, error)
 	Stat(ctx context.Context, in *StatRequest, opts ...grpc.CallOption) (*StatResponse, error)
 	Rename(ctx context.Context, in *RenameRequest, opts ...grpc.CallOption) (*RenameResponse, error)
 	Remove(ctx context.Context, in *RemoveRequest, opts ...grpc.CallOption) (*RemoveResponse, error)
@@ -84,11 +90,10 @@ type HostServiceClient interface {
 	Chmod(ctx context.Context, in *ChmodRequest, opts ...grpc.CallOption) (*ChmodResponse, error)
 	Chown(ctx context.Context, in *ChownRequest, opts ...grpc.CallOption) (*ChownResponse, error)
 	Chtimes(ctx context.Context, in *ChtimesRequest, opts ...grpc.CallOption) (*ChtimesResponse, error)
-	// TODO
 	Lchown(ctx context.Context, in *LchownRequest, opts ...grpc.CallOption) (*LchownResponse, error)
 	Lstat(ctx context.Context, in *LstatRequest, opts ...grpc.CallOption) (*LstatResponse, error)
 	Readlink(ctx context.Context, in *ReadlinkRequest, opts ...grpc.CallOption) (*ReadlinkResponse, error)
-	Link(ctx context.Context, in *LinkRequest, opts ...grpc.CallOption) (*LstatResponse, error)
+	Link(ctx context.Context, in *LinkRequest, opts ...grpc.CallOption) (*LinkResponse, error)
 	Symlink(ctx context.Context, in *SymlinkRequest, opts ...grpc.CallOption) (*SymlinkResponse, error)
 	// FS - File Handle Endpoints
 	FileCreate(ctx context.Context, in *FileCreateRequest, opts ...grpc.CallOption) (*FileCreateResponse, error)
@@ -99,12 +104,13 @@ type HostServiceClient interface {
 	FileSync(ctx context.Context, in *FileSyncRequest, opts ...grpc.CallOption) (*FileSyncResponse, error)
 	FileClose(ctx context.Context, in *FileCloseRequest, opts ...grpc.CallOption) (*FileCloseResponse, error)
 	FileTruncate(ctx context.Context, in *FileTruncateRequest, opts ...grpc.CallOption) (*FileTruncateResponse, error)
-	// TODO
 	FileChmod(ctx context.Context, in *FileChmodRequest, opts ...grpc.CallOption) (*FileChmodResponse, error)
 	FileChown(ctx context.Context, in *FileChownRequest, opts ...grpc.CallOption) (*FileChownResponse, error)
-	// FS - Streaming File Ops
+	// FS - Streaming File Ops -
 	FileReader(ctx context.Context, in *FileReadRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[FileReadResponse], error)
+	FileReaderAt(ctx context.Context, in *FileReadAtRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[FileReadAtResponse], error)
 	FileWriter(ctx context.Context, opts ...grpc.CallOption) (grpc.ClientStreamingClient[FileWriteRequest, FileWriteResponse], error)
+	FileWriterAt(ctx context.Context, opts ...grpc.CallOption) (grpc.ClientStreamingClient[FileWriteAtRequest, FileWriteAtResponse], error)
 	// Env Endpoints
 	Getuid(ctx context.Context, in *GetuidRequest, opts ...grpc.CallOption) (*GetuidResponse, error)
 	Getgid(ctx context.Context, in *GetgidRequest, opts ...grpc.CallOption) (*GetgidResponse, error)
@@ -148,10 +154,30 @@ func (c *hostServiceClient) ReadFile(ctx context.Context, in *ReadFileRequest, o
 	return out, nil
 }
 
+func (c *hostServiceClient) ReadFileAt(ctx context.Context, in *ReadFileAtRequest, opts ...grpc.CallOption) (*ReadFileAtResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ReadFileAtResponse)
+	err := c.cc.Invoke(ctx, HostService_ReadFileAt_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *hostServiceClient) WriteFile(ctx context.Context, in *WriteFileRequest, opts ...grpc.CallOption) (*WriteFileResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(WriteFileResponse)
 	err := c.cc.Invoke(ctx, HostService_WriteFile_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *hostServiceClient) WriteFileAt(ctx context.Context, in *WriteFileAtRequest, opts ...grpc.CallOption) (*WriteFileAtResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(WriteFileAtResponse)
+	err := c.cc.Invoke(ctx, HostService_WriteFileAt_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -288,9 +314,9 @@ func (c *hostServiceClient) Readlink(ctx context.Context, in *ReadlinkRequest, o
 	return out, nil
 }
 
-func (c *hostServiceClient) Link(ctx context.Context, in *LinkRequest, opts ...grpc.CallOption) (*LstatResponse, error) {
+func (c *hostServiceClient) Link(ctx context.Context, in *LinkRequest, opts ...grpc.CallOption) (*LinkResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(LstatResponse)
+	out := new(LinkResponse)
 	err := c.cc.Invoke(ctx, HostService_Link_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
@@ -427,9 +453,28 @@ func (c *hostServiceClient) FileReader(ctx context.Context, in *FileReadRequest,
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
 type HostService_FileReaderClient = grpc.ServerStreamingClient[FileReadResponse]
 
+func (c *hostServiceClient) FileReaderAt(ctx context.Context, in *FileReadAtRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[FileReadAtResponse], error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	stream, err := c.cc.NewStream(ctx, &HostService_ServiceDesc.Streams[1], HostService_FileReaderAt_FullMethodName, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &grpc.GenericClientStream[FileReadAtRequest, FileReadAtResponse]{ClientStream: stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type HostService_FileReaderAtClient = grpc.ServerStreamingClient[FileReadAtResponse]
+
 func (c *hostServiceClient) FileWriter(ctx context.Context, opts ...grpc.CallOption) (grpc.ClientStreamingClient[FileWriteRequest, FileWriteResponse], error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	stream, err := c.cc.NewStream(ctx, &HostService_ServiceDesc.Streams[1], HostService_FileWriter_FullMethodName, cOpts...)
+	stream, err := c.cc.NewStream(ctx, &HostService_ServiceDesc.Streams[2], HostService_FileWriter_FullMethodName, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -439,6 +484,19 @@ func (c *hostServiceClient) FileWriter(ctx context.Context, opts ...grpc.CallOpt
 
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
 type HostService_FileWriterClient = grpc.ClientStreamingClient[FileWriteRequest, FileWriteResponse]
+
+func (c *hostServiceClient) FileWriterAt(ctx context.Context, opts ...grpc.CallOption) (grpc.ClientStreamingClient[FileWriteAtRequest, FileWriteAtResponse], error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	stream, err := c.cc.NewStream(ctx, &HostService_ServiceDesc.Streams[3], HostService_FileWriterAt_FullMethodName, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &grpc.GenericClientStream[FileWriteAtRequest, FileWriteAtResponse]{ClientStream: stream}
+	return x, nil
+}
+
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type HostService_FileWriterAtClient = grpc.ClientStreamingClient[FileWriteAtRequest, FileWriteAtResponse]
 
 func (c *hostServiceClient) Getuid(ctx context.Context, in *GetuidRequest, opts ...grpc.CallOption) (*GetuidResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
@@ -570,7 +628,9 @@ type HostServiceServer interface {
 	// FS Endpoints - Unary Calls
 	ReadDir(context.Context, *ReadDirRequest) (*ReadDirResponse, error)
 	ReadFile(context.Context, *ReadFileRequest) (*ReadFileResponse, error)
+	ReadFileAt(context.Context, *ReadFileAtRequest) (*ReadFileAtResponse, error)
 	WriteFile(context.Context, *WriteFileRequest) (*WriteFileResponse, error)
+	WriteFileAt(context.Context, *WriteFileAtRequest) (*WriteFileAtResponse, error)
 	Stat(context.Context, *StatRequest) (*StatResponse, error)
 	Rename(context.Context, *RenameRequest) (*RenameResponse, error)
 	Remove(context.Context, *RemoveRequest) (*RemoveResponse, error)
@@ -581,11 +641,10 @@ type HostServiceServer interface {
 	Chmod(context.Context, *ChmodRequest) (*ChmodResponse, error)
 	Chown(context.Context, *ChownRequest) (*ChownResponse, error)
 	Chtimes(context.Context, *ChtimesRequest) (*ChtimesResponse, error)
-	// TODO
 	Lchown(context.Context, *LchownRequest) (*LchownResponse, error)
 	Lstat(context.Context, *LstatRequest) (*LstatResponse, error)
 	Readlink(context.Context, *ReadlinkRequest) (*ReadlinkResponse, error)
-	Link(context.Context, *LinkRequest) (*LstatResponse, error)
+	Link(context.Context, *LinkRequest) (*LinkResponse, error)
 	Symlink(context.Context, *SymlinkRequest) (*SymlinkResponse, error)
 	// FS - File Handle Endpoints
 	FileCreate(context.Context, *FileCreateRequest) (*FileCreateResponse, error)
@@ -596,12 +655,13 @@ type HostServiceServer interface {
 	FileSync(context.Context, *FileSyncRequest) (*FileSyncResponse, error)
 	FileClose(context.Context, *FileCloseRequest) (*FileCloseResponse, error)
 	FileTruncate(context.Context, *FileTruncateRequest) (*FileTruncateResponse, error)
-	// TODO
 	FileChmod(context.Context, *FileChmodRequest) (*FileChmodResponse, error)
 	FileChown(context.Context, *FileChownRequest) (*FileChownResponse, error)
-	// FS - Streaming File Ops
+	// FS - Streaming File Ops -
 	FileReader(*FileReadRequest, grpc.ServerStreamingServer[FileReadResponse]) error
+	FileReaderAt(*FileReadAtRequest, grpc.ServerStreamingServer[FileReadAtResponse]) error
 	FileWriter(grpc.ClientStreamingServer[FileWriteRequest, FileWriteResponse]) error
+	FileWriterAt(grpc.ClientStreamingServer[FileWriteAtRequest, FileWriteAtResponse]) error
 	// Env Endpoints
 	Getuid(context.Context, *GetuidRequest) (*GetuidResponse, error)
 	Getgid(context.Context, *GetgidRequest) (*GetgidResponse, error)
@@ -631,8 +691,14 @@ func (UnimplementedHostServiceServer) ReadDir(context.Context, *ReadDirRequest) 
 func (UnimplementedHostServiceServer) ReadFile(context.Context, *ReadFileRequest) (*ReadFileResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ReadFile not implemented")
 }
+func (UnimplementedHostServiceServer) ReadFileAt(context.Context, *ReadFileAtRequest) (*ReadFileAtResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ReadFileAt not implemented")
+}
 func (UnimplementedHostServiceServer) WriteFile(context.Context, *WriteFileRequest) (*WriteFileResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method WriteFile not implemented")
+}
+func (UnimplementedHostServiceServer) WriteFileAt(context.Context, *WriteFileAtRequest) (*WriteFileAtResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method WriteFileAt not implemented")
 }
 func (UnimplementedHostServiceServer) Stat(context.Context, *StatRequest) (*StatResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Stat not implemented")
@@ -673,7 +739,7 @@ func (UnimplementedHostServiceServer) Lstat(context.Context, *LstatRequest) (*Ls
 func (UnimplementedHostServiceServer) Readlink(context.Context, *ReadlinkRequest) (*ReadlinkResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Readlink not implemented")
 }
-func (UnimplementedHostServiceServer) Link(context.Context, *LinkRequest) (*LstatResponse, error) {
+func (UnimplementedHostServiceServer) Link(context.Context, *LinkRequest) (*LinkResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Link not implemented")
 }
 func (UnimplementedHostServiceServer) Symlink(context.Context, *SymlinkRequest) (*SymlinkResponse, error) {
@@ -712,8 +778,14 @@ func (UnimplementedHostServiceServer) FileChown(context.Context, *FileChownReque
 func (UnimplementedHostServiceServer) FileReader(*FileReadRequest, grpc.ServerStreamingServer[FileReadResponse]) error {
 	return status.Errorf(codes.Unimplemented, "method FileReader not implemented")
 }
+func (UnimplementedHostServiceServer) FileReaderAt(*FileReadAtRequest, grpc.ServerStreamingServer[FileReadAtResponse]) error {
+	return status.Errorf(codes.Unimplemented, "method FileReaderAt not implemented")
+}
 func (UnimplementedHostServiceServer) FileWriter(grpc.ClientStreamingServer[FileWriteRequest, FileWriteResponse]) error {
 	return status.Errorf(codes.Unimplemented, "method FileWriter not implemented")
+}
+func (UnimplementedHostServiceServer) FileWriterAt(grpc.ClientStreamingServer[FileWriteAtRequest, FileWriteAtResponse]) error {
+	return status.Errorf(codes.Unimplemented, "method FileWriterAt not implemented")
 }
 func (UnimplementedHostServiceServer) Getuid(context.Context, *GetuidRequest) (*GetuidResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Getuid not implemented")
@@ -808,6 +880,24 @@ func _HostService_ReadFile_Handler(srv interface{}, ctx context.Context, dec fun
 	return interceptor(ctx, in, info, handler)
 }
 
+func _HostService_ReadFileAt_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ReadFileAtRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(HostServiceServer).ReadFileAt(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: HostService_ReadFileAt_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(HostServiceServer).ReadFileAt(ctx, req.(*ReadFileAtRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _HostService_WriteFile_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(WriteFileRequest)
 	if err := dec(in); err != nil {
@@ -822,6 +912,24 @@ func _HostService_WriteFile_Handler(srv interface{}, ctx context.Context, dec fu
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(HostServiceServer).WriteFile(ctx, req.(*WriteFileRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _HostService_WriteFileAt_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(WriteFileAtRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(HostServiceServer).WriteFileAt(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: HostService_WriteFileAt_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(HostServiceServer).WriteFileAt(ctx, req.(*WriteFileAtRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -1287,12 +1395,30 @@ func _HostService_FileReader_Handler(srv interface{}, stream grpc.ServerStream) 
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
 type HostService_FileReaderServer = grpc.ServerStreamingServer[FileReadResponse]
 
+func _HostService_FileReaderAt_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(FileReadAtRequest)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(HostServiceServer).FileReaderAt(m, &grpc.GenericServerStream[FileReadAtRequest, FileReadAtResponse]{ServerStream: stream})
+}
+
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type HostService_FileReaderAtServer = grpc.ServerStreamingServer[FileReadAtResponse]
+
 func _HostService_FileWriter_Handler(srv interface{}, stream grpc.ServerStream) error {
 	return srv.(HostServiceServer).FileWriter(&grpc.GenericServerStream[FileWriteRequest, FileWriteResponse]{ServerStream: stream})
 }
 
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
 type HostService_FileWriterServer = grpc.ClientStreamingServer[FileWriteRequest, FileWriteResponse]
+
+func _HostService_FileWriterAt_Handler(srv interface{}, stream grpc.ServerStream) error {
+	return srv.(HostServiceServer).FileWriterAt(&grpc.GenericServerStream[FileWriteAtRequest, FileWriteAtResponse]{ServerStream: stream})
+}
+
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type HostService_FileWriterAtServer = grpc.ClientStreamingServer[FileWriteAtRequest, FileWriteAtResponse]
 
 func _HostService_Getuid_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(GetuidRequest)
@@ -1526,8 +1652,16 @@ var HostService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _HostService_ReadFile_Handler,
 		},
 		{
+			MethodName: "ReadFileAt",
+			Handler:    _HostService_ReadFileAt_Handler,
+		},
+		{
 			MethodName: "WriteFile",
 			Handler:    _HostService_WriteFile_Handler,
+		},
+		{
+			MethodName: "WriteFileAt",
+			Handler:    _HostService_WriteFileAt_Handler,
 		},
 		{
 			MethodName: "Stat",
@@ -1685,8 +1819,18 @@ var HostService_ServiceDesc = grpc.ServiceDesc{
 			ServerStreams: true,
 		},
 		{
+			StreamName:    "FileReaderAt",
+			Handler:       _HostService_FileReaderAt_Handler,
+			ServerStreams: true,
+		},
+		{
 			StreamName:    "FileWriter",
 			Handler:       _HostService_FileWriter_Handler,
+			ClientStreams: true,
+		},
+		{
+			StreamName:    "FileWriterAt",
+			Handler:       _HostService_FileWriterAt_Handler,
 			ClientStreams: true,
 		},
 	},

@@ -119,31 +119,37 @@ That's it. All existing plugins can now call `GetEnv()`. No plugin code changes 
 
 **Want to add a completely new service?** Same pattern - define proto, generate, implement. The `hostconn` infrastructure handles the connection plumbing.
 
-### 5. **Client Identification for Capability-Based Security**
+### 5. **Automatic Client Identification for Capability-Based Security**
 
 Here's where it gets really interesting for end users:
 
 ```go
-// Plugin gets its client ID when establishing host services
+// Plugin establishes host services with standard boilerplate
 func (p *Plugin) EstablishHostServices(hostServiceID uint32) (hostserve.ClientID, error) {
     conn, _ := p.broker.Dial(hostServiceID)
     client := hostserve.NewHostServiceGRPCClient(hostservev1.NewHostServiceClient(conn))
     p.hostServiceClient = client
-    return client.ClientID(), nil  
+    // Client ID is assigned by the host and tracked automatically
+    return client.ClientID(), nil
 }
 
-// Plugin just makes normal calls - client ID is automatically included
+// Plugin makes normal calls - client ID and request ID are automatically added by the client
 ctx := context.Background()
 entries, _ := hostServiceClient.ReadDir(ctx, "/home/user", "/sensitive-data")
+// The plugin never needs to worry about client/request IDs - handled transparently
 ```
 
 ```go
-// Host service automatically receives and can check client capabilities
+// Host service automatically identifies the client owner from active client tracking
+// Client ID and request ID are extracted from gRPC metadata by request processing helpers
 func (h *HostServices) ReadDir(ctx context.Context, rootDir, path string) ([]fs.DirEntry, error) {
-    clientID := getClientIDFromContext(ctx)  // Extracted from gRPC metadata
+    // Client owner is identified via active client tracking (no manual context values needed)
+    // This enables capability-based security checks:
+
+    clientOwner := getClientOwnerFromContext(ctx)  // Extracted automatically
 
     // Check what this client is allowed to access
-    if !h.capabilities.CanAccess(clientID, rootDir, path) {
+    if !h.capabilities.CanAccess(clientOwner, rootDir, path) {
         return nil, errors.New("access denied")
     }
 
@@ -241,9 +247,9 @@ This demo includes:
 
 ### Example Plugins
 
-**Two test plugins demonstrating different patterns:**
-- **`filelister`**: Lists directory contents and demonstrates file handle operations (`FileOpen`, `FileReader`, `FileClose`) for resource management and streaming large files
-- **`colorlister`**: Reads and displays file contents with ANSI color coding, demonstrates context propagation and client identification patterns
+**Two test plugins demonstrating the majority of host service operations:**
+- **`filelister`**: Comprehensive demonstration of file handle-based operations including `FileOpen`, `FileReader`, `FileSeek`, `FileStat`, `FileClose`, directory operations (`ReadDir`, `Mkdir`), and file management (`FileCreate`, `Rename`, `Remove`). Shows proper resource lifecycle management and streaming for large files.
+- **`colorlister`**: Extensive demonstration of path-based operations, process/user identification (`Getuid`, `Getgid`, `Geteuid`, `Getegid`, `GetGroups`, `Getpid`, `Getppid`), temporary file/directory creation with auto-cleanup (`MkdirTemp`, `FileCreateTemp`), directory operations, and file content reading with ANSI color output. Exercises the majority of the host service API surface.
 
 ### Host Services API
 
@@ -1000,13 +1006,16 @@ hostconn.EstablishHostServices(plugin, hostServices, logger)  // One line!
 
 ## Security: Building Capability-Based Sandboxing
 
-The client identification pattern demonstrated in `colorlister` is the foundation for real security:
+The automatic client identification system provides the foundation for real security through capability-based access control:
 
-### Current Implementation (Demo)
-```go
-// colorlister.go:31
-ctx = context.WithValue(ctx, "client", "cl-plugin")
-```
+### How It Works
+
+**Client Identification Flow:**
+1. Plugin establishes host services via standard boilerplate in `EstablishHostServices`
+2. Host assigns a client ID and registers it in active client tracking
+3. Client automatically adds client ID and request ID to every gRPC call (transparent to plugin code)
+4. Host extracts client ID from gRPC metadata and maps to client owner via active client tracking
+5. All operations are logged with client owner, request ID, and duration for full audit trails
 
 ### Production Implementation (Conceptual)
 
@@ -1021,27 +1030,33 @@ capabilities:
   - env:API_KEY
 ```
 
-**2. Host assigns UUID and loads capabilities:**
+**2. Host loads capabilities and registers client:**
 ```go
+// When plugin connects, assign client ID and load capabilities
 clientID := uuid.New()
 caps := loadCapabilities("plugins/myplugin/manifest.yaml")
-capabilityManager.Register(clientID, caps)
+capabilityManager.Register(clientID, "my-plugin", caps)
 
-ctx := context.WithValue(context.Background(), "clientID", clientID)
+// Register in active client tracking for automatic identification
+activeClients.Register(clientID, "my-plugin")
 ```
 
-**3. Host services enforce capabilities:**
+**3. Plugin makes calls (client ID added automatically):**
+```go
+// Plugin code - no manual client ID management needed
+ctx := context.Background()
+entries, err := hostServiceClient.ReadDir(ctx, rootDir, path)
+// Client ID and request ID are automatically added by the gRPC client
+```
+
+**4. Host services enforce capabilities:**
 ```go
 func (h *HostServices) ReadDir(ctx context.Context, rootDir, path string) ([]fs.DirEntry, error) {
-    clientID := ctx.Value("clientID").(uuid.UUID)
+    // Client owner extracted automatically from gRPC metadata via active client tracking
+    clientOwner := getClientOwnerFromContext(ctx)
 
-    if !capabilityManager.CanRead(clientID, rootDir, path) {
-        h.logger.Warn("Access denied", "client", clientID, "rootDir", rootDir, "path", path)
-        return nil, ErrAccessDenied
-    }
-
-    // Validate rootDir is within allowed boundaries
-    if !isRootDirAllowed(clientID, rootDir) {
+    if !capabilityManager.CanRead(clientOwner, rootDir, path) {
+        h.logger.Warn("Access denied", "client_owner", clientOwner, "rootDir", rootDir, "path", path)
         return nil, ErrAccessDenied
     }
 
@@ -1049,15 +1064,19 @@ func (h *HostServices) ReadDir(ctx context.Context, rootDir, path string) ([]fs.
 }
 ```
 
-**4. Audit trail:**
+**5. Automatic audit trail:**
 ```go
-h.auditLog.Log(AuditEntry{
-    ClientID:  clientID,
-    Action:    "ReadDir",
-    Resource:  path,
-    Allowed:   true,
-    Timestamp: time.Now(),
-})
+// All requests automatically logged at receipt and completion
+// 2025-12-09T20:46:55.171-0500 [INFO]  host: ReadDir request from client:
+//   client=019b05f0-a32c-7b3d-a0f1-5087d232174f
+//   clientOwner=my-plugin
+//   request=019b05f0-a343-7753-93aa-117a437c5321
+//   root_dir=/config path=app.yaml
+// 2025-12-09T20:46:55.171-0500 [INFO]  host: ReadDir completed successfully:
+//   client=019b05f0-a32c-7b3d-a0f1-5087d232174f
+//   clientOwner=my-plugin
+//   request=019b05f0-a343-7753-93aa-117a437c5321
+//   duration_us=120 success=true
 ```
 
 ### What This Enables
@@ -1151,10 +1170,12 @@ hostconn.EstablishHostServices(plugin1, hostServices, logger)
 hostconn.EstablishHostServices(plugin2, hostServices, logger)
 ```
 
-**Pattern**: Context-based client identification (colorlister.go:31)
+**Pattern**: Automatic client identification (transparent to plugin code)
 ```go
-ctx = context.WithValue(ctx, "client", "cl-plugin")
-result := hostServiceClient.ReadDir(ctx, dir)
+// Plugin makes normal calls - client ID and request ID automatically added by gRPC client
+ctx := context.Background()
+entries, err := hostServiceClient.ReadDir(ctx, rootDir, path)
+// Host extracts client owner from gRPC metadata via active client tracking
 ```
 
 **Pattern**: Safe file operations with internal root confinement (host_fs.go:81-121)

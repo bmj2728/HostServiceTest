@@ -172,6 +172,7 @@ This is the foundation for building plugin systems users can trust.
 
 **Latest improvements to the architecture:**
 
+- **Concurrent plugin execution demonstration**: The demo now clearly illustrates real-world plugin behavior with multiple plugins concurrently accessing the host service. Plugins are executed in goroutines, showing interleaved request patterns where one plugin may start first but finish after another. This demonstrates the thread-safe nature of the broker multiplexing and reflects realistic scenarios where a long-running server handles multiple active plugins simultaneously, rather than sequential one-shot execution.
 - **Enhanced request logging and metrics**: Major refactor to add consistency and metrics to all gRPC operations. Each request is logged at receipt and completion with structured fields including client ID, client owner, request ID, microsecond-precision duration, and success indicators. Enables comprehensive performance monitoring, audit trails, and debugging across all host service operations.
 - **Comprehensive filesystem operations**: Full support for symbolic/hard links (`Symlink`, `Link`, `Readlink`, `Lstat`), file permissions (`Chmod`, `Chown`, `Lchown`, `Chtimes`), file management (`Rename`, `Remove`, `RemoveAll`), and process/user identification (`Getpid`, `Getppid`, `Getuid`, `Geteuid`, `Getgid`, `Getegid`, `GetGroups`).
 - **Consistent rootDir + path API pattern**: All file operations accept a `rootDir` (must be absolute) and a `path` (absolute or relative, must not escape rootDir) for clear security boundaries and better path confinement. See the [API Design Patterns](#api-design-patterns) section for details.
@@ -199,11 +200,15 @@ go build -o plugins/colorlister/colorlister ./plugins/colorlister
 ```
 
 You'll see:
-- The host spawning two plugins
-- Plugins calling back to host services to read directories
+- The host spawning two plugins and executing them concurrently
+- Interleaved requests from both plugins demonstrating concurrent host service access
+- `filelister` may start first but finish after `colorlister` - illustrating realistic asynchronous plugin behavior
 - `filelister` demonstrating file handle operations (open, use, close)
 - `colorlister` reading file contents with colored output and context propagation
+- Request logs showing concurrent calls from multiple plugins with proper client identification
 - Clean shutdown with proper connection cleanup
+
+This concurrent execution pattern reflects real-world scenarios where a long-running server handles multiple active plugins simultaneously, rather than sequential execution.
 
 ## Architecture: The Big Picture
 

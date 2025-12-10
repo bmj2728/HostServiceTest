@@ -191,7 +191,7 @@ func withRequestLoggingAndResponse[Req proto.Message, Res proto.Message](
 		hclog.Default().Info(fmt.Sprintf("%s bad request from client", operationName),
 			append(logFields,
 				"error", err, // Why validation failed
-				"duration_ms", metrics.Duration.Milliseconds(), // Time spent in validation
+				"duration_us", metrics.Duration.Microseconds(), // Time spent in validation
 				"success", false, // Explicit failure marker
 			)...)
 
@@ -217,7 +217,7 @@ func withRequestLoggingAndResponse[Req proto.Message, Res proto.Message](
 	// Build completion log with timing and outcome metrics.
 	// Enables performance monitoring, success rate tracking, and error correlation.
 	completionFields := append(logFields,
-		"duration_ms", metrics.Duration.Milliseconds(), // Processing time
+		"duration_us", metrics.Duration.Microseconds(), // Processing time in microseconds
 		"end_time", metrics.EndTime.Format(time.RFC3339Nano), // Completion timestamp
 		"success", metrics.Success, // Success/failure indicator
 	)

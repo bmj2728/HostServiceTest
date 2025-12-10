@@ -5,6 +5,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"time"
 
 	"github.com/bmj2728/hst/shared/pkg/filelister"
 	"github.com/bmj2728/hst/shared/pkg/hostconn"
@@ -93,7 +94,7 @@ func main() {
 	logger := hclog.New(&hclog.LoggerOptions{
 		Name:   "host",
 		Output: os.Stdout,
-		Level:  hclog.Debug,
+		Level:  hclog.Info,
 		Color:  hclog.ForceColor,
 	})
 	hclog.SetDefault(logger)
@@ -215,28 +216,31 @@ func main() {
 	// End plugin 2
 
 	fld := "plugins/filelister"
-	// Test the plugin by listing files in the current directory
-	entries, err := fileLister.ListFiles("/home/brian/GolandProjects/HostServiceTest", fld)
-	if err != nil {
-		logger.Error("Failed to list files", "err", err)
-		os.Exit(1)
-	}
+	go func() {
+		// Test the plugin by listing files in the current directory
+		entries, err := fileLister.ListFiles("/home/brian/GolandProjects/HostServiceTest", fld)
+		if err != nil {
+			logger.Error("Failed to list files", "err", err)
+			os.Exit(1)
+		}
+		logger.Info("Successfully listed files - no color")
+		for _, entry := range entries {
+			fmt.Println(entry)
+		}
+	}()
+	go func() {
+		colorEntries, err := colorlister.ListFiles("/home/brian/GolandProjects/HostServiceTest", "/home/brian/GolandProjects/HostServiceTest")
+		if err != nil {
+			logger.Error("Failed to list files", "err", err)
+			os.Exit(1)
+		}
+		logger.Info("Successfully listed files - with color")
+		for _, entry := range colorEntries {
+			fmt.Println(entry)
+		}
+	}()
 
-	colorEntries, err := colorlister.ListFiles("/home/brian/GolandProjects/HostServiceTest", "/home/brian/GolandProjects/HostServiceTest")
-	if err != nil {
-		logger.Error("Failed to list files", "err", err)
-		os.Exit(1)
-	}
-
-	logger.Info("Successfully listed files - no color")
-	for _, entry := range entries {
-		fmt.Println(entry)
-	}
-
-	logger.Info("Successfully listed files - with color")
-	for _, entry := range colorEntries {
-		fmt.Println(entry)
-	}
+	time.Sleep(1 * time.Second)
 	// Clean shutdown - disconnect from host services
 	logger.Info("Shutting down plugins")
 	hostconn.DisconnectHostServices(raw, logger)

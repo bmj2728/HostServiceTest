@@ -96,13 +96,24 @@ Adding a new host service function follows a clear pattern:
    }
    ```
 
-5. **Add gRPC server wrapper** (calls host implementation):
+5. **Add gRPC server wrapper** (calls host implementation with logging and metrics):
    ```go
    func (s *HostServiceGRPCServer) GetEnv(ctx context.Context, req *hostservev1.GetEnvRequest) (*hostservev1.GetEnvResponse, error) {
-       value, err := s.Impl.GetEnv(ctx, req.Key)
-       return &hostservev1.GetEnvResponse{Value: value}, err
+       return processRequestWithResponse(ctx, s, "GetEnv",
+           func(ctx context.Context) ([]any, error) {
+               return extractRequestFields(req)
+           },
+           func(ctx context.Context, hostServices *HostServices) (*hostservev1.GetEnvResponse, error) {
+               value, err := hostServices.GetEnv(ctx, req.Key)
+               if err != nil {
+                   return nil, err
+               }
+               return &hostservev1.GetEnvResponse{Value: value}, nil
+           })
    }
    ```
+
+Note: The new pattern uses `processRequestWithResponse` helper which automatically logs request receipt and completion with metrics (duration, success/failure) for consistent observability across all operations.
 
 That's it. All existing plugins can now call `GetEnv()`. No plugin code changes needed.
 
@@ -155,25 +166,11 @@ This is the foundation for building plugin systems users can trust.
 
 **Latest improvements to the architecture:**
 
-- **Symbolic links and hard links**: Full support for creating, reading, and managing symbolic and hard links via `Symlink`, `Link`, `Readlink`, and `Lstat` operations. Essential for configuration management and shared resources.
-- **File permissions and ownership**: Comprehensive permission management with both path-based (`Chmod`, `Chown`, `Lchown`, `Chtimes`) and handle-based (`FileChmod`, `FileChown`) operations. Change permissions, ownership, and timestamps with fine-grained control.
-- **File handle operations**: Added `FileSync` for explicit disk synchronization and `FileTruncate` for resizing files - essential for reliable file operations and data integrity.
-- **Process identification**: Added `Getpid` and `Getppid` methods to retrieve process identifiers, enabling better logging, tracking, and process management.
-- **File and directory management**: Added `Rename`, `Remove`, and `RemoveAll` operations for comprehensive file system management. These destructive operations follow the same security model and path confinement as other operations - use responsibly!
-- **User and group identification**: Added `Getuid`, `Getgid`, `Geteuid`, `Getegid`, and `GetGroups` methods to retrieve user and group identifiers from the host system, enabling plugins to make security-aware decisions without direct system access
-- **Consistent rootDir + path API pattern**: Refactored all file operations (`ReadDir`, `ReadFile`, `WriteFile`, `FileOpen`, `FileCreate`, `Stat`) to consistently accept a `rootDir` (must be absolute) and a `path` (absolute or relative, must not escape rootDir) instead of attempting to identify this data manually. This provides clearer security boundaries and better path confinement. See the [API Design Patterns](#api-design-patterns) section for details.
-- **Convenience stat method**: Added `Stat` method as a simpler alternative to FileOpen -> FileStat -> FileClose pattern for retrieving file information when you just need metadata
-- **Truly temporary files with automated cleanup**: Added `MkdirTemp` and `FileCreateTemp` methods that create temporary directories and files with server-side lifecycle tracking for guaranteed cleanup when connections close - unlike stdlib temps that persist until manual deletion
-- **File positioning**: Implemented `FileSeek` method for standard file seeking operations (similar to `os.File.Seek`)
-- **File information retrieval**: Added `FileStat` method to retrieve file metadata (size, mode, modification time) for open file handles - returns an object nearly identical to `fs.FileInfo`, but always returns nil for `Sys()`
-- **Temp directory access**: Added `TempDir` method to retrieve the system temporary directory path
-- **Additional filesystem operations**: Added `Mkdir`, `MkdirAll`, and `FileCreate` methods to provide complete directory creation and file initialization capabilities
-- **Streaming file operations**: Fully implemented streaming for large files via `FileReader` (server streaming) and `FileWriter` (client streaming) to handle large files efficiently without loading everything into memory
-- **Chunk size constraints**: `FileReader` enforces chunk sizes between 8KB (minimum for performance) and ~3.81MB (maximum due to gRPC 4MB message limits)
-- **File handle management**: Introduced `FileOpen`/`FileClose` endpoints with handle-based operations, enabling better resource management and explicit lifecycle control
-- **Simplified architecture**: Removed `OpenRoots` complexity in favor of cleaner internal path confinement
-- **Consistent naming**: Standardized method names (`FileOpen`, `FileClose`) for better API clarity
-- **Dual access patterns**: Both simple unary operations (for small files) and handle-based streaming (for large files) are now supported
+- **Enhanced request logging and metrics**: Major refactor to add consistency and metrics to all gRPC operations. Each request is logged at receipt and completion with structured fields including client ID, client owner, request ID, microsecond-precision duration, and success indicators. Enables comprehensive performance monitoring, audit trails, and debugging across all host service operations.
+- **Comprehensive filesystem operations**: Full support for symbolic/hard links (`Symlink`, `Link`, `Readlink`, `Lstat`), file permissions (`Chmod`, `Chown`, `Lchown`, `Chtimes`), file management (`Rename`, `Remove`, `RemoveAll`), and process/user identification (`Getpid`, `Getppid`, `Getuid`, `Geteuid`, `Getgid`, `Getegid`, `GetGroups`).
+- **Consistent rootDir + path API pattern**: All file operations accept a `rootDir` (must be absolute) and a `path` (absolute or relative, must not escape rootDir) for clear security boundaries and better path confinement. See the [API Design Patterns](#api-design-patterns) section for details.
+- **Dual access patterns**: Both simple unary operations (for small files) and handle-based streaming operations (for large files) are supported. File handles enable efficient streaming via `FileReader`/`FileWriter` with configurable chunk sizes (8KB to ~3.81MB).
+- **Truly temporary files with automated cleanup**: `MkdirTemp` and `FileCreateTemp` provide server-side lifecycle tracking for automatic cleanup when plugin connections close - no manual deletion needed.
 
 See the [Dual File Access Patterns](#dual-file-access-patterns) section for details on how to use both approaches.
 
@@ -242,66 +239,81 @@ You'll see:
 
 This demo includes:
 
-**Two Example Plugins:**
-- `filelister`: Lists files and demonstrates file handle operations (`FileOpen`/`FileClose`) for resource management
-- `colorlister`: Reads files with colored output, demonstrates context propagation and client identification
+### Example Plugins
 
-**Host Services:**
+**Two test plugins demonstrating different patterns:**
+- **`filelister`**: Lists directory contents and demonstrates file handle operations (`FileOpen`, `FileReader`, `FileClose`) for resource management and streaming large files
+- **`colorlister`**: Reads and displays file contents with ANSI color coding, demonstrates context propagation and client identification patterns
 
-*Simple Unary Operations:*
-- `ReadDir(rootDir, path)`: Read directory contents (unary RPC)
-- `ReadFile(rootDir, path)`: Read file contents (unary RPC)
-- `WriteFile(rootDir, path, data, perm)`: Write file (unary RPC)
-- `Stat(rootDir, path)`: Get file information (size, mode, modification time) for a path - convenience method that doesn't require file handle operations
-- `Lstat(rootDir, path)`: Get file information without following symbolic links - returns info about the link itself
-- `Rename(rootDir, oldPath, newPath)`: Rename or move a file or directory (unary RPC)
-- `Remove(rootDir, path)`: Delete a file or empty directory (unary RPC)
-- `RemoveAll(rootDir, path)`: Recursively delete a directory and its contents (unary RPC) - **use with caution!**
-- `Mkdir(rootDir, name, perm)`: Create a single directory (unary RPC)
-- `MkdirAll(rootDir, path, perm)`: Create directory and all necessary parents (unary RPC)
-- `MkdirTemp(rootDir, pattern)`: Create temporary directory with server-side tracking for automatic cleanup (unary RPC)
-- `FileCreate(rootDir, path)`: Create or truncate a file (unary RPC)
-- `Chmod(rootDir, path, mode)`: Change file mode/permissions (unary RPC)
-- `Chown(rootDir, path, uid, gid)`: Change file ownership (unary RPC)
-- `Lchown(rootDir, path, uid, gid)`: Change file ownership without following symbolic links
-- `Chtimes(rootDir, path, atime, mtime)`: Change file access and modification times (unary RPC)
-- `Readlink(rootDir, path)`: Read the target of a symbolic link (unary RPC)
-- `Link(rootDir, oldPath, newPath)`: Create a hard link (unary RPC)
-- `Symlink(rootDir, oldPath, newPath)`: Create a symbolic link (unary RPC)
-- `GetEnv(key)`: Get environment variable
-- `TempDir()`: Get system temporary directory path
-- `UserCacheDir()`: Get user-specific cache directory (mirrors `os.UserCacheDir`)
-- `UserConfigDir()`: Get user-specific configuration directory (mirrors `os.UserConfigDir`)
-- `UserHomeDir()`: Get user's home directory (mirrors `os.UserHomeDir`)
-- `Getuid()`: Get the user ID of the current process
-- `Getgid()`: Get the group ID of the current process
-- `Geteuid()`: Get the effective user ID of the current process
-- `Getegid()`: Get the effective group ID of the current process
-- `GetGroups()`: Get the list of supplementary group IDs for the current process
-- `Getpid()`: Get the process ID of the current process
-- `Getppid()`: Get the parent process ID of the current process
+### Host Services API
 
-*File Handle Operations (for larger files and streaming):*
-- `FileOpen(rootDir, path, mode, perm)`: Open file and return handle
-- `FileCreateTemp(rootDir, pattern)`: Create temporary file with server-side tracking for automatic cleanup, returns handle
-- `FileSeek(handle, offset, whence)`: Seek to position in file (similar to `os.File.Seek`)
-- `FileStat(handle)`: Get file information (size, mode, modification time) for an open file handle - returns an `fs.FileInfo`-compatible object that always returns nil for `Sys()`
-- `FileSync(handle)`: Sync file contents to disk (similar to `os.File.Sync`)
-- `FileTruncate(handle, size)`: Truncate or extend file to specified size
-- `FileChmod(handle, mode)`: Change permissions on an open file handle
-- `FileChown(handle, uid, gid)`: Change ownership on an open file handle
-- `FileClose(handle)`: Close file handle
-- `FileReader(handle, chunk_size)`: Read file in chunks via server streaming (fully implemented)
-  - Requires `chunk_size` between 8KB and ~3.81MB
-  - Returns an `io.Reader` for progressive file reading
-- `FileWriter(handle, chunks)`: Write file in chunks via client streaming (fully implemented)
+All operations use structured logging with request/completion tracking, client identification, and microsecond-precision metrics.
 
-**Infrastructure:**
-- `hostconn` package: Reusable connection management for any plugin type
-- Clean separation between business logic and infrastructure
-- Proper connection lifecycle (setup → use → teardown)
-- Thread-safe broker multiplexing
-- File handle management for streaming operations
+#### Filesystem Operations (Path-Based)
+
+| Operation | Signature | stdlib Equivalent | Description |
+|-----------|-----------|-------------------|-------------|
+| `ReadDir` | `(ctx, rootDir, path)` | `os.ReadDir` | Read directory contents |
+| `ReadFile` | `(ctx, rootDir, path)` | `os.ReadFile` | Read entire file contents |
+| `WriteFile` | `(ctx, rootDir, path, data, perm)` | `os.WriteFile` | Write entire file contents |
+| `Stat` | `(ctx, rootDir, path)` | `os.Stat` | Get file/directory info |
+| `Lstat` | `(ctx, rootDir, path)` | `os.Lstat` | Get file info without following symlinks |
+| `Rename` | `(ctx, rootDir, oldPath, newPath)` | `os.Rename` | Rename or move file/directory |
+| `Remove` | `(ctx, rootDir, path)` | `os.Remove` | Delete file or empty directory |
+| `RemoveAll` | `(ctx, rootDir, path)` | `os.RemoveAll` | Recursively delete directory and contents |
+| `Mkdir` | `(ctx, rootDir, name, perm)` | `os.Mkdir` | Create single directory |
+| `MkdirAll` | `(ctx, rootDir, path, perm)` | `os.MkdirAll` | Create directory with parents |
+| `MkdirTemp` | `(ctx, rootDir, pattern)` | `os.MkdirTemp` | Create temporary directory (auto-cleanup) |
+| `Chmod` | `(ctx, rootDir, path, mode)` | `os.Chmod` | Change file permissions |
+| `Chown` | `(ctx, rootDir, path, uid, gid)` | `os.Chown` | Change file ownership |
+| `Lchown` | `(ctx, rootDir, path, uid, gid)` | `os.Lchown` | Change ownership without following symlinks |
+| `Chtimes` | `(ctx, rootDir, path, atime, mtime)` | `os.Chtimes` | Change access/modification times |
+| `Readlink` | `(ctx, rootDir, path)` | `os.Readlink` | Read symbolic link target |
+| `Link` | `(ctx, rootDir, oldPath, newPath)` | `os.Link` | Create hard link |
+| `Symlink` | `(ctx, rootDir, oldPath, newPath)` | `os.Symlink` | Create symbolic link |
+
+#### Filesystem Operations (Handle-Based)
+
+| Operation | Signature | stdlib Equivalent | Description |
+|-----------|-----------|-------------------|-------------|
+| `FileOpen` | `(ctx, rootDir, path, flag, perm)` | `os.OpenFile` | Open file and return handle with size |
+| `FileCreate` | `(ctx, rootDir, path)` | `os.Create` | Create or truncate file |
+| `FileCreateTemp` | `(ctx, rootDir, pattern)` | `os.CreateTemp` | Create temporary file (auto-cleanup) |
+| `FileStat` | `(ctx, handle)` | `(*os.File).Stat` | Get file info for open handle |
+| `FileSeek` | `(ctx, handle, offset, whence)` | `(*os.File).Seek` | Seek to position in file |
+| `FileSync` | `(ctx, handle)` | `(*os.File).Sync` | Flush buffered data to disk |
+| `FileTruncate` | `(ctx, handle, size)` | `(*os.File).Truncate` | Resize file to specified size |
+| `FileChmod` | `(ctx, handle, mode)` | `(*os.File).Chmod` | Change permissions on open file |
+| `FileChown` | `(ctx, handle, uid, gid)` | `(*os.File).Chown` | Change ownership on open file |
+| `FileClose` | `(ctx, handle)` | `(*os.File).Close` | Close file handle |
+| `FileReader` | `(ctx, handle, chunkSize)` | `io.Reader` | Stream file contents in chunks (8KB-3.81MB) |
+| `FileWriter` | `(ctx, handle)` | `io.WriteCloser` | Stream write to file |
+
+#### Environment & Process Operations
+
+| Operation | Signature | stdlib Equivalent | Description |
+|-----------|-----------|-------------------|-------------|
+| `GetEnv` | `(ctx, key)` | `os.Getenv` | Get environment variable |
+| `TempDir` | `(ctx)` | `os.TempDir` | Get system temp directory |
+| `UserCacheDir` | `(ctx)` | `os.UserCacheDir` | Get user cache directory |
+| `UserConfigDir` | `(ctx)` | `os.UserConfigDir` | Get user config directory |
+| `UserHomeDir` | `(ctx)` | `os.UserHomeDir` | Get user home directory |
+| `Getuid` | `(ctx)` | `os.Getuid` | Get real user ID |
+| `Getgid` | `(ctx)` | `os.Getgid` | Get real group ID |
+| `Geteuid` | `(ctx)` | `os.Geteuid` | Get effective user ID |
+| `Getegid` | `(ctx)` | `os.Getegid` | Get effective group ID |
+| `GetGroups` | `(ctx)` | `os.Getgroups` | Get supplementary group IDs |
+| `Getpid` | `(ctx)` | `os.Getpid` | Get current process ID |
+| `Getppid` | `(ctx)` | `os.Getppid` | Get parent process ID |
+
+### Infrastructure
+
+- **`hostconn` package**: Reusable connection management for any plugin type
+- **Structured logging**: Request/completion tracking with client ID, request ID, duration (µs), and success indicators
+- **Clean separation**: Business logic separated from gRPC infrastructure
+- **Connection lifecycle**: Proper setup → use → teardown pattern with automatic cleanup
+- **Thread-safe**: Broker multiplexing and concurrent request handling
+- **File handle management**: Server-side tracking with automatic cleanup on disconnect
 
 ### Temporary Files and Directories with Automated Cleanup
 
@@ -889,18 +901,26 @@ func (c *HostServiceGRPCClient) YourNewMethod(ctx context.Context, param1 string
 }
 ```
 
-**Step 5: Add gRPC server wrapper**
+**Step 5: Add gRPC server wrapper with logging and metrics**
 
-In `shared/pkg/hostserve/grpc_server_*.go`, add the server method that calls your implementation:
+In `shared/pkg/hostserve/grpc_server_*.go`, add the server method using the request processing pattern:
 ```go
 func (s *HostServiceGRPCServer) YourNewMethod(ctx context.Context, req *hostservev1.YourNewMethodRequest) (*hostservev1.YourNewMethodResponse, error) {
-    result, err := s.Impl.YourNewMethod(ctx, req.Param1, req.Param2)
-    if err != nil {
-        return nil, err
-    }
-    return &hostservev1.YourNewMethodResponse{Result: result}, nil
+    return processRequestWithResponse(ctx, s, "YourNewMethod",
+        func(ctx context.Context) ([]any, error) {
+            return extractRequestFields(req)
+        },
+        func(ctx context.Context, hostServices *HostServices) (*hostservev1.YourNewMethodResponse, error) {
+            result, err := hostServices.YourNewMethod(ctx, req.Param1, req.Param2)
+            if err != nil {
+                return nil, err
+            }
+            return &hostservev1.YourNewMethodResponse{Result: result}, nil
+        })
 }
 ```
+
+This pattern ensures automatic structured logging at request receipt and completion with client ID, request ID, duration, and success indicators.
 
 **Done!** All plugins can now call your new method. No changes needed to:
 - The broker setup

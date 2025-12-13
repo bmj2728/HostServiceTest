@@ -584,12 +584,12 @@ func (c *HostServiceGRPCClient) FileReadSection(ctx context.Context, handle File
 }
 
 // FileWriteSection writes a specific section of data to a file at the provided offset and returns the number of bytes written.
-func (c *HostServiceGRPCClient) FileWriteSection(ctx context.Context, handle FileHandle, offset int64, length int32, data []byte) (int, error) {
+func (c *HostServiceGRPCClient) FileWriteSection(ctx context.Context, handle FileHandle, offset int64, maxLength int32, data []byte) (int, error) {
 	ctx = addTracingIDsToContext(ctx, c.clientID, NewRequestID())
 	resp, err := c.client.FileWriteSection(ctx, &hostservev1.FileWriteSectionRequest{
 		Handle:    string(handle),
 		Offset:    uint64(offset),
-		MaxLength: uint32(length),
+		MaxLength: uint32(maxLength),
 		Data:      data,
 	})
 	if err != nil {
@@ -617,6 +617,19 @@ func (c *HostServiceGRPCClient) FileReader(ctx context.Context, handle FileHandl
 	return &grpcFileStreamReader{stream: stream}, nil
 }
 
+func (c *HostServiceGRPCClient) FileReaderAt(ctx context.Context, handle FileHandle, offset uint64, chunkSize uint32) (io.Reader, error) {
+	ctx = addTracingIDsToContext(ctx, c.clientID, NewRequestID())
+	stream, err := c.client.FileReaderAt(ctx, &hostservev1.FileReadAtRequest{
+		Handle:    string(handle),
+		Offset:    offset,
+		ChunkSize: chunkSize,
+	})
+	if err != nil {
+		return nil, &HostServiceError{Message: err.Error()}
+	}
+	return &grpcFileStreamReaderAt{stream: stream, offset: offset}, nil
+}
+
 // FileWriter opens a stream to write file data to a remote host, returning an io.WriteCloser for handling the stream.
 // It accepts a context for request lifecycle management and a file handle for identifying the target file.
 // Returns an io.WriteCloser on success or an error if the stream initialization fails.
@@ -627,6 +640,16 @@ func (c *HostServiceGRPCClient) FileWriter(ctx context.Context, handle FileHandl
 		return nil, &HostServiceError{Message: err.Error()}
 	}
 	return &grpcFileStreamWriter{stream: stream, handle: handle}, nil
+}
+
+// FileWriterAt establishes a gRPC stream for writing data to a file at a specified offset, returning an io.WriteCloser.
+func (c *HostServiceGRPCClient) FileWriterAt(ctx context.Context, handle FileHandle, offset int64) (io.WriteCloser, error) {
+	ctx = addTracingIDsToContext(ctx, c.clientID, NewRequestID())
+	stream, err := c.client.FileWriterAt(ctx)
+	if err != nil {
+		return nil, &HostServiceError{Message: err.Error()}
+	}
+	return &grpcFileStreamWriterAt{stream: stream, handle: handle, offset: uint64(offset)}, nil
 }
 
 // MkdirTemp creates a new temporary directory in the specified root directory with a given pattern and returns its path.

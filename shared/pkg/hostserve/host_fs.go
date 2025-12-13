@@ -719,6 +719,39 @@ func (hf *HostFS) FileReader(ctx context.Context, handle FileHandle, chunkSize u
 	return file, nil
 }
 
+// FileReaderAt returns an io.ReaderAt for the specified file handle, starting from the given offset and chunk size.
+// Validates the chunk size and ensures the offset is within the file's size.
+func (hf *HostFS) FileReaderAt(ctx context.Context, handle FileHandle, offset uint64, chunkSize uint32) (io.Reader, error) {
+	// Validate chunk size - return early if invalid
+	if chunkSize < minChunkSize || chunkSize > maxChunkSize {
+		return nil, fmt.Errorf("chunk size must be between %d and %d bytes", minChunkSize, maxChunkSize)
+	}
+	if offset < 0 {
+		return nil, fmt.Errorf("offset must be non-negative")
+	}
+	// Get the file
+	file, err := hf.retrieveOpenFile(ctx, handle)
+	if err != nil {
+		return nil, err
+	}
+	// Ensure the offset is within the file's size'
+	info, err := file.Stat()
+	if err != nil {
+		return nil, fmt.Errorf("failed to retrieve file info: %w", err)
+	}
+	if info.Size() < int64(offset) {
+		return nil, fmt.Errorf("offset %d is beyond the end of the file", offset)
+	}
+	// Seek to the offset
+	no, err := file.Seek(int64(offset), io.SeekStart)
+	if err != nil {
+		return nil, fmt.Errorf("failed to seek to offset %d: %w", offset, err)
+	}
+	hclog.Default().Debug("FileReaderAt set seek", "offset", no, "handle", handle)
+	// return the file with the new offset
+	return file, nil
+}
+
 // FileWriter returns a WriteCloser for the specified file handle, allowing write operations on the file.
 func (hf *HostFS) FileWriter(ctx context.Context, handle FileHandle) (io.WriteCloser, error) {
 
@@ -727,6 +760,30 @@ func (hf *HostFS) FileWriter(ctx context.Context, handle FileHandle) (io.WriteCl
 		return nil, err
 	}
 
+	return file, nil
+}
+
+// FileWriterAt opens a file for writing starting at a specified offset and returns an io.WriteCloser for the file.
+// Returns an error if the offset is negative, the file cannot be found, or seeking to the offset fails.
+func (hf *HostFS) FileWriterAt(ctx context.Context, handle FileHandle, offset int64) (io.WriteCloser, error) {
+	// Check for negative offset
+	if offset < 0 {
+		return nil, fmt.Errorf("offset must be non-negative")
+	}
+
+	// Get the file
+	file, err := hf.retrieveOpenFile(ctx, handle)
+	if err != nil {
+		return nil, err
+	}
+
+	// Seek to the offset
+	no, err := file.Seek(offset, io.SeekStart)
+	if err != nil {
+		return nil, fmt.Errorf("failed to seek to offset %d: %w", offset, err)
+	}
+	hclog.Default().Debug("FileWriterAt set seek", "offset", no, "handle", handle)
+	// return the file with the new offset
 	return file, nil
 }
 

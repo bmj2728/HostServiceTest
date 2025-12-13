@@ -131,12 +131,14 @@ type IHostFS interface {
 	// FileReader returns an io.Reader for sequentially reading data from an open file handle in chunks of the specified size.
 	FileReader(ctx context.Context, handle FileHandle, chunkSize uint32) (io.Reader, error)
 
-	//FileReaderAt(ctx context.Context, handle FileHandle, offset int64, chunkSize uint32) (io.ReaderAt, error)
+	// FileReaderAt returns an io.ReaderAt for the file represented by the handle, starting at the given offset with a chunk size.
+	FileReaderAt(ctx context.Context, handle FileHandle, offset uint64, chunkSize uint32) (io.Reader, error)
 
 	// FileWriter returns an io.WriteCloser to write data to the file identified by the given FileHandle.
 	FileWriter(ctx context.Context, handle FileHandle) (io.WriteCloser, error)
 
-	//FileWriterAt(ctx context.Context, handle FileHandle, offset int64) (io.WriterAt, error)
+	// FileWriterAt returns a WriterAtCloser for the specified file handle, enabling random-access write operations starting at the given offset.
+	FileWriterAt(ctx context.Context, handle FileHandle, offset int64) (io.WriteCloser, error)
 }
 
 // IHostEnv defines a contract for interacting with environment variables in the host system.

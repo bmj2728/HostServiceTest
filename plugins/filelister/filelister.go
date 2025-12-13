@@ -154,6 +154,42 @@ func (f *FileLister) ListFiles(rootDir, path string) ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
+	wo := int64(1024)
+	writerAt, err := f.hostServiceClient.FileWriterAt(ctx, retrieved, wo)
+	if err != nil {
+		hclog.Default().Error("Failed to get file writer", "err", err)
+	}
+	// simulate an actual streaming op
+	for i := 0; i < 10; i++ {
+		txt := fmt.Sprintf("Wrote to file at offset %d\n", i*1024)
+		b, err := writerAt.Write([]byte(txt))
+		if err != nil {
+			hclog.Default().Error("Failed to write to file", "err", err)
+		}
+		hclog.Default().Info("Wrote to file", "bytes", b)
+	}
+	err = writerAt.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	raStream, err := f.hostServiceClient.FileReaderAt(ctx, retrieved, uint64(len(bunchOfBytes)*9), 1024*8)
+	if err != nil {
+		return nil, err
+	}
+	rab := make([]byte, 1024*8)
+	for {
+		n, err := raStream.Read(rab)
+		if err != nil && err != io.EOF {
+			hclog.Default().Error("FileReadAt failed to read file via host service", "root", rootDir, "err", err)
+			break
+		}
+		if n == 0 && err == io.EOF {
+			hclog.Default().Info("FileReadAt reached end of file")
+			break
+		}
+		hclog.Default().Info("FileReadAt read file", "read", n)
+	}
 
 	atWrit, err := f.hostServiceClient.FileWriteSection(ctx, retrieved, 1024*4, 50, []byte("Hi Host!"))
 	if err != nil {

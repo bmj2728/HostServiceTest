@@ -7,6 +7,12 @@ import (
 	"google.golang.org/grpc"
 )
 
+// WriterAtCloser combines the io.WriterAt and io.Closer interfaces, allowing random writes to a resource and its closure.
+type WriterAtCloser interface {
+	io.WriterAt
+	io.Closer
+}
+
 // grpcFileStreamReader is a gRPC-based reader for streaming file data from a server, implementing
 // the io.Reader interface.
 // It buffers data from the stream and tracks the end of the data using the final field.
@@ -84,8 +90,75 @@ func (g *grpcFileStreamReader) Read(p []byte) (n int, err error) {
 	return 0, &HostServiceError{Message: "empty response from stream"}
 }
 
-func (g *grpcFileStreamReader) ReadAt(p []byte, off int64) (n int, err error) {
-	panic("not implemented")
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+//TODO entirely duplicates above to handle different response type - make stream reader generic
+
+type grpcFileStreamReaderAt struct {
+	stream grpc.ServerStreamingClient[hostservev1.FileReadAtResponse]
+	offset uint64
+	buffer []byte
+	final  bool
+}
+
+func (g *grpcFileStreamReaderAt) Read(p []byte) (n int, err error) {
+
+	// Check for zero-length buffer
+	if len(p) == 0 {
+		return 0, nil
+	}
+
+	// If we buffered data on the last read, add it to p first
+	if len(g.buffer) > 0 {
+		n = copy(p, g.buffer)
+		g.buffer = g.buffer[n:]
+
+		// When the buffer is empty and the last read reported EOF, return EOF
+		if len(g.buffer) == 0 && g.final {
+			return n, io.EOF
+		}
+		return n, nil
+	}
+
+	// Read from the stream
+	resp, recvErr := g.stream.Recv()
+
+	// Check if there's data in the response
+	if resp != nil && resp.Chunk != nil && len(resp.Chunk.Data) > 0 {
+		// Copy what fits into p
+		n = copy(p, resp.Chunk.Data)
+
+		// Buffer remaining data
+		if n < len(resp.Chunk.Data) {
+			g.buffer = resp.Chunk.Data[n:]
+			// Track if this was the final chunk
+			g.final = resp.Chunk.IsFinal
+			return n, nil // Return data now, error (if any) on next Read()
+		}
+
+		// All data fit - check if this was the final chunk
+		if resp.Chunk.IsFinal {
+			return n, io.EOF
+		}
+
+		return n, nil
+	}
+
+	// No valid data in response, handle errors
+	if recvErr == io.EOF {
+		return 0, io.EOF
+	}
+	if recvErr != nil {
+		return 0, &HostServiceError{Message: recvErr.Error()}
+	}
+
+	// Check for error in response message
+	if resp != nil && resp.Error != nil {
+		return 0, &HostServiceError{Message: *resp.Error}
+	}
+
+	// Got response but no data and no error - shouldn't happen
+	return 0, &HostServiceError{Message: "empty response from stream"}
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -123,10 +196,6 @@ func (w *grpcFileStreamWriter) Write(p []byte) (n int, err error) {
 	return totalWritten, nil
 }
 
-func (w *grpcFileStreamWriter) WriteAt(p []byte, off int64) (n int, err error) {
-	panic("not implemented")
-}
-
 func (w *grpcFileStreamWriter) sendChunk(data []byte, isFinal bool) error {
 	err := w.stream.Send(&hostservev1.FileWriteRequest{
 		Handle: w.handle.String(),
@@ -144,6 +213,79 @@ func (w *grpcFileStreamWriter) sendChunk(data []byte, isFinal bool) error {
 }
 
 func (w *grpcFileStreamWriter) Close() error {
+	// Send final marker
+	err := w.sendChunk(nil, true)
+	if err != nil {
+		return err
+	}
+
+	// Receive the final response
+	resp, err := w.stream.CloseAndRecv()
+	if err != nil {
+		return &HostServiceError{Message: err.Error()}
+	}
+
+	if resp.Error != nil {
+		return &HostServiceError{Message: *resp.Error}
+	}
+
+	return nil
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+//TODO entirely duplicates above to handle different client types - make stream reader generic
+
+type grpcFileStreamWriterAt struct {
+	stream grpc.ClientStreamingClient[hostservev1.FileWriteAtRequest, hostservev1.FileWriteAtResponse]
+	handle FileHandle
+	offset uint64
+}
+
+func (w *grpcFileStreamWriterAt) Write(p []byte) (n int, err error) {
+	if len(p) == 0 {
+		return 0, nil
+	}
+
+	totalWritten := 0
+	data := p
+
+	// Send data in chunks no larger than maxChunkSize
+	for len(data) > 0 {
+		chunkSize := len(data)
+		if chunkSize > maxChunkSize {
+			chunkSize = maxChunkSize
+		}
+
+		err := w.sendChunk(data[:chunkSize], false)
+		if err != nil {
+			return totalWritten, err
+		}
+
+		data = data[chunkSize:]
+		totalWritten += chunkSize
+	}
+
+	return totalWritten, nil
+}
+
+func (w *grpcFileStreamWriterAt) sendChunk(data []byte, isFinal bool) error {
+	err := w.stream.Send(&hostservev1.FileWriteAtRequest{
+		Handle: w.handle.String(),
+		Chunk: &hostservev1.FileChunk{
+			Data:    data,
+			Offset:  w.offset,
+			IsFinal: isFinal,
+		},
+	})
+	if err != nil {
+		return &HostServiceError{Message: err.Error()}
+	}
+	w.offset += uint64(len(data))
+	return nil
+}
+
+func (w *grpcFileStreamWriterAt) Close() error {
 	// Send final marker
 	err := w.sendChunk(nil, true)
 	if err != nil {

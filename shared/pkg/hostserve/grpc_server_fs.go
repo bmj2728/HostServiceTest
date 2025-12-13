@@ -724,6 +724,69 @@ func (s *HostServiceGRPCServer) FileReader(request *hostservev1.FileReadRequest,
 		})
 }
 
+func (s *HostServiceGRPCServer) FileReaderAt(request *hostservev1.FileReadAtRequest,
+
+	stream grpc.ServerStreamingServer[hostservev1.FileReadAtResponse],
+
+) error {
+
+	// Get file handle
+	fh := FileHandle(request.Handle)
+
+	// Use the streaming wrapper to handle context processing, logging, and metrics
+	return withServerStreamLogging(s,
+		stream,
+		"FileReaderAt",
+		request,
+		// this is the handler for FileReader - see grpc_server_helpers/withServerStreamLogging for invocation
+		func(ctx context.Context, clientID ClientID, reqID RequestID, owner string, logFields []interface{}) error {
+			// Get the file from the open files map
+			reader, err := s.Impl.FileReaderAt(ctx, fh, request.Offset, request.ChunkSize)
+			if err != nil {
+				return stream.Send(&hostservev1.FileReadAtResponse{Error: proto.String(err.Error())})
+			}
+
+			// A buffer to read data into
+			buffer := make([]byte, request.ChunkSize)
+			// Offset is the number of bytes read from the file so far
+			offset := request.Offset
+
+			// Loop by chunk size until EOF
+			for {
+				// Read from the file into the buffer
+				n, err := reader.Read(buffer)
+				// Check the bytes read
+				if n > 0 {
+					// set isFinal to true if we've reached EOF
+					isFinal := err == io.EOF
+					// Send the chunk
+					if sendErr := stream.Send(&hostservev1.FileReadAtResponse{
+						Chunk: &hostservev1.FileChunk{
+							Data:    buffer[:n],
+							Offset:  offset,
+							IsFinal: isFinal,
+						},
+					}); sendErr != nil {
+						// break if we have an error sending the chunk
+						return sendErr
+					}
+					// update the offset
+					offset += uint64(n)
+				}
+				// break if we have reached EOF
+				if err == io.EOF {
+					return nil
+				}
+				// break if we have an error reading from the file - propagating to the client
+				if err != nil {
+					return stream.Send(&hostservev1.FileReadAtResponse{
+						Error: proto.String(err.Error()),
+					})
+				}
+			}
+		})
+}
+
 // FileWriter handles client stream requests to write a file, validating chunks and writing data incrementally to storage.
 func (s *HostServiceGRPCServer) FileWriter(stream grpc.ClientStreamingServer[hostservev1.FileWriteRequest, hostservev1.FileWriteResponse]) error {
 
@@ -807,6 +870,98 @@ func (s *HostServiceGRPCServer) FileWriter(stream grpc.ClientStreamingServer[hos
 			}
 
 			return st.SendAndClose(&hostservev1.FileWriteResponse{
+				BytesWritten: totalBytes,
+			})
+		})
+}
+
+func (s *HostServiceGRPCServer) FileWriterAt(stream grpc.ClientStreamingServer[hostservev1.FileWriteAtRequest, hostservev1.FileWriteAtResponse]) error {
+
+	// Use the client streaming wrapper to handle context processing, logging, and metrics
+	return withClientStreamLogging(s, stream, "FileWriterAt",
+		func(ctx context.Context,
+			clientID ClientID,
+			reqID RequestID,
+			owner string,
+			logFields []interface{},
+			firstReq *hostservev1.FileWriteAtRequest, st grpc.ClientStreamingServer[hostservev1.FileWriteAtRequest, hostservev1.FileWriteAtResponse]) error {
+			totalBytes := uint32(0)
+
+			// Get handle from first request
+			handle := FileHandle(firstReq.Handle)
+
+			// Get the file writer
+			file, err := s.Impl.FileWriterAt(ctx, handle, int64(firstReq.Offset))
+			if err != nil {
+				return st.SendAndClose(&hostservev1.FileWriteAtResponse{Error: proto.String(err.Error())})
+			}
+			info, err := file.(*os.File).Stat()
+			if err != nil {
+				return st.SendAndClose(&hostservev1.FileWriteAtResponse{Error: proto.String(err.Error())})
+			}
+
+			// Log additional file info
+			hclog.Default().Debug("FileWriter processing",
+				append(logFields, "handle", handle, "file", info.Name())...)
+
+			// Write the first chunk
+			if firstReq.Chunk != nil && len(firstReq.Chunk.Data) > 0 {
+				n, err := file.Write(firstReq.Chunk.Data)
+				if err != nil {
+					return st.SendAndClose(&hostservev1.FileWriteAtResponse{
+						Error: proto.String(err.Error()),
+					})
+				}
+				hclog.Default().Debug("Wrote chunk", "bytes", n, "handle", handle)
+				totalBytes += uint32(n)
+			}
+
+			// Now we're grooving - loop until EOF
+			for {
+				req, err := st.Recv()
+				if err == io.EOF {
+					break
+				}
+				if err != nil {
+					return st.SendAndClose(&hostservev1.FileWriteAtResponse{
+						Error: proto.String(err.Error()),
+					})
+				}
+
+				// Validate handle consistency
+				if FileHandle(req.Handle) != handle {
+					return st.SendAndClose(&hostservev1.FileWriteAtResponse{
+						Error: proto.String(fmt.Sprintf("handle mismatch: expected %s, got %s", handle, req.Handle)),
+					})
+				}
+
+				// Write chunk
+				if req.Chunk != nil && len(req.Chunk.Data) > 0 {
+					n, err := file.Write(req.Chunk.Data)
+					if err != nil {
+						return st.SendAndClose(&hostservev1.FileWriteAtResponse{
+							Error: proto.String(err.Error()),
+						})
+					}
+					hclog.Default().Debug("Wrote chunk", "bytes", n, "handle", handle)
+					totalBytes += uint32(n)
+				}
+
+				// Check if final
+				if req.Chunk != nil && req.Chunk.IsFinal {
+					break
+				}
+			}
+
+			// Sync the file
+			err = file.(*os.File).Sync()
+			if err != nil {
+				return st.SendAndClose(&hostservev1.FileWriteAtResponse{
+					Error: proto.String(fmt.Sprintf("failed to sync file: %v", err)),
+				})
+			}
+
+			return st.SendAndClose(&hostservev1.FileWriteAtResponse{
 				BytesWritten: totalBytes,
 			})
 		})

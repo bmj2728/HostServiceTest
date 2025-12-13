@@ -123,7 +123,7 @@ func (f *FileLister) ListFiles(rootDir, path string) ([]string, error) {
 
 	newFileName := filepath.Join(rootDir, "listed_files.txt")
 
-	fh2, sz2, err := f.hostServiceClient.FileOpen(ctx, rootDir, "listed_files.txt", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0644)
+	fh2, sz2, err := f.hostServiceClient.FileOpen(ctx, rootDir, "listed_files.txt", os.O_RDWR|os.O_CREATE, 0644)
 	if err != nil {
 		hclog.Default().Error("Failed to open file via host service", "root", rootDir, "err", err)
 	}
@@ -155,7 +155,18 @@ func (f *FileLister) ListFiles(rootDir, path string) ([]string, error) {
 		return nil, err
 	}
 
-	atDat, err := f.hostServiceClient.FileReadSection(ctx, retrieved, 1024*4, 1024*8)
+	atWrit, err := f.hostServiceClient.FileWriteSection(ctx, retrieved, 1024*4, 50, []byte("Hi Host!"))
+	if err != nil {
+		return nil, err
+	}
+	hclog.Default().Info("Wrote to file section", "bytes_written", atWrit)
+
+	err = f.hostServiceClient.FileSync(ctx, retrieved)
+	if err != nil {
+		hclog.Default().Error("Failed to sync file", "err", err)
+	}
+
+	atDat, err := f.hostServiceClient.FileReadSection(ctx, retrieved, 1024*4, int32(atWrit))
 	if err != nil {
 		hclog.Default().Error("Failed to read file section", "err", err)
 	}

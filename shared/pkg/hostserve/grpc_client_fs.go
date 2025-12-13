@@ -583,6 +583,27 @@ func (c *HostServiceGRPCClient) FileReadSection(ctx context.Context, handle File
 	return resp.Contents, nil
 }
 
+// FileWriteSection writes a specific section of data to a file at the provided offset and returns the number of bytes written.
+func (c *HostServiceGRPCClient) FileWriteSection(ctx context.Context, handle FileHandle, offset int64, length int32, data []byte) (int, error) {
+	ctx = addTracingIDsToContext(ctx, c.clientID, NewRequestID())
+	resp, err := c.client.FileWriteSection(ctx, &hostservev1.FileWriteSectionRequest{
+		Handle:    string(handle),
+		Offset:    uint64(offset),
+		MaxLength: uint32(length),
+		Data:      data,
+	})
+	if err != nil {
+		return 0, &HostServiceError{Message: err.Error()}
+	}
+	if resp == nil {
+		return 0, &HostServiceError{Message: "nil response from FileReadSection"}
+	}
+	if resp.Error != nil {
+		return 0, &HostServiceError{Message: *resp.Error}
+	}
+	return int(resp.BytesWritten), nil
+}
+
 // FileReader provides a gRPC client-side implementation to read files in chunks via a streaming connection.
 func (c *HostServiceGRPCClient) FileReader(ctx context.Context, handle FileHandle, chunkSize uint32) (io.Reader, error) {
 	ctx = addTracingIDsToContext(ctx, c.clientID, NewRequestID())

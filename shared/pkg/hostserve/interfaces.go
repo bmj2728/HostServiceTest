@@ -121,8 +121,8 @@ type IHostFS interface {
 	// FileReadSection reads a specified section of an open file using the provided offset and size, returning the data or an error.
 	FileReadSection(ctx context.Context, handle FileHandle, offset int64, size int32) ([]byte, error)
 
-	//// FileWriteSection writes a specified byte slice to a file starting at the given offset, up to the maximum length.
-	//FileWriteSection(ctx context.Context, handle FileHandle, offset int64, maxLength int32, data []byte) error
+	// FileWriteSection writes a specified byte slice to a file starting at the given offset, up to the maximum length.
+	FileWriteSection(ctx context.Context, handle FileHandle, offset int64, maxLength int32, data []byte) (int, error)
 
 	/*
 		Streaming Ops

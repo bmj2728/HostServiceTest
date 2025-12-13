@@ -636,6 +636,28 @@ func (s *HostServiceGRPCServer) FileReadSection(ctx context.Context, request *ho
 	return response, nil
 }
 
+// FileWriteSection handles gRPC requests to write a section of data to a file at a specified offset and length.
+func (s *HostServiceGRPCServer) FileWriteSection(ctx context.Context, request *hostservev1.FileWriteSectionRequest) (*hostservev1.FileWriteSectionResponse, error) {
+	fh := FileHandle(request.Handle)
+
+	response, err := withRequestLoggingAndResponse(s,
+		ctx,
+		"FileWriteSection",
+		request,
+		func(ctx context.Context, req *hostservev1.FileWriteSectionRequest) (*hostservev1.FileWriteSectionResponse, error) {
+			implBytesWritten, implErr := s.Impl.FileWriteSection(ctx, fh, int64(req.Offset), int32(req.MaxLength), req.Data)
+			if implErr != nil {
+				return &hostservev1.FileWriteSectionResponse{Error: proto.String(implErr.Error())}, nil
+			}
+			return &hostservev1.FileWriteSectionResponse{BytesWritten: uint32(implBytesWritten)}, nil
+		},
+	)
+	if err != nil {
+		return &hostservev1.FileWriteSectionResponse{Error: proto.String(err.Error())}, nil
+	}
+	return response, nil
+}
+
 // FileReader streams chunks of a file to the client based on the given file handle and chunk size in the request.
 // The method validates client metadata, fetches the file, reads it in chunks, and streams the data until EOF or error.
 // It sends an error response back to the client if any issues occur during validation, reading, or streaming.

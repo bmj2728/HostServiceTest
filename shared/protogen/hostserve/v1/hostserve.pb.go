@@ -3375,7 +3375,8 @@ func (x *FileWriteSectionRequest) GetPerm() uint32 {
 
 type FileWriteSectionResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Error         *string                `protobuf:"bytes,1,opt,name=error,proto3,oneof" json:"error,omitempty"`
+	BytesWritten  uint32                 `protobuf:"varint,1,opt,name=bytes_written,json=bytesWritten,proto3" json:"bytes_written,omitempty"`
+	Error         *string                `protobuf:"bytes,2,opt,name=error,proto3,oneof" json:"error,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -3408,6 +3409,13 @@ func (x *FileWriteSectionResponse) ProtoReflect() protoreflect.Message {
 // Deprecated: Use FileWriteSectionResponse.ProtoReflect.Descriptor instead.
 func (*FileWriteSectionResponse) Descriptor() ([]byte, []int) {
 	return file_hostserve_v1_hostserve_proto_rawDescGZIP(), []int{62}
+}
+
+func (x *FileWriteSectionResponse) GetBytesWritten() uint32 {
+	if x != nil {
+		return x.BytesWritten
+	}
+	return 0
 }
 
 func (x *FileWriteSectionResponse) GetError() string {
@@ -5141,9 +5149,10 @@ const file_hostserve_v1_hostserve_proto_rawDesc = "" +
 	"\n" +
 	"max_length\x18\x03 \x01(\rR\tmaxLength\x12\x12\n" +
 	"\x04data\x18\x04 \x01(\fR\x04data\x12\x12\n" +
-	"\x04perm\x18\x05 \x01(\rR\x04perm\"?\n" +
-	"\x18FileWriteSectionResponse\x12\x19\n" +
-	"\x05error\x18\x01 \x01(\tH\x00R\x05error\x88\x01\x01B\b\n" +
+	"\x04perm\x18\x05 \x01(\rR\x04perm\"d\n" +
+	"\x18FileWriteSectionResponse\x12#\n" +
+	"\rbytes_written\x18\x01 \x01(\rR\fbytesWritten\x12\x19\n" +
+	"\x05error\x18\x02 \x01(\tH\x00R\x05error\x88\x01\x01B\b\n" +
 	"\x06_error\"H\n" +
 	"\x0fFileReadRequest\x12\x16\n" +
 	"\x06handle\x18\x01 \x01(\tR\x06handle\x12\x1d\n" +

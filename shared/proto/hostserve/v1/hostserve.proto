@@ -420,7 +420,8 @@ message FileWriteSectionRequest {
 }
 
 message FileWriteSectionResponse {
-  optional string error = 1;
+  uint32 bytes_written = 1;
+  optional string error = 2;
 }
 
 // STREAMING OPS

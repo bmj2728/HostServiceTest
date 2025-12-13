@@ -673,12 +673,34 @@ func (hf *HostFS) FileReadSection(ctx context.Context, handle FileHandle, offset
 	if err != nil {
 		return nil, err
 	}
+
 	buf := make([]byte, size)
 	n, err := file.ReadAt(buf, offset)
 	if err != nil {
 		return nil, err
 	}
+
 	return buf[:n], nil
+}
+
+// FileWriteSection writes a section of data to a file at a specific offset, respecting the maximum allowed length.
+// Returns the number of bytes written or an error if the operation fails.
+func (hf *HostFS) FileWriteSection(ctx context.Context, handle FileHandle, offset int64, maxLength int32, data []byte) (int, error) {
+	clientID := getClientIDFromContext(ctx)
+	hclog.Default().Debug("Placeholder Pseudo Cap Check...", "clientID", clientID, "handle", handle, "offset", offset, "maxLength", maxLength, "dataLength", len(data))
+	// Do not write if data exceeds the maximum length
+	if len(data) > int(maxLength) {
+		return 0, fmt.Errorf("data length %d exceeds maximum length %d", len(data), maxLength)
+	}
+	file, err := hf.retrieveOpenFile(ctx, handle)
+	if err != nil {
+		return 0, err
+	}
+	n, err := file.WriteAt(data, offset)
+	if err != nil {
+		return 0, err
+	}
+	return n, nil
 }
 
 // FileReader returns a reader for the specified file handle, typically os.File/fs.File.

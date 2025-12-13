@@ -142,11 +142,14 @@ func (f *FileLister) ListFiles(rootDir, path string) ([]string, error) {
 	if err != nil {
 		hclog.Default().Error("Failed to get file writer", "err", err)
 	}
-	b, err := writer.Write(bunchOfBytes)
-	if err != nil {
-		hclog.Default().Error("Failed to write to file", "err", err)
+	// simulate an actual streaming op
+	for i := 0; i < 10; i++ {
+		b, err := writer.Write(bunchOfBytes)
+		if err != nil {
+			hclog.Default().Error("Failed to write to file", "err", err)
+		}
+		hclog.Default().Info("Wrote to file", "bytes", b)
 	}
-	hclog.Default().Info("Wrote to file", "bytes", b)
 	err = writer.Close()
 	if err != nil {
 		return nil, err

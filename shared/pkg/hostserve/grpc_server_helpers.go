@@ -106,6 +106,66 @@ func getErrorField(msg proto.Message) string {
 	return ""
 }
 
+// buildLogFields constructs the base logging fields and appends request-specific fields.
+// Returns a slice of key-value pairs suitable for hclog.
+func buildLogFields(clientID ClientID, owner string, reqID RequestID, request proto.Message) []interface{} {
+	baseFields := []interface{}{
+		ctxClientIDKey, clientID,
+		ctxClientOwner, owner,
+		ctxHostRequestIDKey, reqID,
+	}
+
+	// Extract request fields if we have a valid proto message
+	if request != nil {
+		requestFields := extractRequestFields("", request, 0)
+		return append(baseFields, requestFields...)
+	}
+
+	return baseFields
+}
+
+// recordMetrics updates the metrics with end time and duration.
+func recordMetrics(metrics *RequestMetrics) {
+	metrics.EndTime = time.Now()
+	metrics.Duration = metrics.EndTime.Sub(metrics.StartTime)
+}
+
+// logBadRequest logs a context validation error with timing information.
+func logBadRequest(operationName string, logFields []interface{}, err error, metrics *RequestMetrics) {
+	recordMetrics(metrics)
+	metrics.Success = false
+
+	hclog.Default().Info(fmt.Sprintf("%s bad request from client", operationName),
+		append(logFields,
+			"error", err,
+			"duration_us", metrics.Duration.Microseconds(),
+			"success", false,
+		)...)
+}
+
+// logRequestStart logs the beginning of request processing.
+func logRequestStart(operationName string, logFields []interface{}) {
+	hclog.Default().Info(fmt.Sprintf("%s request from client", operationName), logFields...)
+}
+
+// logCompletion logs the completion of a request with metrics and outcome.
+func logCompletion(operationName string, logFields []interface{}, metrics *RequestMetrics, err error) {
+	completionFields := append(logFields,
+		"duration_us", metrics.Duration.Microseconds(),
+		"end_time", metrics.EndTime.Format(time.RFC3339Nano),
+		"success", metrics.Success,
+	)
+
+	if err != nil {
+		completionFields = append(completionFields, "error", err)
+		hclog.Default().Warn(fmt.Sprintf("%s failed", operationName), completionFields...)
+	} else if !metrics.Success {
+		hclog.Default().Warn(fmt.Sprintf("%s failed", operationName), completionFields...)
+	} else {
+		hclog.Default().Info(fmt.Sprintf("%s completed successfully", operationName), completionFields...)
+	}
+}
+
 // withRequestLoggingAndResponse wraps standard unary gRPC request handlers with logging and metrics.
 // This helper handles the complete request lifecycle for handlers that receive one request and return one response.
 //
@@ -152,101 +212,45 @@ func withRequestLoggingAndResponse[Req proto.Message, Res proto.Message](
 	request Req,
 	handler func(context.Context, Req) (Res, error),
 ) (Res, error) {
-	// Initialize zero value for early returns on error
 	var zeroValue Res
-
-	// Start timing the request
 	metrics := &RequestMetrics{StartTime: time.Now()}
 
-	// Process and validate the request context.
-	// Extracts clientID and requestID from gRPC metadata.
-	// Validates both are present and non-empty.
-	// Looks up client owner from active clients registry.
-	// Adds owner to context for downstream handlers.
+	// Process and validate context
 	ctx, clientID, reqID, owner, err := s.processRequestContext(ctx)
+	logFields := buildLogFields(clientID, owner, reqID, request)
 
-	// Build base logging fields for request traceability
-	baseFields := []interface{}{
-		ctxClientIDKey, clientID, // Which client made this request
-		ctxClientOwner, owner, // Owner/identity of the client
-		ctxHostRequestIDKey, reqID, // Unique ID for this specific request
-	}
-
-	// Extract all non-zero fields from the protobuf request using reflection.
-	// This provides complete visibility into request parameters without manual field enumeration.
-	requestFields := extractRequestFields("", request, 0)
-
-	// Combine base context fields with request-specific fields
-	logFields := append(baseFields, requestFields...)
-
-	// Handle context validation errors
+	// Handle validation errors
 	if err != nil {
-		// Record timing for failed validation
-		metrics.EndTime = time.Now()
-		metrics.Duration = metrics.EndTime.Sub(metrics.StartTime)
-		metrics.Success = false
-
-		// Log bad request with full context for debugging client issues.
-		// Even though validation failed, we log whatever context we could extract.
-		hclog.Default().Info(fmt.Sprintf("%s bad request from client", operationName),
-			append(logFields,
-				"error", err, // Why validation failed
-				"duration_us", metrics.Duration.Microseconds(), // Time spent in validation
-				"success", false, // Explicit failure marker
-			)...)
-
-		// Return zero value and validation error
+		logBadRequest(operationName, logFields, err, metrics)
 		return zeroValue, err
 	}
 
-	// Log the validated request start.
-	// Creates audit trail of all valid requests entering the system.
-	hclog.Default().Info(fmt.Sprintf("%s request from client", operationName), logFields...)
+	// Log request start
+	logRequestStart(operationName, logFields)
 
-	// Execute the business logic handler with validated context and request
+	// Execute handler
 	result, handlerErr := handler(ctx, request)
 
-	// Record completion timing and outcome
-	metrics.EndTime = time.Now()
-	metrics.Duration = metrics.EndTime.Sub(metrics.StartTime)
-
-	// Determine success: check both Go error and protobuf Error field
-	// Most handlers return errors in the response's Error field, not as Go errors
+	// Record metrics
+	recordMetrics(metrics)
 	metrics.Success = handlerErr == nil && !hasErrorField(result)
 
-	// Build completion log with timing and outcome metrics.
-	// Enables performance monitoring, success rate tracking, and error correlation.
-	completionFields := append(logFields,
-		"duration_us", metrics.Duration.Microseconds(), // Processing time in microseconds
-		"end_time", metrics.EndTime.Format(time.RFC3339Nano), // Completion timestamp
-		"success", metrics.Success, // Success/failure indicator
-	)
-
-	// Log completion with outcome-specific message
-	if handlerErr != nil {
-		// Add error details for failed requests (Go error path)
-		completionFields = append(completionFields, "error", handlerErr)
-		hclog.Default().Warn(fmt.Sprintf("%s failed", operationName), completionFields...)
-
-		// Return zero value and handler error
-		return zeroValue, handlerErr
-	} else if !metrics.Success {
-		// Handler succeeded at Go level but returned error in response message
-		// Extract error from response for logging
-		if errorMsg := getErrorField(result); errorMsg != "" {
-			completionFields = append(completionFields, "error", errorMsg)
+	// Extract error message from response if present
+	var errMsg error = handlerErr
+	if !metrics.Success && handlerErr == nil {
+		if msg := getErrorField(result); msg != "" {
+			errMsg = fmt.Errorf("%s", msg)
 		}
-		hclog.Default().Warn(fmt.Sprintf("%s failed", operationName), completionFields...)
-
-		// Return handler result (which contains the error in its Error field)
-		return result, nil
-	} else {
-		// Log successful completion
-		hclog.Default().Info(fmt.Sprintf("%s completed successfully", operationName), completionFields...)
-
-		// Return handler result
-		return result, nil
 	}
+
+	// Log completion
+	logCompletion(operationName, logFields, metrics, errMsg)
+
+	// Return result
+	if handlerErr != nil {
+		return zeroValue, handlerErr
+	}
+	return result, nil
 }
 
 // withServerStreamLogging wraps server streaming gRPC handlers with logging and metrics.
@@ -287,66 +291,31 @@ func withServerStreamLogging[Req proto.Message, Res any](
 	request Req,
 	handler func(context.Context, ClientID, RequestID, string, []interface{}) error,
 ) error {
-	// Get context from stream
 	ctx := stream.Context()
-
-	// Start timing
 	metrics := &RequestMetrics{StartTime: time.Now()}
 
 	// Process and validate context
 	ctx, clientID, reqID, owner, err := s.processRequestContext(ctx)
+	logFields := buildLogFields(clientID, owner, reqID, request)
 
-	// Build logging fields
-	baseFields := []interface{}{
-		ctxClientIDKey, clientID,
-		ctxClientOwner, owner,
-		ctxHostRequestIDKey, reqID,
-	}
-	requestFields := extractRequestFields("", request, 0)
-	logFields := append(baseFields, requestFields...)
-
-	// Handle context validation errors
+	// Handle validation errors
 	if err != nil {
-		metrics.EndTime = time.Now()
-		metrics.Duration = metrics.EndTime.Sub(metrics.StartTime)
-		metrics.Success = false
-
-		// Log bad request
-		hclog.Default().Error(fmt.Sprintf("%s bad request from client", operationName),
-			append(logFields,
-				"error", err,
-				"duration_ms", metrics.Duration.Milliseconds(),
-				"success", false,
-			)...)
-
+		logBadRequest(operationName, logFields, err, metrics)
 		return err
 	}
 
-	// Log stream start
-	hclog.Default().Info(fmt.Sprintf("%s request from client", operationName), logFields...)
+	// Log request start
+	logRequestStart(operationName, logFields)
 
-	// Execute streaming handler
+	// Execute handler
 	handlerErr := handler(ctx, clientID, reqID, owner, logFields)
 
-	// Record completion
-	metrics.EndTime = time.Now()
-	metrics.Duration = metrics.EndTime.Sub(metrics.StartTime)
+	// Record metrics
+	recordMetrics(metrics)
 	metrics.Success = handlerErr == nil
 
-	// Build completion fields
-	completionFields := append(logFields,
-		"duration_ms", metrics.Duration.Milliseconds(),
-		"end_time", metrics.EndTime.Format(time.RFC3339Nano),
-		"success", metrics.Success,
-	)
-
 	// Log completion
-	if handlerErr != nil {
-		completionFields = append(completionFields, "error", handlerErr)
-		hclog.Default().Info(fmt.Sprintf("%s failed", operationName), completionFields...)
-	} else {
-		hclog.Default().Info(fmt.Sprintf("%s completed successfully", operationName), completionFields...)
-	}
+	logCompletion(operationName, logFields, metrics, handlerErr)
 
 	return handlerErr
 }
@@ -388,14 +357,10 @@ func withClientStreamLogging[Req any, Res any](
 	operationName string,
 	handler func(context.Context, ClientID, RequestID, string, []interface{}, *Req, grpc.ClientStreamingServer[Req, Res]) error,
 ) error {
-	// Get context from stream
 	ctx := stream.Context()
-
-	// Start timing
 	metrics := &RequestMetrics{StartTime: time.Now()}
 
 	// Receive first message to get request metadata
-	// (we can't process context until we have the request)
 	firstReq, err := stream.Recv()
 	if err != nil {
 		return err
@@ -404,56 +369,31 @@ func withClientStreamLogging[Req any, Res any](
 	// Process and validate context
 	ctx, clientID, reqID, owner, err := s.processRequestContext(ctx)
 
-	// Build logging fields
-	// For client streaming, we log whatever we can extract from the first message
-	baseFields := []interface{}{
-		ctxClientIDKey, clientID,
-		ctxClientOwner, owner,
-		ctxHostRequestIDKey, reqID,
+	// Build logging fields - extract from first message if it's a proto.Message
+	var protoMsg proto.Message
+	if msg, ok := any(firstReq).(proto.Message); ok {
+		protoMsg = msg
 	}
+	logFields := buildLogFields(clientID, owner, reqID, protoMsg)
 
-	// Handle context validation errors
+	// Handle validation errors
 	if err != nil {
-		metrics.EndTime = time.Now()
-		metrics.Duration = metrics.EndTime.Sub(metrics.StartTime)
-		metrics.Success = false
-
-		// Log bad request
-		hclog.Default().Info(fmt.Sprintf("%s bad request from client", operationName),
-			append(baseFields,
-				"error", err,
-				"duration_ms", metrics.Duration.Milliseconds(),
-				"success", false,
-			)...)
-
+		logBadRequest(operationName, logFields, err, metrics)
 		return err
 	}
 
-	// Log stream start
-	hclog.Default().Info(fmt.Sprintf("%s request from client", operationName), baseFields...)
+	// Log request start
+	logRequestStart(operationName, logFields)
 
-	// Execute streaming handler, passing the first request and stream
-	handlerErr := handler(ctx, clientID, reqID, owner, baseFields, firstReq, stream)
+	// Execute handler
+	handlerErr := handler(ctx, clientID, reqID, owner, logFields, firstReq, stream)
 
-	// Record completion
-	metrics.EndTime = time.Now()
-	metrics.Duration = metrics.EndTime.Sub(metrics.StartTime)
+	// Record metrics
+	recordMetrics(metrics)
 	metrics.Success = handlerErr == nil
 
-	// Build completion fields
-	completionFields := append(baseFields,
-		"duration_ms", metrics.Duration.Milliseconds(),
-		"end_time", metrics.EndTime.Format(time.RFC3339Nano),
-		"success", metrics.Success,
-	)
-
 	// Log completion
-	if handlerErr != nil {
-		completionFields = append(completionFields, "error", handlerErr)
-		hclog.Default().Info(fmt.Sprintf("%s failed", operationName), completionFields...)
-	} else {
-		hclog.Default().Info(fmt.Sprintf("%s completed successfully", operationName), completionFields...)
-	}
+	logCompletion(operationName, logFields, metrics, handlerErr)
 
 	return handlerErr
 }

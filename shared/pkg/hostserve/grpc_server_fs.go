@@ -617,7 +617,9 @@ func (s *HostServiceGRPCServer) FileChown(ctx context.Context, request *hostserv
 // The method validates client metadata, fetches the file, reads it in chunks, and streams the data until EOF or error.
 // It sends an error response back to the client if any issues occur during validation, reading, or streaming.
 func (s *HostServiceGRPCServer) FileReader(request *hostservev1.FileReadRequest,
+
 	stream grpc.ServerStreamingServer[hostservev1.FileReadResponse],
+
 ) error {
 
 	// Get file handle

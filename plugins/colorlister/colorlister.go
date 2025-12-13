@@ -106,6 +106,9 @@ func (f *ColorLister) ListFiles(rootDir, path string) ([]string, error) {
 		if entry.IsDir() {
 			entries = append(entries, dirFormat.Wrap(entry.Name(), true))
 		} else {
+			if entry.Name() == "renameme.md" {
+				continue
+			}
 			data, err := f.hostServiceClient.ReadFile(ctx, rootDir, entry.Name())
 			if err != nil {
 				hclog.Default().Error("Failed to read file via host service", "root", rootDir, "path", path,

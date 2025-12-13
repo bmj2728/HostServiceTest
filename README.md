@@ -174,6 +174,7 @@ This is the foundation for building plugin systems users can trust.
 
 - **Concurrent plugin execution demonstration**: The demo now clearly illustrates real-world plugin behavior with multiple plugins concurrently accessing the host service. Plugins are executed in goroutines, showing interleaved request patterns where one plugin may start first but finish after another. This demonstrates the thread-safe nature of the broker multiplexing and reflects realistic scenarios where a long-running server handles multiple active plugins simultaneously, rather than sequential one-shot execution.
 - **Enhanced request logging and metrics**: Major refactor to add consistency and metrics to all gRPC operations. Each request is logged at receipt and completion with structured fields including client ID, client owner, request ID, microsecond-precision duration, and success indicators. Enables comprehensive performance monitoring, audit trails, and debugging across all host service operations.
+- **Random access file operations**: New `FileReadSection` and `FileWriteSection` methods enable efficient random access I/O for reading and writing specific file sections at given offsets without streaming entire files. Ideal for structured binary files, patch updates, and database-like operations. Demonstrated in the `filelister` plugin.
 - **Comprehensive filesystem operations**: Full support for symbolic/hard links (`Symlink`, `Link`, `Readlink`, `Lstat`), file permissions (`Chmod`, `Chown`, `Lchown`, `Chtimes`), file management (`Rename`, `Remove`, `RemoveAll`), and process/user identification (`Getpid`, `Getppid`, `Getuid`, `Geteuid`, `Getgid`, `Getegid`, `GetGroups`).
 - **Consistent rootDir + path API pattern**: All file operations accept a `rootDir` (must be absolute) and a `path` (absolute or relative, must not escape rootDir) for clear security boundaries and better path confinement. See the [API Design Patterns](#api-design-patterns) section for details.
 - **Dual access patterns**: Both simple unary operations (for small files) and handle-based streaming operations (for large files) are supported. File handles enable efficient streaming via `FileReader`/`FileWriter` with configurable chunk sizes (8KB to ~3.81MB).
@@ -299,6 +300,8 @@ All operations use structured logging with request/completion tracking, client i
 | `FileClose` | `(ctx, handle)` | `(*os.File).Close` | Close file handle |
 | `FileReader` | `(ctx, handle, chunkSize)` | `io.Reader` | Stream file contents in chunks (8KB-3.81MB) |
 | `FileWriter` | `(ctx, handle)` | `io.WriteCloser` | Stream write to file |
+| `FileReadSection` | `(ctx, handle, offset, size)` | `(*os.File).ReadAt` | Read specific section of file at offset |
+| `FileWriteSection` | `(ctx, handle, offset, maxLen, data)` | `(*os.File).WriteAt` | Write data to specific section at offset |
 
 #### Environment & Process Operations
 
@@ -560,7 +563,56 @@ const (
 )
 ```
 
-**Note:** See `plugins/filelister/filelister.go` for a complete working example of file handle operations with `FileReader` streaming.
+**Reading and Writing Specific File Sections:**
+
+For random access to specific parts of a file without streaming the entire contents, use `FileReadSection` and `FileWriteSection`:
+
+```go
+// Open file for reading and writing
+handle, _, err := hostServiceClient.FileOpen(ctx, "/home/user", "data.bin", os.O_RDWR|os.O_CREATE, 0644)
+if err != nil {
+    log.Fatal(err)
+}
+defer hostServiceClient.FileClose(ctx, handle)
+
+// Write data to a specific offset in the file
+// Parameters: handle, offset, maxLength, data
+// Returns: number of bytes actually written
+offset := int64(1024 * 4) // Write at 4KB offset
+maxLength := int32(50)    // Maximum bytes to write
+data := []byte("Hi Host!")
+bytesWritten, err := hostServiceClient.FileWriteSection(ctx, handle, offset, maxLength, data)
+if err != nil {
+    log.Fatal(err)
+}
+log.Printf("Wrote %d bytes at offset %d", bytesWritten, offset)
+
+// Ensure data is flushed to disk
+err = hostServiceClient.FileSync(ctx, handle)
+if err != nil {
+    log.Fatal(err)
+}
+
+// Read back the data from the same location
+// Parameters: handle, offset, size
+// Returns: byte slice containing the data read
+readData, err := hostServiceClient.FileReadSection(ctx, handle, offset, int32(bytesWritten))
+if err != nil {
+    log.Fatal(err)
+}
+log.Printf("Read back: %s", string(readData))
+```
+
+**Use Cases for Section Operations:**
+- **Random access I/O**: Read/write specific parts of a file without seeking
+- **Patch updates**: Modify specific sections of binary files
+- **Header manipulation**: Update file headers or metadata at known offsets
+- **Database-like operations**: Read/write records at fixed positions
+- **Concurrent access**: Multiple goroutines reading different sections (with proper synchronization)
+
+These operations are particularly useful when working with structured binary files, databases, or any scenario requiring efficient random access without full file streaming.
+
+**Note:** See `plugins/filelister/filelister.go` (lines 158-173) for a complete working example of file handle operations including `FileReader` streaming and section-based operations.
 
 ### File Management Operations: With Great Power...
 

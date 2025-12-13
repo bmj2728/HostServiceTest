@@ -377,7 +377,7 @@ func (c *HostServiceGRPCClient) RemoveAll(ctx context.Context, rootDir, path str
 		return &HostServiceError{Message: err.Error()}
 	}
 	if resp == nil {
-		return &HostServiceError{Message: "nil response from Remove"}
+		return &HostServiceError{Message: "nil response from RemoveAll"}
 	}
 	if resp.Error != nil {
 		return &HostServiceError{Message: *resp.Error}
@@ -561,6 +561,26 @@ func (c *HostServiceGRPCClient) FileChown(ctx context.Context, handle FileHandle
 		return &HostServiceError{Message: *resp.Error}
 	}
 	return nil
+}
+
+// FileReadSection reads a specified section of an open file identified by the handle, starting at an offset for a given length.
+func (c *HostServiceGRPCClient) FileReadSection(ctx context.Context, handle FileHandle, offset int64, length int32) ([]byte, error) {
+	ctx = addTracingIDsToContext(ctx, c.clientID, NewRequestID())
+	resp, err := c.client.FileReadSection(ctx, &hostservev1.FileReadSectionRequest{
+		Handle: string(handle),
+		Offset: uint64(offset),
+		Length: uint32(length),
+	})
+	if err != nil {
+		return nil, &HostServiceError{Message: err.Error()}
+	}
+	if resp == nil {
+		return nil, &HostServiceError{Message: "nil response from FileReadSection"}
+	}
+	if resp.Error != nil {
+		return nil, &HostServiceError{Message: *resp.Error}
+	}
+	return resp.Contents, nil
 }
 
 // FileReader provides a gRPC client-side implementation to read files in chunks via a streaming connection.

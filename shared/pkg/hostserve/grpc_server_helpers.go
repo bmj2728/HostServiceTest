@@ -298,7 +298,7 @@ func withServerStreamLogging[Req proto.Message, Res any](
 	ctx, clientID, reqID, owner, err := s.processRequestContext(ctx)
 	logFields := buildLogFields(clientID, owner, reqID, request)
 
-	// Handle validation errors
+	// Handle context validation errors - missing client id/owner or request id
 	if err != nil {
 		logBadRequest(operationName, logFields, err, metrics)
 		return err
@@ -307,7 +307,8 @@ func withServerStreamLogging[Req proto.Message, Res any](
 	// Log request start
 	logRequestStart(operationName, logFields)
 
-	// Execute handler
+	// Execute handler - See grpc_server_fs/FileReader for an example closure containing the logic for the operation
+	// handler should encompass all logic to process the request
 	handlerErr := handler(ctx, clientID, reqID, owner, logFields)
 
 	// Record metrics
@@ -369,7 +370,7 @@ func withClientStreamLogging[Req any, Res any](
 	// Process and validate context
 	ctx, clientID, reqID, owner, err := s.processRequestContext(ctx)
 
-	// Build logging fields - extract from first message if it's a proto.Message
+	// Build logging fields - extract from the first message if it's a proto.Message
 	var protoMsg proto.Message
 	if msg, ok := any(firstReq).(proto.Message); ok {
 		protoMsg = msg

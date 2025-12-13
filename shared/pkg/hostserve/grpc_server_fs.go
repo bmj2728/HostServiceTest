@@ -613,6 +613,29 @@ func (s *HostServiceGRPCServer) FileChown(ctx context.Context, request *hostserv
 	return response, nil
 }
 
+// FileReadSection processes a gRPC request to read a specific section of a file on the server based on offset and length.
+func (s *HostServiceGRPCServer) FileReadSection(ctx context.Context, request *hostservev1.FileReadSectionRequest) (*hostservev1.FileReadSectionResponse, error) {
+
+	fh := FileHandle(request.Handle)
+
+	response, err := withRequestLoggingAndResponse(s,
+		ctx,
+		"FileReadSection",
+		request,
+		func(ctx context.Context, req *hostservev1.FileReadSectionRequest) (*hostservev1.FileReadSectionResponse, error) {
+
+			implData, implErr := s.Impl.FileReadSection(ctx, fh, int64(req.Offset), int32(req.Length))
+			if implErr != nil {
+				return &hostservev1.FileReadSectionResponse{Error: proto.String(implErr.Error())}, nil
+			}
+			return &hostservev1.FileReadSectionResponse{Contents: implData}, nil
+		})
+	if err != nil {
+		return &hostservev1.FileReadSectionResponse{Error: proto.String(err.Error())}, nil
+	}
+	return response, nil
+}
+
 // FileReader streams chunks of a file to the client based on the given file handle and chunk size in the request.
 // The method validates client metadata, fetches the file, reads it in chunks, and streams the data until EOF or error.
 // It sends an error response back to the client if any issues occur during validation, reading, or streaming.
@@ -626,7 +649,11 @@ func (s *HostServiceGRPCServer) FileReader(request *hostservev1.FileReadRequest,
 	fh := FileHandle(request.Handle)
 
 	// Use the streaming wrapper to handle context processing, logging, and metrics
-	return withServerStreamLogging(s, stream, "FileReader", request,
+	return withServerStreamLogging(s,
+		stream,
+		"FileReader",
+		request,
+		// this is the handler for FileReader - see grpc_server_helpers/withServerStreamLogging for invocation
 		func(ctx context.Context, clientID ClientID, reqID RequestID, owner string, logFields []interface{}) error {
 			// Get the file from the open files map
 			reader, err := s.Impl.FileReader(ctx, fh, request.ChunkSize)

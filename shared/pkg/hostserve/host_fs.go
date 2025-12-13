@@ -665,6 +665,22 @@ func (hf *HostFS) FileChown(ctx context.Context, handle FileHandle, uid, gid int
 	return file.Chown(uid, gid)
 }
 
+// FileReadSection reads a section of a file from a specific offset and size, returning the data or an error if any occurs.
+func (hf *HostFS) FileReadSection(ctx context.Context, handle FileHandle, offset int64, size int32) ([]byte, error) {
+	clientID := getClientIDFromContext(ctx)
+	hclog.Default().Debug("Placeholder Pseudo Cap Check...", "clientID", clientID, "handle", handle, "offset", offset, "size", size)
+	file, err := hf.retrieveOpenFile(ctx, handle)
+	if err != nil {
+		return nil, err
+	}
+	buf := make([]byte, size)
+	n, err := file.ReadAt(buf, offset)
+	if err != nil {
+		return nil, err
+	}
+	return buf[:n], nil
+}
+
 // FileReader returns a reader for the specified file handle, typically os.File/fs.File.
 // This implementation contains pseudocode for suggested security checks.
 func (hf *HostFS) FileReader(ctx context.Context, handle FileHandle, chunkSize uint32) (io.Reader, error) {

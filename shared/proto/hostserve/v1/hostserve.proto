@@ -37,9 +37,7 @@ service HostService {
   // FS Endpoints - Unary Calls
   rpc ReadDir(ReadDirRequest) returns (ReadDirResponse);
   rpc ReadFile(ReadFileRequest) returns (ReadFileResponse);
-  rpc ReadFileAt(ReadFileAtRequest) returns (ReadFileAtResponse); // unary read of pre-determined size from offset
   rpc WriteFile(WriteFileRequest) returns (WriteFileResponse);
-  rpc WriteFileAt(WriteFileAtRequest) returns (WriteFileAtResponse); // unary write at offset
   rpc Stat(StatRequest) returns (StatResponse); // convenience for open->stat->close
   rpc Rename(RenameRequest) returns (RenameResponse);
   rpc Remove(RemoveRequest) returns (RemoveResponse);
@@ -67,6 +65,8 @@ service HostService {
   rpc FileTruncate(FileTruncateRequest) returns (FileTruncateResponse);
   rpc FileChmod(FileChmodRequest) returns (FileChmodResponse);
   rpc FileChown(FileChownRequest) returns (FileChownResponse);
+  rpc FileReadSection(FileReadSectionRequest) returns (FileReadSectionResponse);
+  rpc FileWriteSection(FileWriteSectionRequest) returns (FileWriteSectionResponse);
 
   // FS - Streaming File Ops -
   rpc FileReader(FileReadRequest) returns (stream FileReadResponse);
@@ -137,18 +137,6 @@ message ReadFileResponse {
   optional string error = 2;
 }
 
-message ReadFileAtRequest {
-  string root_dir = 1;
-  string path = 2;
-  uint64 offset = 3;
-  uint32 read_size = 4;
-}
-
-message ReadFileAtResponse {
-  bytes contents = 1;
-  optional string error = 2;
-}
-
 message WriteFileRequest {
   string root_dir = 1;
   string path = 2;
@@ -157,18 +145,6 @@ message WriteFileRequest {
 }
 
 message WriteFileResponse {
-  optional string error = 1;
-}
-
-message WriteFileAtRequest {
-  string root_dir = 1;
-  string path = 2;
-  uint32 offset = 3;
-  bytes data = 4;
-  uint32 perm = 5;
-}
-
-message WriteFileAtResponse {
   optional string error = 1;
 }
 
@@ -420,6 +396,30 @@ message FileChownRequest {
 }
 
 message FileChownResponse {
+  optional string error = 1;
+}
+
+message FileReadSectionRequest {
+  string handle = 1;
+  uint64 offset = 2;
+  uint32 length = 3;
+}
+
+message FileReadSectionResponse {
+  bytes contents = 1;
+  optional string error = 2;
+}
+
+
+message FileWriteSectionRequest {
+  string handle = 1;
+  uint64 offset = 2;
+  uint32 max_length = 3;
+  bytes data = 4;
+  uint32 perm = 5;
+}
+
+message FileWriteSectionResponse {
   optional string error = 1;
 }
 

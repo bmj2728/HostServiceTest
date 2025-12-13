@@ -155,6 +155,12 @@ func (f *FileLister) ListFiles(rootDir, path string) ([]string, error) {
 		return nil, err
 	}
 
+	atDat, err := f.hostServiceClient.FileReadSection(ctx, retrieved, 1024*4, 1024*8)
+	if err != nil {
+		hclog.Default().Error("Failed to read file section", "err", err)
+	}
+	hclog.Default().Info("Read file section", "section", string(atDat))
+
 	err = f.hostServiceClient.FileSync(ctx, fh)
 	if err != nil {
 		hclog.Default().Error("Failed to sync file", "err", err)

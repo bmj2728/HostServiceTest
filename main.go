@@ -94,7 +94,7 @@ func main() {
 	logger := hclog.New(&hclog.LoggerOptions{
 		Name:   "host",
 		Output: os.Stdout,
-		Level:  hclog.Info,
+		Level:  hclog.Debug,
 		Color:  hclog.ForceColor,
 	})
 	hclog.SetDefault(logger)

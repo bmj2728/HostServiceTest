@@ -68,13 +68,22 @@ type IHostFS interface {
 	// Lchown changes the ownership of a symbolic link at the specified path without following it. Returns an error if failed.
 	Lchown(ctx context.Context, rootDir, path string, uid, gid int) error
 
+	// Lstat retrieves file metadata without following symbolic links for a specified root directory and path.
 	Lstat(ctx context.Context, rootDir, path string) (fs.FileInfo, error)
 
+	// Readlink resolves the target of a symbolic link at the specified path relative to the provided root directory.
+	// Returns the destination of the symbolic link or an error if resolution fails.
 	Readlink(ctx context.Context, rootDir, path string) (string, error)
 
+	// Link creates a hard link named newpath for the file specified by oldpath within the given root directory.
 	Link(ctx context.Context, rootDir, oldpath, newpath string) error
 
+	// Symlink creates a symbolic link from OldPath to NewPath within the given RootDir. Returns an error if the operation fails.
 	Symlink(ctx context.Context, rootDir, oldpath, newpath string) error
+
+	/*
+		Handle Ops
+	*/
 
 	// FileCreate creates a new file at the specified path within the root directory and returns a unique FileHandle.
 	FileCreate(ctx context.Context, rootDir, path string) (FileHandle, error)
@@ -109,6 +118,16 @@ type IHostFS interface {
 	// FileChown changes the ownership of the file associated with the given handle to the specified UID and GID.
 	FileChown(ctx context.Context, handle FileHandle, uid, gid int) error
 
+	// FileReadSection reads a specified section of an open file using the provided offset and size, returning the data or an error.
+	FileReadSection(ctx context.Context, handle FileHandle, offset int64, size int32) ([]byte, error)
+
+	//// FileWriteSection writes a specified byte slice to a file starting at the given offset, up to the maximum length.
+	//FileWriteSection(ctx context.Context, handle FileHandle, offset int64, maxLength int32, data []byte) error
+
+	/*
+		Streaming Ops
+	*/
+
 	// FileReader returns an io.Reader for sequentially reading data from an open file handle in chunks of the specified size.
 	FileReader(ctx context.Context, handle FileHandle, chunkSize uint32) (io.Reader, error)
 
@@ -116,6 +135,8 @@ type IHostFS interface {
 
 	// FileWriter returns an io.WriteCloser to write data to the file identified by the given FileHandle.
 	FileWriter(ctx context.Context, handle FileHandle) (io.WriteCloser, error)
+
+	//FileWriterAt(ctx context.Context, handle FileHandle, offset int64) (io.WriterAt, error)
 }
 
 // IHostEnv defines a contract for interacting with environment variables in the host system.

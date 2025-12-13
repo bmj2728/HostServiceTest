@@ -19,52 +19,52 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	HostService_ReadDir_FullMethodName        = "/hostserve.v1.HostService/ReadDir"
-	HostService_ReadFile_FullMethodName       = "/hostserve.v1.HostService/ReadFile"
-	HostService_ReadFileAt_FullMethodName     = "/hostserve.v1.HostService/ReadFileAt"
-	HostService_WriteFile_FullMethodName      = "/hostserve.v1.HostService/WriteFile"
-	HostService_WriteFileAt_FullMethodName    = "/hostserve.v1.HostService/WriteFileAt"
-	HostService_Stat_FullMethodName           = "/hostserve.v1.HostService/Stat"
-	HostService_Rename_FullMethodName         = "/hostserve.v1.HostService/Rename"
-	HostService_Remove_FullMethodName         = "/hostserve.v1.HostService/Remove"
-	HostService_RemoveAll_FullMethodName      = "/hostserve.v1.HostService/RemoveAll"
-	HostService_Mkdir_FullMethodName          = "/hostserve.v1.HostService/Mkdir"
-	HostService_MkdirAll_FullMethodName       = "/hostserve.v1.HostService/MkdirAll"
-	HostService_MkdirTemp_FullMethodName      = "/hostserve.v1.HostService/MkdirTemp"
-	HostService_Chmod_FullMethodName          = "/hostserve.v1.HostService/Chmod"
-	HostService_Chown_FullMethodName          = "/hostserve.v1.HostService/Chown"
-	HostService_Chtimes_FullMethodName        = "/hostserve.v1.HostService/Chtimes"
-	HostService_Lchown_FullMethodName         = "/hostserve.v1.HostService/Lchown"
-	HostService_Lstat_FullMethodName          = "/hostserve.v1.HostService/Lstat"
-	HostService_Readlink_FullMethodName       = "/hostserve.v1.HostService/Readlink"
-	HostService_Link_FullMethodName           = "/hostserve.v1.HostService/Link"
-	HostService_Symlink_FullMethodName        = "/hostserve.v1.HostService/Symlink"
-	HostService_FileCreate_FullMethodName     = "/hostserve.v1.HostService/FileCreate"
-	HostService_FileCreateTemp_FullMethodName = "/hostserve.v1.HostService/FileCreateTemp"
-	HostService_FileOpen_FullMethodName       = "/hostserve.v1.HostService/FileOpen"
-	HostService_FileStat_FullMethodName       = "/hostserve.v1.HostService/FileStat"
-	HostService_FileSeek_FullMethodName       = "/hostserve.v1.HostService/FileSeek"
-	HostService_FileSync_FullMethodName       = "/hostserve.v1.HostService/FileSync"
-	HostService_FileClose_FullMethodName      = "/hostserve.v1.HostService/FileClose"
-	HostService_FileTruncate_FullMethodName   = "/hostserve.v1.HostService/FileTruncate"
-	HostService_FileChmod_FullMethodName      = "/hostserve.v1.HostService/FileChmod"
-	HostService_FileChown_FullMethodName      = "/hostserve.v1.HostService/FileChown"
-	HostService_FileReader_FullMethodName     = "/hostserve.v1.HostService/FileReader"
-	HostService_FileReaderAt_FullMethodName   = "/hostserve.v1.HostService/FileReaderAt"
-	HostService_FileWriter_FullMethodName     = "/hostserve.v1.HostService/FileWriter"
-	HostService_FileWriterAt_FullMethodName   = "/hostserve.v1.HostService/FileWriterAt"
-	HostService_Getuid_FullMethodName         = "/hostserve.v1.HostService/Getuid"
-	HostService_Getgid_FullMethodName         = "/hostserve.v1.HostService/Getgid"
-	HostService_Geteuid_FullMethodName        = "/hostserve.v1.HostService/Geteuid"
-	HostService_Getegid_FullMethodName        = "/hostserve.v1.HostService/Getegid"
-	HostService_GetGroups_FullMethodName      = "/hostserve.v1.HostService/GetGroups"
-	HostService_Getpid_FullMethodName         = "/hostserve.v1.HostService/Getpid"
-	HostService_Getppid_FullMethodName        = "/hostserve.v1.HostService/Getppid"
-	HostService_GetEnv_FullMethodName         = "/hostserve.v1.HostService/GetEnv"
-	HostService_TempDir_FullMethodName        = "/hostserve.v1.HostService/TempDir"
-	HostService_UserCacheDir_FullMethodName   = "/hostserve.v1.HostService/UserCacheDir"
-	HostService_UserConfigDir_FullMethodName  = "/hostserve.v1.HostService/UserConfigDir"
-	HostService_UserHomeDir_FullMethodName    = "/hostserve.v1.HostService/UserHomeDir"
+	HostService_ReadDir_FullMethodName          = "/hostserve.v1.HostService/ReadDir"
+	HostService_ReadFile_FullMethodName         = "/hostserve.v1.HostService/ReadFile"
+	HostService_WriteFile_FullMethodName        = "/hostserve.v1.HostService/WriteFile"
+	HostService_Stat_FullMethodName             = "/hostserve.v1.HostService/Stat"
+	HostService_Rename_FullMethodName           = "/hostserve.v1.HostService/Rename"
+	HostService_Remove_FullMethodName           = "/hostserve.v1.HostService/Remove"
+	HostService_RemoveAll_FullMethodName        = "/hostserve.v1.HostService/RemoveAll"
+	HostService_Mkdir_FullMethodName            = "/hostserve.v1.HostService/Mkdir"
+	HostService_MkdirAll_FullMethodName         = "/hostserve.v1.HostService/MkdirAll"
+	HostService_MkdirTemp_FullMethodName        = "/hostserve.v1.HostService/MkdirTemp"
+	HostService_Chmod_FullMethodName            = "/hostserve.v1.HostService/Chmod"
+	HostService_Chown_FullMethodName            = "/hostserve.v1.HostService/Chown"
+	HostService_Chtimes_FullMethodName          = "/hostserve.v1.HostService/Chtimes"
+	HostService_Lchown_FullMethodName           = "/hostserve.v1.HostService/Lchown"
+	HostService_Lstat_FullMethodName            = "/hostserve.v1.HostService/Lstat"
+	HostService_Readlink_FullMethodName         = "/hostserve.v1.HostService/Readlink"
+	HostService_Link_FullMethodName             = "/hostserve.v1.HostService/Link"
+	HostService_Symlink_FullMethodName          = "/hostserve.v1.HostService/Symlink"
+	HostService_FileCreate_FullMethodName       = "/hostserve.v1.HostService/FileCreate"
+	HostService_FileCreateTemp_FullMethodName   = "/hostserve.v1.HostService/FileCreateTemp"
+	HostService_FileOpen_FullMethodName         = "/hostserve.v1.HostService/FileOpen"
+	HostService_FileStat_FullMethodName         = "/hostserve.v1.HostService/FileStat"
+	HostService_FileSeek_FullMethodName         = "/hostserve.v1.HostService/FileSeek"
+	HostService_FileSync_FullMethodName         = "/hostserve.v1.HostService/FileSync"
+	HostService_FileClose_FullMethodName        = "/hostserve.v1.HostService/FileClose"
+	HostService_FileTruncate_FullMethodName     = "/hostserve.v1.HostService/FileTruncate"
+	HostService_FileChmod_FullMethodName        = "/hostserve.v1.HostService/FileChmod"
+	HostService_FileChown_FullMethodName        = "/hostserve.v1.HostService/FileChown"
+	HostService_FileReadSection_FullMethodName  = "/hostserve.v1.HostService/FileReadSection"
+	HostService_FileWriteSection_FullMethodName = "/hostserve.v1.HostService/FileWriteSection"
+	HostService_FileReader_FullMethodName       = "/hostserve.v1.HostService/FileReader"
+	HostService_FileReaderAt_FullMethodName     = "/hostserve.v1.HostService/FileReaderAt"
+	HostService_FileWriter_FullMethodName       = "/hostserve.v1.HostService/FileWriter"
+	HostService_FileWriterAt_FullMethodName     = "/hostserve.v1.HostService/FileWriterAt"
+	HostService_Getuid_FullMethodName           = "/hostserve.v1.HostService/Getuid"
+	HostService_Getgid_FullMethodName           = "/hostserve.v1.HostService/Getgid"
+	HostService_Geteuid_FullMethodName          = "/hostserve.v1.HostService/Geteuid"
+	HostService_Getegid_FullMethodName          = "/hostserve.v1.HostService/Getegid"
+	HostService_GetGroups_FullMethodName        = "/hostserve.v1.HostService/GetGroups"
+	HostService_Getpid_FullMethodName           = "/hostserve.v1.HostService/Getpid"
+	HostService_Getppid_FullMethodName          = "/hostserve.v1.HostService/Getppid"
+	HostService_GetEnv_FullMethodName           = "/hostserve.v1.HostService/GetEnv"
+	HostService_TempDir_FullMethodName          = "/hostserve.v1.HostService/TempDir"
+	HostService_UserCacheDir_FullMethodName     = "/hostserve.v1.HostService/UserCacheDir"
+	HostService_UserConfigDir_FullMethodName    = "/hostserve.v1.HostService/UserConfigDir"
+	HostService_UserHomeDir_FullMethodName      = "/hostserve.v1.HostService/UserHomeDir"
 )
 
 // HostServiceClient is the client API for HostService service.
@@ -77,9 +77,7 @@ type HostServiceClient interface {
 	// FS Endpoints - Unary Calls
 	ReadDir(ctx context.Context, in *ReadDirRequest, opts ...grpc.CallOption) (*ReadDirResponse, error)
 	ReadFile(ctx context.Context, in *ReadFileRequest, opts ...grpc.CallOption) (*ReadFileResponse, error)
-	ReadFileAt(ctx context.Context, in *ReadFileAtRequest, opts ...grpc.CallOption) (*ReadFileAtResponse, error)
 	WriteFile(ctx context.Context, in *WriteFileRequest, opts ...grpc.CallOption) (*WriteFileResponse, error)
-	WriteFileAt(ctx context.Context, in *WriteFileAtRequest, opts ...grpc.CallOption) (*WriteFileAtResponse, error)
 	Stat(ctx context.Context, in *StatRequest, opts ...grpc.CallOption) (*StatResponse, error)
 	Rename(ctx context.Context, in *RenameRequest, opts ...grpc.CallOption) (*RenameResponse, error)
 	Remove(ctx context.Context, in *RemoveRequest, opts ...grpc.CallOption) (*RemoveResponse, error)
@@ -106,6 +104,8 @@ type HostServiceClient interface {
 	FileTruncate(ctx context.Context, in *FileTruncateRequest, opts ...grpc.CallOption) (*FileTruncateResponse, error)
 	FileChmod(ctx context.Context, in *FileChmodRequest, opts ...grpc.CallOption) (*FileChmodResponse, error)
 	FileChown(ctx context.Context, in *FileChownRequest, opts ...grpc.CallOption) (*FileChownResponse, error)
+	FileReadSection(ctx context.Context, in *FileReadSectionRequest, opts ...grpc.CallOption) (*FileReadSectionResponse, error)
+	FileWriteSection(ctx context.Context, in *FileWriteSectionRequest, opts ...grpc.CallOption) (*FileWriteSectionResponse, error)
 	// FS - Streaming File Ops -
 	FileReader(ctx context.Context, in *FileReadRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[FileReadResponse], error)
 	FileReaderAt(ctx context.Context, in *FileReadAtRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[FileReadAtResponse], error)
@@ -154,30 +154,10 @@ func (c *hostServiceClient) ReadFile(ctx context.Context, in *ReadFileRequest, o
 	return out, nil
 }
 
-func (c *hostServiceClient) ReadFileAt(ctx context.Context, in *ReadFileAtRequest, opts ...grpc.CallOption) (*ReadFileAtResponse, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(ReadFileAtResponse)
-	err := c.cc.Invoke(ctx, HostService_ReadFileAt_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 func (c *hostServiceClient) WriteFile(ctx context.Context, in *WriteFileRequest, opts ...grpc.CallOption) (*WriteFileResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(WriteFileResponse)
 	err := c.cc.Invoke(ctx, HostService_WriteFile_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *hostServiceClient) WriteFileAt(ctx context.Context, in *WriteFileAtRequest, opts ...grpc.CallOption) (*WriteFileAtResponse, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(WriteFileAtResponse)
-	err := c.cc.Invoke(ctx, HostService_WriteFileAt_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -434,6 +414,26 @@ func (c *hostServiceClient) FileChown(ctx context.Context, in *FileChownRequest,
 	return out, nil
 }
 
+func (c *hostServiceClient) FileReadSection(ctx context.Context, in *FileReadSectionRequest, opts ...grpc.CallOption) (*FileReadSectionResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(FileReadSectionResponse)
+	err := c.cc.Invoke(ctx, HostService_FileReadSection_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *hostServiceClient) FileWriteSection(ctx context.Context, in *FileWriteSectionRequest, opts ...grpc.CallOption) (*FileWriteSectionResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(FileWriteSectionResponse)
+	err := c.cc.Invoke(ctx, HostService_FileWriteSection_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *hostServiceClient) FileReader(ctx context.Context, in *FileReadRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[FileReadResponse], error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	stream, err := c.cc.NewStream(ctx, &HostService_ServiceDesc.Streams[0], HostService_FileReader_FullMethodName, cOpts...)
@@ -628,9 +628,7 @@ type HostServiceServer interface {
 	// FS Endpoints - Unary Calls
 	ReadDir(context.Context, *ReadDirRequest) (*ReadDirResponse, error)
 	ReadFile(context.Context, *ReadFileRequest) (*ReadFileResponse, error)
-	ReadFileAt(context.Context, *ReadFileAtRequest) (*ReadFileAtResponse, error)
 	WriteFile(context.Context, *WriteFileRequest) (*WriteFileResponse, error)
-	WriteFileAt(context.Context, *WriteFileAtRequest) (*WriteFileAtResponse, error)
 	Stat(context.Context, *StatRequest) (*StatResponse, error)
 	Rename(context.Context, *RenameRequest) (*RenameResponse, error)
 	Remove(context.Context, *RemoveRequest) (*RemoveResponse, error)
@@ -657,6 +655,8 @@ type HostServiceServer interface {
 	FileTruncate(context.Context, *FileTruncateRequest) (*FileTruncateResponse, error)
 	FileChmod(context.Context, *FileChmodRequest) (*FileChmodResponse, error)
 	FileChown(context.Context, *FileChownRequest) (*FileChownResponse, error)
+	FileReadSection(context.Context, *FileReadSectionRequest) (*FileReadSectionResponse, error)
+	FileWriteSection(context.Context, *FileWriteSectionRequest) (*FileWriteSectionResponse, error)
 	// FS - Streaming File Ops -
 	FileReader(*FileReadRequest, grpc.ServerStreamingServer[FileReadResponse]) error
 	FileReaderAt(*FileReadAtRequest, grpc.ServerStreamingServer[FileReadAtResponse]) error
@@ -691,14 +691,8 @@ func (UnimplementedHostServiceServer) ReadDir(context.Context, *ReadDirRequest) 
 func (UnimplementedHostServiceServer) ReadFile(context.Context, *ReadFileRequest) (*ReadFileResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ReadFile not implemented")
 }
-func (UnimplementedHostServiceServer) ReadFileAt(context.Context, *ReadFileAtRequest) (*ReadFileAtResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method ReadFileAt not implemented")
-}
 func (UnimplementedHostServiceServer) WriteFile(context.Context, *WriteFileRequest) (*WriteFileResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method WriteFile not implemented")
-}
-func (UnimplementedHostServiceServer) WriteFileAt(context.Context, *WriteFileAtRequest) (*WriteFileAtResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method WriteFileAt not implemented")
 }
 func (UnimplementedHostServiceServer) Stat(context.Context, *StatRequest) (*StatResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Stat not implemented")
@@ -774,6 +768,12 @@ func (UnimplementedHostServiceServer) FileChmod(context.Context, *FileChmodReque
 }
 func (UnimplementedHostServiceServer) FileChown(context.Context, *FileChownRequest) (*FileChownResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method FileChown not implemented")
+}
+func (UnimplementedHostServiceServer) FileReadSection(context.Context, *FileReadSectionRequest) (*FileReadSectionResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method FileReadSection not implemented")
+}
+func (UnimplementedHostServiceServer) FileWriteSection(context.Context, *FileWriteSectionRequest) (*FileWriteSectionResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method FileWriteSection not implemented")
 }
 func (UnimplementedHostServiceServer) FileReader(*FileReadRequest, grpc.ServerStreamingServer[FileReadResponse]) error {
 	return status.Errorf(codes.Unimplemented, "method FileReader not implemented")
@@ -880,24 +880,6 @@ func _HostService_ReadFile_Handler(srv interface{}, ctx context.Context, dec fun
 	return interceptor(ctx, in, info, handler)
 }
 
-func _HostService_ReadFileAt_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ReadFileAtRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(HostServiceServer).ReadFileAt(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: HostService_ReadFileAt_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(HostServiceServer).ReadFileAt(ctx, req.(*ReadFileAtRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 func _HostService_WriteFile_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(WriteFileRequest)
 	if err := dec(in); err != nil {
@@ -912,24 +894,6 @@ func _HostService_WriteFile_Handler(srv interface{}, ctx context.Context, dec fu
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(HostServiceServer).WriteFile(ctx, req.(*WriteFileRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _HostService_WriteFileAt_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(WriteFileAtRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(HostServiceServer).WriteFileAt(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: HostService_WriteFileAt_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(HostServiceServer).WriteFileAt(ctx, req.(*WriteFileAtRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -1384,6 +1348,42 @@ func _HostService_FileChown_Handler(srv interface{}, ctx context.Context, dec fu
 	return interceptor(ctx, in, info, handler)
 }
 
+func _HostService_FileReadSection_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(FileReadSectionRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(HostServiceServer).FileReadSection(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: HostService_FileReadSection_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(HostServiceServer).FileReadSection(ctx, req.(*FileReadSectionRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _HostService_FileWriteSection_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(FileWriteSectionRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(HostServiceServer).FileWriteSection(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: HostService_FileWriteSection_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(HostServiceServer).FileWriteSection(ctx, req.(*FileWriteSectionRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _HostService_FileReader_Handler(srv interface{}, stream grpc.ServerStream) error {
 	m := new(FileReadRequest)
 	if err := stream.RecvMsg(m); err != nil {
@@ -1652,16 +1652,8 @@ var HostService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _HostService_ReadFile_Handler,
 		},
 		{
-			MethodName: "ReadFileAt",
-			Handler:    _HostService_ReadFileAt_Handler,
-		},
-		{
 			MethodName: "WriteFile",
 			Handler:    _HostService_WriteFile_Handler,
-		},
-		{
-			MethodName: "WriteFileAt",
-			Handler:    _HostService_WriteFileAt_Handler,
 		},
 		{
 			MethodName: "Stat",
@@ -1762,6 +1754,14 @@ var HostService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "FileChown",
 			Handler:    _HostService_FileChown_Handler,
+		},
+		{
+			MethodName: "FileReadSection",
+			Handler:    _HostService_FileReadSection_Handler,
+		},
+		{
+			MethodName: "FileWriteSection",
+			Handler:    _HostService_FileWriteSection_Handler,
 		},
 		{
 			MethodName: "Getuid",

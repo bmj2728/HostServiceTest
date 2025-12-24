@@ -1,6 +1,84 @@
 # Decoupled Bidirectional gRPC Plugin Communication: The Missing Example
 
+![Go Version](https://img.shields.io/badge/Go-1.25%2B-00ADD8?logo=go&logoColor=white)
+![Python Version](https://img.shields.io/badge/Python-3.9%2B-3776AB?logo=python&logoColor=white)
+![gRPC](https://img.shields.io/badge/gRPC-Protocol-244c5a?logo=grpc)
+![Protobuf](https://img.shields.io/badge/Protobuf-3-4285F4?logo=google&logoColor=white)
+![License](https://img.shields.io/badge/License-MIT-blue)
+![Polyglot](https://img.shields.io/badge/Polyglot-Go%20%2B%20Python-blueviolet)
+![Architecture](https://img.shields.io/badge/Architecture-Plugin%20System-orange)
+![Status](https://img.shields.io/badge/Status-Demo%20%2F%20Reference-yellow)
+![HashiCorp](https://img.shields.io/badge/Built%20on-go--plugin-7B42BC?logo=hashicorp)
+![Buf](https://img.shields.io/badge/Buf-Protobuf%20Codegen-235EE7?logo=buf)
+
 > **This is a demonstration project** that shows patterns for building production-ready plugin systems with HashiCorp's go-plugin. It fills gaps in existing documentation by showing how to build **decoupled, secure, and extensible** bidirectional communication between host and plugins.
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│  🚀 Production-Ready Patterns  |  🔒 Sandboxed Execution            │
+│  🌐 Cross-Language Support     |  📦 Reusable Infrastructure        │
+│  🎯 One Service, Many Plugins  |  ⚡ Concurrent & Thread-Safe       │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+**At a Glance:**
+- ✅ **3 example plugins** (2 Go, 1 Python) demonstrating real-world patterns
+- ✅ **60+ host service operations** covering filesystem, processes, and more
+- ✅ **Automatic client identification** for capability-based security
+- ✅ **Cross-language compatibility** with plans for full Python SDK
+- ✅ **Production patterns** that scale from demos to real plugin systems
+
+---
+
+## Table of Contents
+
+- [Why This Exists](#why-this-exists)
+- [What Makes This Different (and Cool)](#what-makes-this-different-and-cool)
+  - [1. Clean Separation of Concerns](#1-clean-separation-of-concerns)
+  - [2. One Service Implementation, Multiple Plugins](#2-one-service-implementation-multiple-plugins)
+  - [3. Optional Host Services](#3-optional-host-services)
+  - [4. Easy Extensibility](#4-easy-extensibility)
+  - [5. Automatic Client Identification](#5-automatic-client-identification-for-capability-based-security)
+- [Recent Updates](#recent-updates)
+- [Quick Start](#quick-start)
+  - [Prerequisites](#prerequisites)
+  - [Build and Run](#build-and-run)
+- [Architecture: The Big Picture](#architecture-the-big-picture)
+- [Cross-Language Plugin Support](#cross-language-plugin-support)
+  - [What Works Today](#what-works-today)
+  - [Current Limitations](#current-limitations)
+  - [Future Python SDK](#future-python-sdk-for-full-integration)
+  - [Why Polyglot Matters](#why-polyglot-matters)
+- [What's Implemented](#whats-implemented)
+  - [Example Plugins](#example-plugins)
+  - [Host Services API](#host-services-api)
+  - [Infrastructure](#infrastructure)
+  - [Temporary Files with Automated Cleanup](#temporary-files-and-directories-with-automated-cleanup)
+  - [Dual File Access Patterns](#dual-file-access-patterns)
+  - [File Management Operations](#file-management-operations-with-great-power)
+  - [User and Group Identification](#user-and-group-identification)
+  - [Symbolic and Hard Links](#symbolic-links-and-hard-links)
+  - [File Permissions and Ownership](#file-permissions-and-ownership-operations)
+  - [API Design Patterns](#api-design-patterns)
+- [Project Structure](#project-structure)
+- [How to Extend](#how-to-extend-add-a-new-host-service-function)
+- [How to Add a New Plugin](#how-to-add-a-new-plugin)
+- [Security](#security-building-capability-based-sandboxing)
+- [Technical Deep Dives](#technical-deep-dives)
+  - [The Broker: How Multiplexing Works](#the-broker-how-multiplexing-works-the-secret-sauce)
+  - [Connection Ownership Model](#connection-ownership-model)
+  - [Why hostconn Package Matters](#why-hostconn-package-matters)
+  - [Thread Safety Considerations](#thread-safety-considerations)
+- [Common Patterns from This Codebase](#common-patterns-from-this-codebase)
+- [Comparison to go-plugin Examples](#comparison-to-go-plugin-examples)
+- [Why You Might Want This Pattern](#why-you-might-want-this-pattern)
+- [Protobuf Workflow](#protobuf-workflow)
+- [Learning Resources](#learning-resources)
+- [FAQ](#faq)
+- [Contributing](#contributing)
+- [License](#license)
+
+---
 
 ## Why This Exists
 
@@ -172,6 +250,7 @@ This is the foundation for building plugin systems users can trust.
 
 **Latest improvements to the architecture:**
 
+- **Cross-language plugin support (Python)**: New Python plugin example (`pylelister`) demonstrates that the go-plugin architecture works seamlessly across programming languages. The Python plugin is built as a self-contained executable with PyInstaller, requiring no Python installation on the host system. This showcases protocol compatibility and polyglot plugin architectures. See [Cross-Language Plugin Support](#cross-language-plugin-support) for details and future Python SDK plans.
 - **Concurrent plugin execution demonstration**: The demo now clearly illustrates real-world plugin behavior with multiple plugins concurrently accessing the host service. Plugins are executed in goroutines, showing interleaved request patterns where one plugin may start first but finish after another. This demonstrates the thread-safe nature of the broker multiplexing and reflects realistic scenarios where a long-running server handles multiple active plugins simultaneously, rather than sequential one-shot execution.
 - **Enhanced request logging and metrics**: Major refactor to add consistency and metrics to all gRPC operations. Each request is logged at receipt and completion with structured fields including client ID, client owner, request ID, microsecond-precision duration, and success indicators. Enables comprehensive performance monitoring, audit trails, and debugging across all host service operations.
 - **Random access file operations**: New `FileReadSection` and `FileWriteSection` methods enable efficient random access I/O for reading and writing specific file sections at given offsets without streaming entire files. Ideal for structured binary files, patch updates, and database-like operations. Demonstrated in the `filelister` plugin.
@@ -204,12 +283,13 @@ cd plugins/pylelister && ./build.sh && cd ../..
 ```
 
 You'll see:
-- The host spawning two plugins and executing them concurrently
-- Interleaved requests from both plugins demonstrating concurrent host service access
-- `filelister` may start first but finish after `colorlister` - illustrating realistic asynchronous plugin behavior
-- `filelister` demonstrating file handle operations (open, use, close)
-- `colorlister` reading file contents with colored output and context propagation
-- Request logs showing concurrent calls from multiple plugins with proper client identification
+- The host spawning plugins and executing them concurrently
+- **Go plugins** (`filelister` and `colorlister`): Demonstrating full host service access with interleaved requests
+  - `filelister` demonstrating file handle operations (open, use, close)
+  - `colorlister` reading file contents with colored output and context propagation
+  - Interleaved requests showing concurrent host service access with proper client identification
+- **Python plugin** (`pylelister`, if built): Demonstrating cross-language compatibility with independent file access
+- Request logs showing concurrent calls from multiple plugins
 - Clean shutdown with proper connection cleanup
 
 This concurrent execution pattern reflects real-world scenarios where a long-running server handles multiple active plugins simultaneously, rather than sequential execution.
@@ -217,38 +297,117 @@ This concurrent execution pattern reflects real-world scenarios where a long-run
 ## Architecture: The Big Picture
 
 ```
-┌───────────────────────────────────────────────────────────────────────────┐
-│                            Host Process                                    │
-│                                                                            │
-│  ┌──────────────────────────────────────────────────────────────────┐    │
-│  │         Shared Host Service Implementation                       │    │
-│  │  File I/O: ReadDir, ReadFile, WriteFile, FileOpen, FileClose... │    │
-│  │  Links: Symlink, Link, Readlink, Lstat                          │    │
-│  │  Permissions: Chmod, Chown, Chtimes                             │    │
-│  │  Process: Getpid, Getuid, GetGroups, GetEnv                     │    │
-│  └──────────────────┬───────────────┬───────────────────────────────┘    │
-│                     │               │                                     │
-│       ┌─────────────┴─────┐  ┌──────┴────────────┐                       │
-│       │  Broker 1         │  │  Broker 2         │                       │
-│       │  (multiplexer)    │  │  (multiplexer)    │                       │
-│       └─────────┬─────────┘  └──────┬────────────┘                       │
-│                 │                    │                                    │
-└─────────────────┼────────────────────┼────────────────────────────────────┘
-                  │                    │
-        ┌─────────┴──────────┐  ┌──────┴─────────┐
-        │                    │  │                │
-┌───────┼──────────┐  ┌──────┼──────────┐       │
-│   Plugin 1       │  │   Plugin 2      │       │
-│   (isolated)     │  │   (isolated)    │       │
-│                  │  │                 │       │
-│  Calls ReadDir() │  │ Calls Chmod()   │       │
-│  Calls Symlink() │  │ Calls Getpid()  │       │
-└──────────────────┘  └─────────────────┘       │
-        Both plugins securely call host services
-        with their own capabilities/permissions
+┌────────────────────────────────────────────────────────────────────────────┐
+│                            Host Process                                     │
+│                                                                             │
+│  ┌───────────────────────────────────────────────────────────────────┐    │
+│  │         Shared Host Service Implementation                        │    │
+│  │  File I/O: ReadDir, ReadFile, WriteFile, FileOpen, FileClose...  │    │
+│  │  Links: Symlink, Link, Readlink, Lstat                           │    │
+│  │  Permissions: Chmod, Chown, Chtimes                              │    │
+│  │  Process: Getpid, Getuid, GetGroups, GetEnv                      │    │
+│  └──────────────┬───────────────┬──────────────────────────────────┘    │
+│                 │               │                                         │
+│    ┌────────────┴─────┐  ┌──────┴────────────┐                           │
+│    │  Broker 1        │  │  Broker 2         │                           │
+│    │  (multiplexer)   │  │  (multiplexer)    │                           │
+│    └────────┬─────────┘  └──────┬────────────┘                           │
+│             │                    │                                        │
+└─────────────┼────────────────────┼────────────────────────────────────────┘
+              │                    │
+    ┌─────────┴─────────┐  ┌───────┴──────────┐     ┌──────────────────┐
+    │                   │  │                  │     │                  │
+┌───┼────────────┐  ┌───┼───────────┐  ┌─────┼──────────────┐        │
+│ Go Plugin 1    │  │ Go Plugin 2   │  │ Python Plugin      │        │
+│ (filelister)   │  │ (colorlister) │  │ (pylelister)       │        │
+│                │  │               │  │                    │        │
+│ Uses host      │  │ Uses host     │  │ Independent FS     │        │
+│ services       │  │ services      │  │ access (no broker) │        │
+│ securely       │  │ securely      │  │ (SDK needed)       │        │
+└────────────────┘  └───────────────┘  └────────────────────┘        │
+   ReadDir, Symlink    Chmod, Getpid     Direct OS calls             │
+   via host services   via host services (demonstrates polyglot)     │
 ```
 
-**Key insight**: Plugins are isolated processes. They can't access resources directly. They MUST go through host services, giving you complete control.
+**Key insights**:
+- **Go plugins** are isolated processes using host services for secure, auditable resource access
+- **Python plugin** demonstrates cross-language compatibility; full host service integration requires Python SDK (planned)
+- All plugins run as separate processes with their own capabilities/permissions model
+
+## Cross-Language Plugin Support
+
+This project demonstrates that the go-plugin architecture works across programming languages. The Python plugin (`pylelister`) showcases:
+
+### What Works Today
+
+- **Protocol compatibility**: The stdio handshake and gRPC connection protocol work seamlessly with Python
+- **Self-contained deployment**: PyInstaller bundles Python interpreter and dependencies into a single executable
+- **Zero host dependencies**: No Python installation required on the system running the host
+- **Polyglot architecture**: Go and Python plugins coexist in the same plugin system
+- **Same protobuf definitions**: Protocol definitions work across both languages
+
+### Current Limitations
+
+The Python plugin in this demo **does not use host services**. Instead, it accesses the filesystem directly. This is because:
+
+- Host services require bidirectional gRPC communication (plugin calling back to host)
+- The go-plugin broker protocol (`GRPCBroker.StartStream`) for bidirectional communication would need to be implemented in Python
+- This requires building a comprehensive Python SDK for go-plugin (see below)
+
+For plugins that don't need host callbacks (formatters, analyzers, simple data transforms), this simplified approach works perfectly.
+
+### Future Python SDK for Full Integration
+
+To enable host services from Python plugins, we plan to develop `goplugin-py`, a Python SDK that would provide:
+
+**Planned Features:**
+- **Broker client implementation**: Handle the `GRPCBroker.StartStream` protocol in Python
+- **Connection management**: Track dialable services and multiplexing
+- **Helper functions**: Simplify plugin authoring (mirroring Go's `plugin.Serve`)
+- **Graceful shutdown**: Handle cleanup signals properly
+- **Full host service access**: Python plugins could use all host services just like Go plugins
+
+**Future API (conceptual):**
+```python
+import goplugin
+from host_service_pb2_grpc import HostServiceStub
+
+class MyPlugin(FileListerServicer):
+    def __init__(self, broker):
+        self.broker = broker  # Handles StartStream protocol
+
+    def EstablishHostServices(self, request, context):
+        # Dial host service via broker
+        conn = self.broker.Dial(request.host_service)
+        self.host_stub = HostServiceStub(conn)
+
+        # Now can use host services securely
+        entries = self.host_stub.ReadDir(root_dir, path)
+
+goplugin.serve({
+    'filelister': MyPlugin
+})
+```
+
+This would unlock the full security and architectural benefits of the decoupled host service pattern for Python plugins, including:
+- Sandboxed execution without direct filesystem access
+- Capability-based security
+- Full audit trails
+- Consistent security boundaries across all plugin languages
+
+### Why Polyglot Matters
+
+**For Plugin Authors:**
+- Choose the best language for the task (Python for ML/data, Go for performance, etc.)
+- Leverage existing libraries and ecosystems
+- Lower barrier to entry for contributing plugins
+
+**For System Architects:**
+- Broader plugin ecosystem
+- Language-agnostic security boundaries
+- Consistent plugin management regardless of implementation language
+
+The Python plugin demonstrates the foundation is solid - we just need to build the SDK layer to unlock full functionality.
 
 ## What's Implemented
 
@@ -1234,11 +1393,17 @@ When extending, ensure your implementations are thread-safe.
 
 ## Common Patterns from This Codebase
 
-**Pattern**: One service, multiple plugins (main.go:35-104)
+**Pattern**: One service, multiple plugins
 ```go
+// Create one host service implementation
 hostServices := hostserve.NewHostServices(...)
-hostconn.EstablishHostServices(plugin1, hostServices, logger)
-hostconn.EstablishHostServices(plugin2, hostServices, logger)
+
+// Share with multiple Go plugins - one line each
+hostconn.EstablishHostServices(goPlugin1, hostServices, logger)
+hostconn.EstablishHostServices(goPlugin2, hostServices, logger)
+
+// Python plugins work independently (for now - SDK needed for host services)
+// They follow the same gRPC protocol but access resources directly
 ```
 
 **Pattern**: Automatic client identification (transparent to plugin code)
@@ -1307,7 +1472,8 @@ defer hostServiceClient.FileClose(ctx, handle)
 | Feature | go-plugin Examples | This Project |
 |---------|-------------------|--------------|
 | Bidirectional RPC | Shown but tightly coupled | Clean separation via `hostconn` |
-| Multiple plugins | Not clearly demonstrated | Two plugins sharing services |
+| Multiple plugins | Not clearly demonstrated | Multiple plugins sharing services (Go + Python) |
+| Cross-language support | Limited examples | Python plugin demonstrating polyglot architecture |
 | Service registration | Manual broker management | One-line helper function |
 | Connection lifecycle | Implicit or unclear | Explicit setup/teardown pattern |
 | Security patterns | Not addressed | Client ID → capabilities foundation |
@@ -1322,12 +1488,14 @@ defer hostServiceClient.FileClose(ctx, handle)
 - You want to add capabilities over time without breaking plugins
 - Multiple plugins should share services efficiently
 - You need audit trails of plugin behavior
+- **Plugin authors want to use different programming languages** (Go, Python, etc.)
 
 **You'll save time because:**
 - The infrastructure is reusable across all plugin types
 - Adding new host services is trivial (edit proto → implement)
 - Connection management is handled consistently
 - Security can be added incrementally via context values
+- **Protobuf definitions work across languages** - write once, use everywhere
 
 ## Protobuf Workflow
 
@@ -1370,80 +1538,8 @@ A: Not directly in this model - they're like kids at separate lunch tables. They
 **Q: What about performance?**
 A: gRPC is efficient - basically, it's fast. For high-frequency calls, you'd want connection pooling (examples in comments). The broker overhead is minimal. You're more likely to be bottlenecked by your business logic than the infrastructure.
 
-## Cross-Language Plugin Support
-
-This project demonstrates that the go-plugin architecture works across programming languages. The Python plugin (`pylelister`) showcases:
-
-### What Works Today
-
-- **Protocol compatibility**: The stdio handshake and gRPC connection protocol work seamlessly with Python
-- **Self-contained deployment**: PyInstaller bundles Python interpreter and dependencies into a single executable
-- **Zero host dependencies**: No Python installation required on the system running the host
-- **Polyglot architecture**: Go and Python plugins coexist in the same plugin system
-- **Same protobuf definitions**: Protocol definitions work across both languages
-
-### Current Limitations
-
-The Python plugin in this demo **does not use host services**. Instead, it accesses the filesystem directly. This is because:
-
-- Host services require bidirectional gRPC communication (plugin calling back to host)
-- The go-plugin broker protocol (`GRPCBroker.StartStream`) for bidirectional communication would need to be implemented in Python
-- This requires building a comprehensive Python SDK for go-plugin (see below)
-
-For plugins that don't need host callbacks (formatters, analyzers, simple data transforms), this simplified approach works perfectly.
-
-### Future Python SDK for Full Integration
-
-To enable host services from Python plugins, we plan to develop `goplugin-py`, a Python SDK that would provide:
-
-**Planned Features:**
-- **Broker client implementation**: Handle the `GRPCBroker.StartStream` protocol in Python
-- **Connection management**: Track dialable services and multiplexing
-- **Helper functions**: Simplify plugin authoring (mirroring Go's `plugin.Serve`)
-- **Graceful shutdown**: Handle cleanup signals properly
-- **Full host service access**: Python plugins could use all host services just like Go plugins
-
-**Future API (conceptual):**
-```python
-import goplugin
-from host_service_pb2_grpc import HostServiceStub
-
-class MyPlugin(FileListerServicer):
-    def __init__(self, broker):
-        self.broker = broker  # Handles StartStream protocol
-
-    def EstablishHostServices(self, request, context):
-        # Dial host service via broker
-        conn = self.broker.Dial(request.host_service)
-        self.host_stub = HostServiceStub(conn)
-
-        # Now can use host services securely
-        entries = self.host_stub.ReadDir(root_dir, path)
-
-goplugin.serve({
-    'filelister': MyPlugin
-})
-```
-
-This would unlock the full security and architectural benefits of the decoupled host service pattern for Python plugins, including:
-- Sandboxed execution without direct filesystem access
-- Capability-based security
-- Full audit trails
-- Consistent security boundaries across all plugin languages
-
-### Why Polyglot Matters
-
-**For Plugin Authors:**
-- Choose the best language for the task (Python for ML/data, Go for performance, etc.)
-- Leverage existing libraries and ecosystems
-- Lower barrier to entry for contributing plugins
-
-**For System Architects:**
-- Broader plugin ecosystem
-- Language-agnostic security boundaries
-- Consistent plugin management regardless of implementation language
-
-The Python plugin demonstrates the foundation is solid - we just need to build the SDK layer to unlock full functionality.
+**Q: Can I use Python (or other languages) for plugins?**
+A: Yes! This project includes a working Python plugin example. The go-plugin protocol works across languages. See the [Cross-Language Plugin Support](#cross-language-plugin-support) section for details on what's possible today and plans for a full Python SDK.
 
 ## Contributing
 

@@ -23,6 +23,7 @@ var handshakeConfig = plugin.HandshakeConfig{
 var pluginMap = map[string]plugin.Plugin{
 	"fl-plugin": &filelister.FileListerGRPCPlugin{},
 	"cl-plugin": &filelister.FileListerGRPCPlugin{},
+	"pl-plugin": &filelister.FileListerGRPCPlugin{},
 }
 
 // used for testing nonlocal project paths
@@ -215,6 +216,57 @@ func main() {
 
 	// End plugin 2
 
+	////Start plugin 3
+	plAbspath, err := filepath.Abs("./plugins/pylelister/dist/pylelister")
+	if err != nil {
+		logger.Error("Failed to get absolute path", "err", err)
+		plAbspath = "./plugins/pylelister/dist/pylelister"
+	}
+	plDir, plBin := filepath.Split(plAbspath)
+	logger.Info("Starting plugin", "dir", plDir, "bin", plBin)
+	python := plugin.NewClient(&plugin.ClientConfig{
+		HandshakeConfig:  handshakeConfig,
+		Plugins:          pluginMap,
+		Cmd:              exec.Command(plAbspath),
+		AllowedProtocols: []plugin.Protocol{plugin.ProtocolGRPC},
+		Logger:           logger,
+	})
+	defer python.Kill()
+
+	// Connect via gRPC - porcelain
+	rpcClientPython, err := python.Client()
+	if err != nil {
+		logger.Error("Failed to get RPC client", "err", err)
+		os.Exit(1)
+	}
+
+	// Request the FileLister plugin - the raw interface
+	rawPython, err := rpcClientPython.Dispense("pl-plugin")
+	if err != nil {
+		logger.Error("Failed to dispense plugin", "err", err)
+		os.Exit(1)
+	}
+
+	// Coerce the raw interface to the FileLister type
+	pythonlister := rawPython.(filelister.FileLister)
+
+	//// Setup host services for the plugin (if supported)
+	//cid3, err := hostconn.EstablishHostServiceConnection(rawPython, hostServices, logger)
+	//if err != nil {
+	//	logger.Error("Failed to establish host services", "err", err)
+	//	os.Exit(1)
+	//}
+	//if cid3 != "" {
+	//	err = hostServices.ActiveClients().AddClient(cid3, plBin)
+	//	if err != nil {
+	//		logger.Error("Failed to add client", "err", err)
+	//		os.Exit(1)
+	//	}
+	//	logger.Info("Host services established", "bin", plBin, "cid", cid3)
+	//}
+
+	// End plugin 2
+
 	fld := "plugins/filelister"
 	go func() {
 		// Test the plugin by listing files in the current directory
@@ -228,6 +280,7 @@ func main() {
 			fmt.Println(entry)
 		}
 	}()
+
 	go func() {
 		colorEntries, err := colorlister.ListFiles("/home/brian/GolandProjects/HostServiceTest", "/home/brian/GolandProjects/HostServiceTest")
 		if err != nil {
@@ -236,6 +289,18 @@ func main() {
 		}
 		logger.Info("Successfully listed files - with color")
 		for _, entry := range colorEntries {
+			fmt.Println(entry)
+		}
+	}()
+
+	go func() {
+		pythonEntries, err := pythonlister.ListFiles("/home/brian/GolandProjects/HostServiceTest", "/home/brian/GolandProjects/HostServiceTest")
+		if err != nil {
+			logger.Error("Failed to list files", "err", err)
+			os.Exit(1)
+		}
+		logger.Info("Successfully listed files - with color")
+		for _, entry := range pythonEntries {
 			fmt.Println(entry)
 		}
 	}()

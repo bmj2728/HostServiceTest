@@ -1,0 +1,5 @@
+grpcio==1.68.1
+grpcio-tools==1.68.1
+protobuf==5.28.3
+pyinstaller==6.11.1
+setuptools==75.6.0  # Pin to stable version without pkg_resources warnings

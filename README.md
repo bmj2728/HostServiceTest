@@ -196,6 +196,9 @@ go build -o host .
 go build -o plugins/filelister/filelister ./plugins/filelister
 go build -o plugins/colorlister/colorlister ./plugins/colorlister
 
+# Optional: Build Python plugin (requires Python 3.9+ and pip for building)
+cd plugins/pylelister && ./build.sh && cd ../..
+
 # Run the demo
 ./host
 ```
@@ -253,9 +256,14 @@ This demo includes:
 
 ### Example Plugins
 
-**Two test plugins demonstrating the majority of host service operations:**
+**Three test plugins demonstrating various patterns:**
+
+**Go Plugins (with host services):**
 - **`filelister`**: Comprehensive demonstration of file handle-based operations including `FileOpen`, `FileReader`, `FileSeek`, `FileStat`, `FileClose`, directory operations (`ReadDir`, `Mkdir`), and file management (`FileCreate`, `Rename`, `Remove`). Shows proper resource lifecycle management and streaming for large files.
 - **`colorlister`**: Extensive demonstration of path-based operations, process/user identification (`Getuid`, `Getgid`, `Geteuid`, `Getegid`, `GetGroups`, `Getpid`, `Getppid`), temporary file/directory creation with auto-cleanup (`MkdirTemp`, `FileCreateTemp`), directory operations, and file content reading with ANSI color output. Exercises the majority of the host service API surface.
+
+**Python Plugin (cross-language demonstration):**
+- **`pylelister`**: Python implementation of the FileLister plugin demonstrating **cross-language compatibility**. This plugin operates independently without host services, showcasing that the go-plugin protocol works across languages. Built as a self-contained executable using PyInstaller (~21MB), it bundles Python 3.13 interpreter and all dependencies. No Python installation required on the host system. See [Future Python SDK](#future-python-sdk-for-full-integration) for plans to enable host services from Python plugins.
 
 ### Host Services API
 
@@ -883,13 +891,19 @@ This design provides both convenience (unary operations for simple cases) and ef
 .
 ├── main.go                           # Host: spawns plugins, shares services
 ├── plugins/
-│   ├── filelister/                   # Demo plugin 1
-│   └── colorlister/                  # Demo plugin 2
+│   ├── filelister/                   # Demo plugin 1 (Go)
+│   ├── colorlister/                  # Demo plugin 2 (Go)
+│   └── pylelister/                   # Demo plugin 3 (Python, cross-language)
+│       ├── src/                      # Python plugin source
+│       ├── dist/                     # Built executable (PyInstaller output)
+│       ├── build.sh                  # Build script
+│       └── README.md                 # Python plugin documentation
 ├── shared/
 │   ├── proto/                        # Service definitions
 │   │   ├── filelister/v1/           # Plugin interface
 │   │   └── hostserve/v1/            # Host services (add new services here)
-│   ├── protogen/                     # Generated code (don't edit)
+│   ├── protogen/                     # Generated Go code (don't edit)
+│   ├── protogen_py/                  # Generated Python code (don't edit)
 │   └── pkg/
 │       ├── hostconn/                 # Reusable infrastructure (the magic)
 │       ├── hostserve/                # Host service implementations
@@ -1321,10 +1335,14 @@ When modifying service definitions:
 
 1. Edit `.proto` files in `shared/proto/`
 2. Run `buf generate`
-3. Implement new methods in corresponding Go files
-4. **Never manually edit files in `shared/protogen/`**
+3. Implement new methods in corresponding Go files (and Python if using cross-language plugins)
+4. **Never manually edit files in `shared/protogen/` or `shared/protogen_py/`**
 
-The buf configuration ensures consistent code generation with proper Go module paths. (And yes, you really should never edit the generated files. We know it's tempting. Don't.)
+The buf configuration ensures consistent code generation with proper Go and Python module paths. Generated code goes to:
+- Go: `shared/protogen/` (for Go plugins and host)
+- Python: `shared/protogen_py/` (for Python plugins)
+
+(And yes, you really should never edit the generated files. We know it's tempting. Don't.)
 
 ## Learning Resources
 
@@ -1352,9 +1370,86 @@ A: Not directly in this model - they're like kids at separate lunch tables. They
 **Q: What about performance?**
 A: gRPC is efficient - basically, it's fast. For high-frequency calls, you'd want connection pooling (examples in comments). The broker overhead is minimal. You're more likely to be bottlenecked by your business logic than the infrastructure.
 
+## Cross-Language Plugin Support
+
+This project demonstrates that the go-plugin architecture works across programming languages. The Python plugin (`pylelister`) showcases:
+
+### What Works Today
+
+- **Protocol compatibility**: The stdio handshake and gRPC connection protocol work seamlessly with Python
+- **Self-contained deployment**: PyInstaller bundles Python interpreter and dependencies into a single executable
+- **Zero host dependencies**: No Python installation required on the system running the host
+- **Polyglot architecture**: Go and Python plugins coexist in the same plugin system
+- **Same protobuf definitions**: Protocol definitions work across both languages
+
+### Current Limitations
+
+The Python plugin in this demo **does not use host services**. Instead, it accesses the filesystem directly. This is because:
+
+- Host services require bidirectional gRPC communication (plugin calling back to host)
+- The go-plugin broker protocol (`GRPCBroker.StartStream`) for bidirectional communication would need to be implemented in Python
+- This requires building a comprehensive Python SDK for go-plugin (see below)
+
+For plugins that don't need host callbacks (formatters, analyzers, simple data transforms), this simplified approach works perfectly.
+
+### Future Python SDK for Full Integration
+
+To enable host services from Python plugins, we plan to develop `goplugin-py`, a Python SDK that would provide:
+
+**Planned Features:**
+- **Broker client implementation**: Handle the `GRPCBroker.StartStream` protocol in Python
+- **Connection management**: Track dialable services and multiplexing
+- **Helper functions**: Simplify plugin authoring (mirroring Go's `plugin.Serve`)
+- **Graceful shutdown**: Handle cleanup signals properly
+- **Full host service access**: Python plugins could use all host services just like Go plugins
+
+**Future API (conceptual):**
+```python
+import goplugin
+from host_service_pb2_grpc import HostServiceStub
+
+class MyPlugin(FileListerServicer):
+    def __init__(self, broker):
+        self.broker = broker  # Handles StartStream protocol
+
+    def EstablishHostServices(self, request, context):
+        # Dial host service via broker
+        conn = self.broker.Dial(request.host_service)
+        self.host_stub = HostServiceStub(conn)
+
+        # Now can use host services securely
+        entries = self.host_stub.ReadDir(root_dir, path)
+
+goplugin.serve({
+    'filelister': MyPlugin
+})
+```
+
+This would unlock the full security and architectural benefits of the decoupled host service pattern for Python plugins, including:
+- Sandboxed execution without direct filesystem access
+- Capability-based security
+- Full audit trails
+- Consistent security boundaries across all plugin languages
+
+### Why Polyglot Matters
+
+**For Plugin Authors:**
+- Choose the best language for the task (Python for ML/data, Go for performance, etc.)
+- Leverage existing libraries and ecosystems
+- Lower barrier to entry for contributing plugins
+
+**For System Architects:**
+- Broader plugin ecosystem
+- Language-agnostic security boundaries
+- Consistent plugin management regardless of implementation language
+
+The Python plugin demonstrates the foundation is solid - we just need to build the SDK layer to unlock full functionality.
+
 ## Contributing
 
 This is an educational project. Improvements that clarify the patterns or demonstrate additional capabilities are welcome. Please maintain focus on teaching the architecture, not adding production features.
+
+Contributions toward the Python SDK (`goplugin-py`) would be particularly valuable for the community.
 
 ## License
 

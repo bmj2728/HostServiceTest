@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -84,13 +85,13 @@ func (h *HostDemo) EnvDemo(ctx context.Context) (string, error) {
 	groupStr := ""
 	for i, group := range groups {
 		if i == 0 {
-			groupStr += "group"
+			groupStr += strconv.Itoa(int(group))
 		} else {
 			groupStr += fmt.Sprintf(" |  %d", group)
 		}
 	}
 	duration := time.Since(start)
-	response := fmt.Sprintf("***Env Demo***\n\nUID: %d\nGID: %d\nEUID: %d\nEGID: %d\nGroups: %s\nPID: %d\nPPID: %dTemp Dir: %s\nUser Cache: %s\nUser Config: %s\nUser Home: %s\nDuration: %v\n",
+	response := fmt.Sprintf("***Env Demo***\n\nUID: %d\nGID: %d\nEUID: %d\nEGID: %d\nGroups: %s\nPID: %d\nPPID: %d\nTemp Dir: %s\nUser Cache: %s\nUser Config: %s\nUser Home: %s\nDuration: %v\n",
 		uid, gid, euid, egid, groupStr, pid, ppid, td, uCache, uConfig, uHome, duration)
 	return response, nil
 }

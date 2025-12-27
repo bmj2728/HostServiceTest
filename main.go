@@ -29,50 +29,6 @@ var pluginMap = map[string]plugin.Plugin{
 	"hd-plugin": &hostdemo.HostDemoGRPCPlugin{},
 }
 
-// used for testing nonlocal project paths
-var userAppHome string
-
-// just for testing
-func initializeHostServiceTestFolder() error {
-	userHome, err := os.UserHomeDir()
-	if err != nil {
-		return err
-	}
-	full := filepath.Join(userHome, "HostServiceTest")
-	err = os.Mkdir(full, 0755)
-	if err != nil && !os.IsExist(err) {
-		return err
-	}
-	if err != nil && os.IsExist(err) {
-		userAppHome = full
-		return nil
-	}
-	userAppHome = full
-	return nil
-}
-
-// just for tests
-func createProject(name string) (string, error) {
-	r, err := os.OpenRoot(userAppHome)
-	if err != nil {
-		return "", fmt.Errorf("failed to open root directory: %w", err)
-	}
-	defer func(r *os.Root) {
-		err := r.Close()
-		if err != nil {
-			fmt.Println(err)
-		}
-	}(r)
-	err = r.Mkdir(name, 0755)
-	if err != nil && !os.IsExist(err) {
-		return "", fmt.Errorf("failed to create project directory: %w", err)
-	}
-	if err != nil && os.IsExist(err) {
-		return filepath.Join(userAppHome, name), nil
-	}
-	return filepath.Join(userAppHome, name), nil
-}
-
 func main() {
 
 	//clean up
@@ -98,24 +54,14 @@ func main() {
 	logger := hclog.New(&hclog.LoggerOptions{
 		Name:   "host",
 		Output: os.Stdout,
-		Level:  hclog.Debug,
+		Level:  hclog.Info,
 		Color:  hclog.ForceColor,
 	})
 	hclog.SetDefault(logger)
 
-	err = initializeHostServiceTestFolder()
-	if err != nil {
-		logger.Error("Failed to initialize test folder", "err", err)
-	}
-	projPath, err := createProject("test")
-	if err != nil {
-		logger.Error("Failed to create project", "err", err)
-	}
-	logger.Info("Created project", "path", projPath)
-
-	// Set up host services - create the implementation
-	// HostServices is a struct that embeds the HostFS and HostEnv interfaces
+	// Set up host services
 	hostServices := hostserve.NewHostServices(hostserve.NewHostFS(), hostserve.NewHostEnv())
+
 	//Start plugin 1
 	flAbspath, err := filepath.Abs("./plugins/filelister/filelister")
 	if err != nil {
@@ -301,7 +247,6 @@ func main() {
 		os.Exit(1)
 	}
 
-	// Coerce the raw interface to the FileLister type
 	demo := rawHD.(hostdemo.HostDemo)
 
 	// Setup host services for the plugin (if supported)
@@ -311,20 +256,21 @@ func main() {
 		os.Exit(1)
 	}
 	if cid4 != "" {
-		err = hostServices.ActiveClients().AddClient(cid4, clBin)
+		err = hostServices.ActiveClients().AddClient(cid4, hdBin)
 		if err != nil {
 			logger.Error("Failed to add client", "err", err)
 			os.Exit(1)
 		}
-		logger.Info("Host services established", "bin", clBin, "cid", cid2)
+		logger.Info("Host services established", "bin", hdBin, "cid", cid4)
 	}
 
-	// End plugin 2
+	// End plugin 4
 
-	fld := "plugins/filelister"
+	// Run some demos
+
 	go func() {
 		// Test the plugin by listing files in the current directory
-		entries, err := fileLister.ListFiles("/home/brian/GolandProjects/HostServiceTest", fld)
+		entries, err := fileLister.ListFiles("/home/brian/GolandProjects/HostServiceTest", "plugins/filelister")
 		if err != nil {
 			logger.Error("Failed to list files", "err", err)
 			os.Exit(1)
@@ -383,7 +329,8 @@ func main() {
 		fmt.Println(tempDemo)
 	}()
 
-	time.Sleep(1 * time.Second)
+	time.Sleep(100 * time.Millisecond)
+
 	// Clean shutdown - disconnect from host services
 	logger.Info("Shutting down plugins")
 	hostconn.DisconnectHostServices(raw, logger)

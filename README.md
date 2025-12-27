@@ -22,12 +22,11 @@
 ```
 
 **At a Glance:**
-- ✅ **3 example plugins** (2 Go, 1 Python) demonstrating real-world patterns
+- ✅ **4 example plugins** (3 Go, 1 Python) demonstrating real-world patterns
 - ✅ **60+ host service operations** covering filesystem, processes, and more
 - ✅ **Automatic client identification** for capability-based security
 - ✅ **Cross-language compatibility** with plans for full Python SDK
 - ✅ **Production patterns** that scale from demos to real plugin systems
-
 ---
 
 ## Table of Contents
@@ -250,6 +249,10 @@ This is the foundation for building plugin systems users can trust.
 
 **Latest improvements to the architecture:**
 
+- **Streamlined demonstration architecture (2025-12-27)**: Significant refactoring to improve code clarity and demonstration capabilities:
+  - **Unified plugin lifecycle management**: The demo `main.go` now uses a single `startPluginClient` helper function, eliminating code duplication across all plugin initializations. This pattern demonstrates clean plugin management that scales from simple demos to production systems.
+  - **New HostDemo service and plugin**: Added a dedicated demonstration service (`hostdemo`) with easy-to-call suite methods that showcase host service capabilities. Features three demo methods: `GetEnvDemo` (environment variables), `EnvDemo` (user/process information), and `TempDemo` (temporary file lifecycle with cleanup).
+  - **Plugin cleanup in progress**: The three file lister plugin implementations (`filelister`, `colorlister`, `pylelister`) are being streamlined by removing demo/test-specific functionality in favor of focused, production-pattern code. This separation between demonstration logic (HostDemo) and implementation examples (file listers) improves code clarity and maintainability.
 - **Cross-language plugin support (Python)**: New Python plugin example (`pylelister`) demonstrates that the go-plugin architecture works seamlessly across programming languages. The Python plugin is built as a self-contained executable with PyInstaller, requiring no Python installation on the host system. This showcases protocol compatibility and polyglot plugin architectures. See [Cross-Language Plugin Support](#cross-language-plugin-support) for details and future Python SDK plans.
 - **Concurrent plugin execution demonstration**: The demo now clearly illustrates real-world plugin behavior with multiple plugins concurrently accessing the host service. Plugins are executed in goroutines, showing interleaved request patterns where one plugin may start first but finish after another. This demonstrates the thread-safe nature of the broker multiplexing and reflects realistic scenarios where a long-running server handles multiple active plugins simultaneously, rather than sequential one-shot execution.
 - **Enhanced request logging and metrics**: Major refactor to add consistency and metrics to all gRPC operations. Each request is logged at receipt and completion with structured fields including client ID, client owner, request ID, microsecond-precision duration, and success indicators. Enables comprehensive performance monitoring, audit trails, and debugging across all host service operations.
@@ -274,6 +277,7 @@ See the [Dual File Access Patterns](#dual-file-access-patterns) section for deta
 go build -o host .
 go build -o plugins/filelister/filelister ./plugins/filelister
 go build -o plugins/colorlister/colorlister ./plugins/colorlister
+go build -o plugins/hostdemo/hostdemo ./plugins/hostdemo
 
 # Optional: Build Python plugin (requires Python 3.9+ and pip for building)
 cd plugins/pylelister && ./build.sh && cd ../..
@@ -284,9 +288,10 @@ cd plugins/pylelister && ./build.sh && cd ../..
 
 You'll see:
 - The host spawning plugins and executing them concurrently
-- **Go plugins** (`filelister` and `colorlister`): Demonstrating full host service access with interleaved requests
+- **Go plugins** demonstrating full host service access with interleaved requests:
   - `filelister` demonstrating file handle operations (open, use, close)
   - `colorlister` reading file contents with colored output and context propagation
+  - `hostdemo` running three coordinated demo suites showing environment variables, system information, and temporary file lifecycle
   - Interleaved requests showing concurrent host service access with proper client identification
 - **Python plugin** (`pylelister`, if built): Demonstrating cross-language compatibility with independent file access
 - Request logs showing concurrent calls from multiple plugins
@@ -297,40 +302,42 @@ This concurrent execution pattern reflects real-world scenarios where a long-run
 ## Architecture: The Big Picture
 
 ```
-┌────────────────────────────────────────────────────────────────────────────┐
-│                            Host Process                                     │
-│                                                                             │
-│  ┌───────────────────────────────────────────────────────────────────┐    │
-│  │         Shared Host Service Implementation                        │    │
-│  │  File I/O: ReadDir, ReadFile, WriteFile, FileOpen, FileClose...  │    │
-│  │  Links: Symlink, Link, Readlink, Lstat                           │    │
-│  │  Permissions: Chmod, Chown, Chtimes                              │    │
-│  │  Process: Getpid, Getuid, GetGroups, GetEnv                      │    │
-│  └──────────────┬───────────────┬──────────────────────────────────┘    │
-│                 │               │                                         │
-│    ┌────────────┴─────┐  ┌──────┴────────────┐                           │
-│    │  Broker 1        │  │  Broker 2         │                           │
-│    │  (multiplexer)   │  │  (multiplexer)    │                           │
-│    └────────┬─────────┘  └──────┬────────────┘                           │
-│             │                    │                                        │
-└─────────────┼────────────────────┼────────────────────────────────────────┘
-              │                    │
-    ┌─────────┴─────────┐  ┌───────┴──────────┐     ┌──────────────────┐
-    │                   │  │                  │     │                  │
-┌───┼────────────┐  ┌───┼───────────┐  ┌─────┼──────────────┐        │
-│ Go Plugin 1    │  │ Go Plugin 2   │  │ Python Plugin      │        │
-│ (filelister)   │  │ (colorlister) │  │ (pylelister)       │        │
-│                │  │               │  │                    │        │
-│ Uses host      │  │ Uses host     │  │ Independent FS     │        │
-│ services       │  │ services      │  │ access (no broker) │        │
-│ securely       │  │ securely      │  │ (SDK needed)       │        │
-└────────────────┘  └───────────────┘  └────────────────────┘        │
-   ReadDir, Symlink    Chmod, Getpid     Direct OS calls             │
-   via host services   via host services (demonstrates polyglot)     │
+┌──────────────────────────────────────────────────────────────────────────────────┐
+│                              Host Process                                         │
+│                                                                                   │
+│  ┌─────────────────────────────────────────────────────────────────────────┐    │
+│  │           Shared Host Service Implementation                            │    │
+│  │  File I/O: ReadDir, ReadFile, WriteFile, FileOpen, FileClose...        │    │
+│  │  Links: Symlink, Link, Readlink, Lstat                                 │    │
+│  │  Permissions: Chmod, Chown, Chtimes                                    │    │
+│  │  Process/Env: Getpid, Getuid, GetGroups, GetEnv, TempDir...           │    │
+│  └──────────────┬─────────────┬─────────────┬──────────────────────────┘    │
+│                 │             │             │                                   │
+│    ┌────────────┴───┐  ┌──────┴──────┐  ┌──┴──────────┐                       │
+│    │  Broker 1      │  │  Broker 2   │  │  Broker 3   │                       │
+│    │ (multiplexer)  │  │(multiplexer)│  │(multiplexer)│                       │
+│    └────────┬───────┘  └──────┬──────┘  └──┬──────────┘                       │
+│             │                  │            │                                   │
+└─────────────┼──────────────────┼────────────┼───────────────────────────────────┘
+              │                  │            │
+    ┌─────────┴────────┐  ┌──────┴─────┐  ┌─┴─────────┐     ┌──────────────────┐
+    │                  │  │            │  │           │     │                  │
+┌───┼───────────┐  ┌───┼────────┐  ┌──┼──────┐  ┌───┼───────────────┐        │
+│ Go Plugin 1   │  │ Go Plugin2 │  │ Go P3  │  │ Python Plugin     │        │
+│ (filelister)  │  │(colorlist.)│  │(hostdm)│  │ (pylelister)      │        │
+│               │  │            │  │        │  │                   │        │
+│ Uses host     │  │ Uses host  │  │ Demo   │  │ Independent FS    │        │
+│ services      │  │ services   │  │ suites │  │ access (no broker)│        │
+│ securely      │  │ securely   │  │        │  │ (SDK needed)      │        │
+└───────────────┘  └────────────┘  └────────┘  └───────────────────┘        │
+   File handles      Colored         GetEnv,      Direct OS calls            │
+   & streaming       output &        EnvDemo,     (demonstrates              │
+   via host svcs     operations      TempDemo     polyglot)                  │
 ```
 
 **Key insights**:
 - **Go plugins** are isolated processes using host services for secure, auditable resource access
+- **HostDemo plugin** showcases coordinated host service workflows in easy-to-call demo suites
 - **Python plugin** demonstrates cross-language compatibility; full host service integration requires Python SDK (planned)
 - All plugins run as separate processes with their own capabilities/permissions model
 
@@ -415,14 +422,18 @@ This demo includes:
 
 ### Example Plugins
 
-**Three test plugins demonstrating various patterns:**
+**Four test plugins demonstrating various patterns:**
 
 **Go Plugins (with host services):**
-- **`filelister`**: Comprehensive demonstration of file handle-based operations including `FileOpen`, `FileReader`, `FileSeek`, `FileStat`, `FileClose`, directory operations (`ReadDir`, `Mkdir`), and file management (`FileCreate`, `Rename`, `Remove`). Shows proper resource lifecycle management and streaming for large files.
-- **`colorlister`**: Extensive demonstration of path-based operations, process/user identification (`Getuid`, `Getgid`, `Geteuid`, `Getegid`, `GetGroups`, `Getpid`, `Getppid`), temporary file/directory creation with auto-cleanup (`MkdirTemp`, `FileCreateTemp`), directory operations, and file content reading with ANSI color output. Exercises the majority of the host service API surface.
+- **`hostdemo`**: **NEW** - Demonstration-focused plugin with easy-to-call suite methods designed to showcase host service capabilities in user-friendly ways. Features three demo methods:
+  - `GetEnvDemo(key)`: Retrieves and displays environment variable values with timing information
+  - `EnvDemo()`: Comprehensive system information suite including user/group IDs, process IDs, and standard directory paths (temp, cache, config, home)
+  - `TempDemo(pattern, text)`: Complete temporary file lifecycle demonstration including directory creation, file creation, writing, stat operations, and automatic cleanup
+- **`filelister`**: Comprehensive demonstration of file handle-based operations including `FileOpen`, `FileReader`, `FileSeek`, `FileStat`, `FileClose`, directory operations (`ReadDir`, `Mkdir`), and file management (`FileCreate`, `Rename`, `Remove`). Shows proper resource lifecycle management and streaming for large files. Being streamlined to focus on production patterns by removing demo-specific code.
+- **`colorlister`**: Extensive demonstration of path-based operations, process/user identification, temporary file/directory creation with auto-cleanup, directory operations, and file content reading with ANSI color output. Being streamlined to focus on production patterns by removing demo-specific code.
 
 **Python Plugin (cross-language demonstration):**
-- **`pylelister`**: Python implementation of the FileLister plugin demonstrating **cross-language compatibility**. This plugin operates independently without host services, showcasing that the go-plugin protocol works across languages. Built as a self-contained executable using PyInstaller (~21MB), it bundles Python 3.13 interpreter and all dependencies. No Python installation required on the host system. See [Future Python SDK](#future-python-sdk-for-full-integration) for plans to enable host services from Python plugins.
+- **`pylelister`**: Python implementation of the FileLister plugin demonstrating **cross-language compatibility**. This plugin operates independently without host services, showcasing that the go-plugin protocol works across languages. Built as a self-contained executable using PyInstaller (~21MB), it bundles Python 3.13 interpreter and all dependencies. No Python installation required on the host system. Being streamlined to focus on production patterns. See [Future Python SDK](#future-python-sdk-for-full-integration) for plans to enable host services from Python plugins.
 
 ### Host Services API
 
@@ -1050,23 +1061,26 @@ This design provides both convenience (unary operations for simple cases) and ef
 .
 ├── main.go                           # Host: spawns plugins, shares services
 ├── plugins/
-│   ├── filelister/                   # Demo plugin 1 (Go)
-│   ├── colorlister/                  # Demo plugin 2 (Go)
-│   └── pylelister/                   # Demo plugin 3 (Python, cross-language)
+│   ├── filelister/                   # Demo plugin 1 (Go) - file operations
+│   ├── colorlister/                  # Demo plugin 2 (Go) - colored output
+│   ├── hostdemo/                     # Demo plugin 3 (Go) - suite demonstrations
+│   └── pylelister/                   # Demo plugin 4 (Python, cross-language)
 │       ├── src/                      # Python plugin source
 │       ├── dist/                     # Built executable (PyInstaller output)
 │       ├── build.sh                  # Build script
 │       └── README.md                 # Python plugin documentation
 ├── shared/
 │   ├── proto/                        # Service definitions
-│   │   ├── filelister/v1/           # Plugin interface
+│   │   ├── filelister/v1/           # FileLister plugin interface
+│   │   ├── hostdemo/v1/             # HostDemo plugin interface
 │   │   └── hostserve/v1/            # Host services (add new services here)
 │   ├── protogen/                     # Generated Go code (don't edit)
 │   ├── protogen_py/                  # Generated Python code (don't edit)
 │   └── pkg/
 │       ├── hostconn/                 # Reusable infrastructure (the magic)
 │       ├── hostserve/                # Host service implementations
-│       └── filelister/               # Plugin interface
+│       ├── filelister/               # FileLister plugin interface
+│       └── hostdemo/                 # HostDemo plugin interface
 ├── buf.yaml                          # Proto module config
 └── buf.gen.yaml                      # Code generation config
 ```
@@ -1393,15 +1407,43 @@ When extending, ensure your implementations are thread-safe.
 
 ## Common Patterns from This Codebase
 
+**Pattern**: Unified plugin lifecycle management (from main.go)
+```go
+// Single reusable helper function for all plugin types
+func startPluginClient(pluginPath string, dispenseName string,
+                      hostServices *HostServices, logger hclog.Logger) (interface{}, *plugin.Client, error) {
+    // Get absolute path and binary name
+    absPath, _ := filepath.Abs(pluginPath)
+    _, bin := filepath.Split(absPath)
+
+    // Create and configure client
+    client := plugin.NewClient(&plugin.ClientConfig{...})
+
+    // Connect and dispense
+    rpcClient, _ := client.Client()
+    raw, _ := rpcClient.Dispense(dispenseName)
+
+    // Establish host services if supported
+    cid, _ := hostconn.EstablishHostServiceConnection(raw, hostServices, logger)
+    if cid != "" {
+        hostServices.ActiveClients().AddClient(cid, bin)
+        hostServices.AddRawPlugin(raw)
+    }
+
+    return raw, client, nil
+}
+
+// Use for any plugin type - eliminates duplication
+flRaw, flClient, _ := startPluginClient("./plugins/filelister/filelister", "fl-plugin", hostServices, logger)
+hdRaw, hdClient, _ := startPluginClient("./plugins/hostdemo/hostdemo", "hd-plugin", hostServices, logger)
+```
+
 **Pattern**: One service, multiple plugins
 ```go
 // Create one host service implementation
 hostServices := hostserve.NewHostServices(...)
 
-// Share with multiple Go plugins - one line each
-hostconn.EstablishHostServices(goPlugin1, hostServices, logger)
-hostconn.EstablishHostServices(goPlugin2, hostServices, logger)
-
+// Share with multiple Go plugins - handled automatically by startPluginClient
 // Python plugins work independently (for now - SDK needed for host services)
 // They follow the same gRPC protocol but access resources directly
 ```

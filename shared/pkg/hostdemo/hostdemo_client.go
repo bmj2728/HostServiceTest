@@ -57,11 +57,11 @@ func (c *GRPCClient) RegisterHostService(hostServices hostserve.IHostServices) (
 	return serviceID, nil
 }
 
-func (c *GRPCClient) GetEnvDemo(ctx context.Context, key string) (string, error) {
+func (c *GRPCClient) GetEnvDemo(key string) (string, error) {
 	if key == "" {
 		return "", fmt.Errorf("key cannot be empty")
 	}
-	resp, err := c.client.GetEnvDemo(ctx, &hostdemov1.GetEnvDemoReq{Key: key})
+	resp, err := c.client.GetEnvDemo(context.Background(), &hostdemov1.GetEnvDemoReq{Key: key})
 	if err != nil {
 		return "", fmt.Errorf("gRPC call failed: %w", err)
 	}
@@ -74,8 +74,8 @@ func (c *GRPCClient) GetEnvDemo(ctx context.Context, key string) (string, error)
 	return resp.Resp, nil
 }
 
-func (c *GRPCClient) EnvDemo(ctx context.Context) (string, error) {
-	resp, err := c.client.EnvDemo(ctx, &hostdemov1.EnvDemoReq{})
+func (c *GRPCClient) EnvDemo() (string, error) {
+	resp, err := c.client.EnvDemo(context.Background(), &hostdemov1.EnvDemoReq{})
 	if err != nil {
 		return "", fmt.Errorf("gRPC call failed: %w", err)
 	}
@@ -88,8 +88,8 @@ func (c *GRPCClient) EnvDemo(ctx context.Context) (string, error) {
 	return resp.Resp, nil
 }
 
-func (c *GRPCClient) TempDemo(ctx context.Context, pattern, textToWrite string) (string, error) {
-	resp, err := c.client.TempDemo(ctx, &hostdemov1.TempDemoReq{Pattern: pattern, TextToWrite: textToWrite})
+func (c *GRPCClient) TempDemo(pattern, textToWrite string) (string, error) {
+	resp, err := c.client.TempDemo(context.Background(), &hostdemov1.TempDemoReq{Pattern: pattern, TextToWrite: textToWrite})
 	if err != nil {
 		return "", fmt.Errorf("gRPC call failed: %w", err)
 	}

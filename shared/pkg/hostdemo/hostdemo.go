@@ -10,9 +10,9 @@ import (
 )
 
 type HostDemo interface {
-	GetEnvDemo(ctx context.Context, key string) (string, error)
-	EnvDemo(ctx context.Context) (string, error)
-	TempDemo(ctx context.Context, pattern, textToWrite string) (string, error)
+	GetEnvDemo(key string) (string, error)
+	EnvDemo() (string, error)
+	TempDemo(pattern, textToWrite string) (string, error)
 }
 
 type HostDemoGRPCPlugin struct {

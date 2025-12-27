@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"fmt"
 	"os"
 	"os/exec"
@@ -23,10 +22,10 @@ var handshakeConfig = plugin.HandshakeConfig{
 }
 
 var pluginMap = map[string]plugin.Plugin{
-	"fl-plugin": &filelister.FileListerGRPCPlugin{},
-	"cl-plugin": &filelister.FileListerGRPCPlugin{},
-	"pl-plugin": &filelister.FileListerGRPCPlugin{},
-	"hd-plugin": &hostdemo.HostDemoGRPCPlugin{},
+	"file-lister":  &filelister.FileListerGRPCPlugin{},
+	"color-lister": &filelister.FileListerGRPCPlugin{},
+	"py-lister":    &filelister.FileListerGRPCPlugin{},
+	"host-demo":    &hostdemo.HostDemoGRPCPlugin{},
 }
 
 func startPluginClient(pluginPath string, dispenseName string, hostServices *hostserve.HostServices, logger hclog.Logger) (interface{}, *plugin.Client, error) {
@@ -130,7 +129,7 @@ func main() {
 	hostServices := hostserve.NewHostServices(hostserve.NewHostFS(), hostserve.NewHostEnv())
 
 	//Start File Lister
-	flRaw, flClient, err := startPluginClient("./plugins/filelister/filelister", "fl-plugin", hostServices, logger)
+	flRaw, flClient, err := startPluginClient("./plugins/filelister/filelister", "file-lister", hostServices, logger)
 	if err != nil {
 		logger.Error("Failed to start plugin", "err", err)
 		return
@@ -139,27 +138,27 @@ func main() {
 	fileLister := flRaw.(filelister.FileLister)
 
 	//Start Color Lister
-	clRaw, clClient, err := startPluginClient("./plugins/colorlister/colorlister", "cl-plugin", hostServices, logger)
+	clRaw, clClient, err := startPluginClient("./plugins/colorlister/colorlister", "color-lister", hostServices, logger)
 	if err != nil {
 		logger.Error("Failed to start plugin", "err", err)
 		return
 	}
 	defer clClient.Kill()
-	colorlister := clRaw.(filelister.FileLister)
+	colorLister := clRaw.(filelister.FileLister)
 
 	////Start Python Lister
 
-	pyRaw, pyClient, err := startPluginClient("./plugins/pylelister/dist/pylelister", "pl-plugin", hostServices, logger)
+	pyRaw, pyClient, err := startPluginClient("./plugins/pylelister/dist/pylelister", "py-lister", hostServices, logger)
 	if err != nil {
 		logger.Error("Failed to start plugin", "err", err)
 		return
 	}
 	defer pyClient.Kill()
-	pythonlister := pyRaw.(filelister.FileLister)
+	pyLister := pyRaw.(filelister.FileLister)
 
 	//Start Host Demo
 
-	hdRaw, hdClient, err := startPluginClient("./plugins/hostdemo/hostdemo", "hd-plugin", hostServices, logger)
+	hdRaw, hdClient, err := startPluginClient("./plugins/hostdemo/hostdemo", "host-demo", hostServices, logger)
 	if err != nil {
 		logger.Error("Failed to start plugin", "err", err)
 		return
@@ -184,7 +183,7 @@ func main() {
 	}()
 
 	go func() {
-		colorEntries, err := colorlister.ListFiles(cwd, cwd)
+		colorEntries, err := colorLister.ListFiles(cwd, cwd)
 		if err != nil {
 			logger.Error("Failed to list files", "err", err)
 			os.Exit(1)
@@ -196,7 +195,7 @@ func main() {
 	}()
 
 	go func() {
-		pythonEntries, err := pythonlister.ListFiles(cwd, cwd)
+		pythonEntries, err := pyLister.ListFiles(cwd, cwd)
 		if err != nil {
 			logger.Error("Failed to list files", "err", err)
 			os.Exit(1)
@@ -208,7 +207,7 @@ func main() {
 	}()
 
 	go func() {
-		val, err := demo.GetEnvDemo(context.Background(), "GOPATH")
+		val, err := demo.GetEnvDemo("GOPATH")
 		if err != nil {
 			logger.Error("Failed get env demo", "err", err)
 		}
@@ -216,7 +215,7 @@ func main() {
 	}()
 
 	go func() {
-		envDat, err := demo.EnvDemo(context.Background())
+		envDat, err := demo.EnvDemo()
 		if err != nil {
 			logger.Error("Failed env demo", "err", err)
 		}
@@ -224,7 +223,7 @@ func main() {
 	}()
 
 	go func() {
-		tempDemo, err := demo.TempDemo(context.Background(), "Host-Demo-*-Temp", "This is a temp file")
+		tempDemo, err := demo.TempDemo("Host-Demo-*-Temp", "This is a temp file")
 		if err != nil {
 			logger.Error("Failed temp demo", "err", err)
 		}

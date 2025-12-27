@@ -24,19 +24,21 @@ type HostDemo struct {
 	connMutex         sync.Mutex
 }
 
-func (h *HostDemo) GetEnvDemo(ctx context.Context, env string) (string, error) {
+func (h *HostDemo) GetEnvDemo(key string) (string, error) {
 	start := time.Now()
-	val, err := h.hostServiceClient.GetEnv(ctx, env)
+	ctx := context.Background()
+	val, err := h.hostServiceClient.GetEnv(ctx, key)
 	if err != nil {
 		return "", fmt.Errorf("failed to get env: %w", err)
 	}
 	duration := time.Since(start)
-	response := fmt.Sprintf("***GetEnv Demo***\n\nRequested Env Var: '%s'\nValue: '%s'\nDuration: %v\n", env, val, duration)
+	response := fmt.Sprintf("***GetEnv Demo***\n\nRequested Env Var: '%s'\nValue: '%s'\nDuration: %v\n", key, val, duration)
 
 	return response, nil
 }
 
-func (h *HostDemo) EnvDemo(ctx context.Context) (string, error) {
+func (h *HostDemo) EnvDemo() (string, error) {
+	ctx := context.Background()
 	start := time.Now()
 	uid, err := h.hostServiceClient.Getuid(ctx)
 	if err != nil {
@@ -96,7 +98,8 @@ func (h *HostDemo) EnvDemo(ctx context.Context) (string, error) {
 	return response, nil
 }
 
-func (h *HostDemo) TempDemo(ctx context.Context, pattern, textToWrite string) (string, error) {
+func (h *HostDemo) TempDemo(pattern, textToWrite string) (string, error) {
+	ctx := context.Background()
 	var sb strings.Builder
 	sb.WriteString("***Temp Demo***\n\n")
 	sb.WriteString("Pattern: " + pattern + "\n")

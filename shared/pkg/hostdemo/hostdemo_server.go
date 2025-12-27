@@ -28,39 +28,39 @@ func (s *GRPCServer) EstablishHostServices(ctx context.Context,
 	return &hostdemov1.HostServiceResponse{}, nil
 }
 
-func (s *GRPCServer) GetEnvDemo(ctx context.Context, request *hostdemov1.GetEnvDemoReq) (*hostdemov1.GetEnvDemoResp, error) {
+func (s *GRPCServer) GetEnvDemo(_ context.Context, request *hostdemov1.GetEnvDemoReq) (*hostdemov1.GetEnvDemoResp, error) {
 	if request == nil {
 		return nil, fmt.Errorf("nil request for GetEnvDemo")
 	}
 	if request.Key == "" {
 		return nil, fmt.Errorf("key cannot be empty")
 	}
-	demo, err := s.Impl.GetEnvDemo(ctx, request.Key)
+	demo, err := s.Impl.GetEnvDemo(request.Key)
 	if err != nil {
 		return nil, fmt.Errorf("failed get env demo: %w", err)
 	}
 	return &hostdemov1.GetEnvDemoResp{Resp: demo}, nil
 }
 
-func (s *GRPCServer) EnvDemo(ctx context.Context, request *hostdemov1.EnvDemoReq) (*hostdemov1.EnvDemoResp, error) {
+func (s *GRPCServer) EnvDemo(_ context.Context, request *hostdemov1.EnvDemoReq) (*hostdemov1.EnvDemoResp, error) {
 	if request == nil {
 		return nil, fmt.Errorf("nil request for EnvDemo")
 	}
-	demo, err := s.Impl.EnvDemo(ctx)
+	demo, err := s.Impl.EnvDemo()
 	if err != nil {
 		return nil, fmt.Errorf("failed env demo: %w", err)
 	}
 	return &hostdemov1.EnvDemoResp{Resp: demo}, nil
 }
 
-func (s *GRPCServer) TempDemo(ctx context.Context, request *hostdemov1.TempDemoReq) (*hostdemov1.TempDemoResp, error) {
+func (s *GRPCServer) TempDemo(_ context.Context, request *hostdemov1.TempDemoReq) (*hostdemov1.TempDemoResp, error) {
 	if request == nil {
 		return nil, fmt.Errorf("nil request for TempDemo")
 	}
 	if request.Pattern == "" {
 		return nil, fmt.Errorf("pattern cannot be empty")
 	}
-	demo, err := s.Impl.TempDemo(ctx, request.Pattern, request.TextToWrite)
+	demo, err := s.Impl.TempDemo(request.Pattern, request.TextToWrite)
 	if err != nil {
 		return nil, fmt.Errorf("failed temp demo: %w", err)
 	}

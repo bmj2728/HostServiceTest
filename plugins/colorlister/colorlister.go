@@ -4,9 +4,7 @@ package main
 import (
 	"context"
 	"fmt"
-	"io"
 	"sync"
-	"time"
 
 	"github.com/bmj2728/hst/shared/pkg/filelister"
 	"github.com/bmj2728/hst/shared/pkg/hostserve"
@@ -49,52 +47,6 @@ func (f *ColorLister) ListFiles(rootDir, path string) ([]string, error) {
 
 			entries = append(entries, fileFormat.Wrap(entry.Name(), true))
 		}
-	}
-
-	err = f.hostServiceClient.Mkdir(ctx, rootDir, "created_dir", 0755)
-	if err != nil {
-		hclog.Default().Error("Failed to create directory via host service", "root", rootDir, "err", err)
-		return nil, err
-	}
-
-	err = f.hostServiceClient.MkdirAll(ctx, rootDir, "nested/dir", 0755)
-	if err != nil {
-		hclog.Default().Error("Failed to create directory via host service", "root", rootDir, "err", err)
-		return nil, err
-	}
-
-	fh, err := f.hostServiceClient.FileCreate(ctx, rootDir, "nested/dir/created_file.txt")
-	if err != nil {
-		hclog.Default().Error("Failed to create file via host service", "dir", rootDir, "err", err)
-		return nil, err
-	}
-	defer func(ctx context.Context, handle hostserve.FileHandle) {
-		err := f.hostServiceClient.FileClose(ctx, handle)
-		if err != nil {
-			hclog.Default().Error("Failed to close file handle", "err", err)
-		}
-	}(ctx, fh)
-
-	newOff, err := f.hostServiceClient.FileSeek(ctx, fh, 0, io.SeekStart)
-	if err != nil {
-		hclog.Default().Error("Failed to seek file via host service", "dir", rootDir, "err", err)
-		return nil, err
-	}
-	hclog.Default().Info("File seeked", "offset", newOff)
-
-	err = f.hostServiceClient.Chmod(ctx, rootDir, "mode_change.txt", 0644)
-	if err != nil {
-		hclog.Default().Error("Failed to change file mode", "err", err)
-	}
-
-	err = f.hostServiceClient.Chown(ctx, rootDir, "owner_change.txt", 1001, 1001)
-	if err != nil {
-		hclog.Default().Error("Failed to change file owner and group", "err", err)
-	}
-
-	err = f.hostServiceClient.Chtimes(ctx, rootDir, "owner_change.txt", time.Now(), time.Now())
-	if err != nil {
-		hclog.Default().Error("Failed to change file modification time", "err", err)
 	}
 
 	return entries, nil

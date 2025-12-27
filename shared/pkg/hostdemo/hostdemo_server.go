@@ -67,6 +67,17 @@ func (s *GRPCServer) TempDemo(_ context.Context, request *hostdemov1.TempDemoReq
 	return &hostdemov1.TempDemoResp{Resp: demo}, nil
 }
 
+func (s *GRPCServer) CreateDirFileDemo(_ context.Context, request *hostdemov1.CreateDemoReq) (*hostdemov1.CreateDemoResp, error) {
+	if request == nil {
+		return nil, fmt.Errorf("nil request for CreateDirFileDemo")
+	}
+	resp, err := s.Impl.CreateDirFileDemo(request.DirToCreate, request.FileToCreate)
+	if err != nil {
+		return nil, fmt.Errorf("failed create demo: %w", err)
+	}
+	return &hostdemov1.CreateDemoResp{DemoResp: resp}, nil
+}
+
 func (s *GRPCServer) ReadFrankenstein(_ context.Context, request *hostdemov1.ReadFrankensteinReq) (*hostdemov1.ReadFrankensteinResp, error) {
 	if request == nil {
 		return nil, fmt.Errorf("nil request for ReadFrankenstein")

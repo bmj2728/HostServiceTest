@@ -184,6 +184,51 @@ func (h *HostDemo) ReadFrankenstein() (string, error) {
 	return fStr, nil
 }
 
+func (h *HostDemo) CreateDirFileDemo(dirToCreate, fileToCreate string) (string, error) {
+	absDemo, err := filepath.Abs("./demo")
+	ctx := context.Background()
+	start := time.Now()
+	if err != nil {
+		return "", fmt.Errorf("failed to get absolute path for demo dir: %w", err)
+	}
+
+	err = h.hostServiceClient.MkdirAll(ctx, absDemo, dirToCreate, 0755)
+	if err != nil {
+		return "", fmt.Errorf("failed to create demo dir: %w", err)
+	}
+
+	rd := filepath.Join(absDemo, dirToCreate)
+	p, s := filepath.Split(rd)
+	di, err := h.hostServiceClient.Stat(ctx, p, s)
+	if err != nil {
+		return "", fmt.Errorf("failed to stat demo dir: %w", err)
+	}
+	dStr := fmt.Sprintf("Created Demo Dir: %s - %s\n", rd, di.Name())
+
+	fh, err := h.hostServiceClient.FileCreate(ctx, rd, fileToCreate)
+	if err != nil {
+		return "", fmt.Errorf("failed to create demo file: %w", err)
+	}
+	defer func(hostServiceClient hostserve.IHostServices, ctx context.Context, handle hostserve.FileHandle) {
+		err := hostServiceClient.FileClose(ctx, handle)
+		if err != nil {
+			hclog.Default().Error("Failed to close file handle", "err", err)
+		}
+	}(h.hostServiceClient, ctx, fh)
+
+	fi, err := h.hostServiceClient.FileStat(ctx, fh)
+	if err != nil {
+		return "", fmt.Errorf("failed to stat demo file: %w", err)
+	}
+	fStr := fmt.Sprintf("Created Demo File: %s - %s\n", fh, fi.Name())
+
+	duration := time.Since(start)
+
+	respStr := fmt.Sprintf("%s\n%s\nDuration: %s", dStr, fStr, duration)
+
+	return respStr, nil
+}
+
 func (h *HostDemo) EstablishHostServices(hostServiceID uint32) (hostserve.ClientID, error) {
 	h.connMutex.Lock()
 	defer h.connMutex.Unlock()

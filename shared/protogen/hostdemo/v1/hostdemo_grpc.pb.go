@@ -23,6 +23,7 @@ const (
 	HostDemo_GetEnvDemo_FullMethodName            = "/hostdemo.v1.HostDemo/GetEnvDemo"
 	HostDemo_EnvDemo_FullMethodName               = "/hostdemo.v1.HostDemo/EnvDemo"
 	HostDemo_TempDemo_FullMethodName              = "/hostdemo.v1.HostDemo/TempDemo"
+	HostDemo_CreateDirFileDemo_FullMethodName     = "/hostdemo.v1.HostDemo/CreateDirFileDemo"
 	HostDemo_ReadFrankenstein_FullMethodName      = "/hostdemo.v1.HostDemo/ReadFrankenstein"
 )
 
@@ -34,6 +35,7 @@ type HostDemoClient interface {
 	GetEnvDemo(ctx context.Context, in *GetEnvDemoReq, opts ...grpc.CallOption) (*GetEnvDemoResp, error)
 	EnvDemo(ctx context.Context, in *EnvDemoReq, opts ...grpc.CallOption) (*EnvDemoResp, error)
 	TempDemo(ctx context.Context, in *TempDemoReq, opts ...grpc.CallOption) (*TempDemoResp, error)
+	CreateDirFileDemo(ctx context.Context, in *CreateDemoReq, opts ...grpc.CallOption) (*CreateDemoResp, error)
 	ReadFrankenstein(ctx context.Context, in *ReadFrankensteinReq, opts ...grpc.CallOption) (*ReadFrankensteinResp, error)
 }
 
@@ -85,6 +87,16 @@ func (c *hostDemoClient) TempDemo(ctx context.Context, in *TempDemoReq, opts ...
 	return out, nil
 }
 
+func (c *hostDemoClient) CreateDirFileDemo(ctx context.Context, in *CreateDemoReq, opts ...grpc.CallOption) (*CreateDemoResp, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(CreateDemoResp)
+	err := c.cc.Invoke(ctx, HostDemo_CreateDirFileDemo_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *hostDemoClient) ReadFrankenstein(ctx context.Context, in *ReadFrankensteinReq, opts ...grpc.CallOption) (*ReadFrankensteinResp, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(ReadFrankensteinResp)
@@ -103,6 +115,7 @@ type HostDemoServer interface {
 	GetEnvDemo(context.Context, *GetEnvDemoReq) (*GetEnvDemoResp, error)
 	EnvDemo(context.Context, *EnvDemoReq) (*EnvDemoResp, error)
 	TempDemo(context.Context, *TempDemoReq) (*TempDemoResp, error)
+	CreateDirFileDemo(context.Context, *CreateDemoReq) (*CreateDemoResp, error)
 	ReadFrankenstein(context.Context, *ReadFrankensteinReq) (*ReadFrankensteinResp, error)
 	mustEmbedUnimplementedHostDemoServer()
 }
@@ -125,6 +138,9 @@ func (UnimplementedHostDemoServer) EnvDemo(context.Context, *EnvDemoReq) (*EnvDe
 }
 func (UnimplementedHostDemoServer) TempDemo(context.Context, *TempDemoReq) (*TempDemoResp, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method TempDemo not implemented")
+}
+func (UnimplementedHostDemoServer) CreateDirFileDemo(context.Context, *CreateDemoReq) (*CreateDemoResp, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateDirFileDemo not implemented")
 }
 func (UnimplementedHostDemoServer) ReadFrankenstein(context.Context, *ReadFrankensteinReq) (*ReadFrankensteinResp, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ReadFrankenstein not implemented")
@@ -222,6 +238,24 @@ func _HostDemo_TempDemo_Handler(srv interface{}, ctx context.Context, dec func(i
 	return interceptor(ctx, in, info, handler)
 }
 
+func _HostDemo_CreateDirFileDemo_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateDemoReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(HostDemoServer).CreateDirFileDemo(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: HostDemo_CreateDirFileDemo_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(HostDemoServer).CreateDirFileDemo(ctx, req.(*CreateDemoReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _HostDemo_ReadFrankenstein_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(ReadFrankensteinReq)
 	if err := dec(in); err != nil {
@@ -262,6 +296,10 @@ var HostDemo_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "TempDemo",
 			Handler:    _HostDemo_TempDemo_Handler,
+		},
+		{
+			MethodName: "CreateDirFileDemo",
+			Handler:    _HostDemo_CreateDirFileDemo_Handler,
 		},
 		{
 			MethodName: "ReadFrankenstein",

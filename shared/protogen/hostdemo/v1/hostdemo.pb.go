@@ -493,6 +493,110 @@ func (x *ReadFrankensteinResp) GetError() string {
 	return ""
 }
 
+type CreateDemoReq struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	DirToCreate   string                 `protobuf:"bytes,1,opt,name=dir_to_create,json=dirToCreate,proto3" json:"dir_to_create,omitempty"`
+	FileToCreate  string                 `protobuf:"bytes,2,opt,name=file_to_create,json=fileToCreate,proto3" json:"file_to_create,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CreateDemoReq) Reset() {
+	*x = CreateDemoReq{}
+	mi := &file_hostdemo_v1_hostdemo_proto_msgTypes[10]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CreateDemoReq) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CreateDemoReq) ProtoMessage() {}
+
+func (x *CreateDemoReq) ProtoReflect() protoreflect.Message {
+	mi := &file_hostdemo_v1_hostdemo_proto_msgTypes[10]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CreateDemoReq.ProtoReflect.Descriptor instead.
+func (*CreateDemoReq) Descriptor() ([]byte, []int) {
+	return file_hostdemo_v1_hostdemo_proto_rawDescGZIP(), []int{10}
+}
+
+func (x *CreateDemoReq) GetDirToCreate() string {
+	if x != nil {
+		return x.DirToCreate
+	}
+	return ""
+}
+
+func (x *CreateDemoReq) GetFileToCreate() string {
+	if x != nil {
+		return x.FileToCreate
+	}
+	return ""
+}
+
+type CreateDemoResp struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	DemoResp      string                 `protobuf:"bytes,1,opt,name=demo_resp,json=demoResp,proto3" json:"demo_resp,omitempty"`
+	Error         *string                `protobuf:"bytes,2,opt,name=error,proto3,oneof" json:"error,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CreateDemoResp) Reset() {
+	*x = CreateDemoResp{}
+	mi := &file_hostdemo_v1_hostdemo_proto_msgTypes[11]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CreateDemoResp) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CreateDemoResp) ProtoMessage() {}
+
+func (x *CreateDemoResp) ProtoReflect() protoreflect.Message {
+	mi := &file_hostdemo_v1_hostdemo_proto_msgTypes[11]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CreateDemoResp.ProtoReflect.Descriptor instead.
+func (*CreateDemoResp) Descriptor() ([]byte, []int) {
+	return file_hostdemo_v1_hostdemo_proto_rawDescGZIP(), []int{11}
+}
+
+func (x *CreateDemoResp) GetDemoResp() string {
+	if x != nil {
+		return x.DemoResp
+	}
+	return ""
+}
+
+func (x *CreateDemoResp) GetError() string {
+	if x != nil && x.Error != nil {
+		return *x.Error
+	}
+	return ""
+}
+
 var File_hostdemo_v1_hostdemo_proto protoreflect.FileDescriptor
 
 const file_hostdemo_v1_hostdemo_proto_rawDesc = "" +
@@ -527,13 +631,21 @@ const file_hostdemo_v1_hostdemo_proto_rawDesc = "" +
 	"\x14ReadFrankensteinResp\x12\x14\n" +
 	"\x05frank\x18\x01 \x01(\tR\x05frank\x12\x19\n" +
 	"\x05error\x18\x02 \x01(\tH\x00R\x05error\x88\x01\x01B\b\n" +
-	"\x06_error2\x85\x03\n" +
+	"\x06_error\"Y\n" +
+	"\rCreateDemoReq\x12\"\n" +
+	"\rdir_to_create\x18\x01 \x01(\tR\vdirToCreate\x12$\n" +
+	"\x0efile_to_create\x18\x02 \x01(\tR\ffileToCreate\"R\n" +
+	"\x0eCreateDemoResp\x12\x1b\n" +
+	"\tdemo_resp\x18\x01 \x01(\tR\bdemoResp\x12\x19\n" +
+	"\x05error\x18\x02 \x01(\tH\x00R\x05error\x88\x01\x01B\b\n" +
+	"\x06_error2\xd3\x03\n" +
 	"\bHostDemo\x12Z\n" +
 	"\x15EstablishHostServices\x12\x1f.hostdemo.v1.HostServiceRequest\x1a .hostdemo.v1.HostServiceResponse\x12E\n" +
 	"\n" +
 	"GetEnvDemo\x12\x1a.hostdemo.v1.GetEnvDemoReq\x1a\x1b.hostdemo.v1.GetEnvDemoResp\x12<\n" +
 	"\aEnvDemo\x12\x17.hostdemo.v1.EnvDemoReq\x1a\x18.hostdemo.v1.EnvDemoResp\x12?\n" +
-	"\bTempDemo\x12\x18.hostdemo.v1.TempDemoReq\x1a\x19.hostdemo.v1.TempDemoResp\x12W\n" +
+	"\bTempDemo\x12\x18.hostdemo.v1.TempDemoReq\x1a\x19.hostdemo.v1.TempDemoResp\x12L\n" +
+	"\x11CreateDirFileDemo\x12\x1a.hostdemo.v1.CreateDemoReq\x1a\x1b.hostdemo.v1.CreateDemoResp\x12W\n" +
 	"\x10ReadFrankenstein\x12 .hostdemo.v1.ReadFrankensteinReq\x1a!.hostdemo.v1.ReadFrankensteinRespB\xb8\x01\n" +
 	"\x0fcom.hostdemo.v1B\rHostdemoProtoP\x01ZIgithub.com/bmj2728/HostServiceTest/shared/protogen/hostdemo/v1;hostdemov1\xa2\x02\x03HXX\xaa\x02\vHostdemo.V1\xca\x02\vHostdemo\\V1\xe2\x02\x17Hostdemo\\V1\\GPBMetadata\xea\x02\fHostdemo::V1b\x06proto3"
 
@@ -549,7 +661,7 @@ func file_hostdemo_v1_hostdemo_proto_rawDescGZIP() []byte {
 	return file_hostdemo_v1_hostdemo_proto_rawDescData
 }
 
-var file_hostdemo_v1_hostdemo_proto_msgTypes = make([]protoimpl.MessageInfo, 10)
+var file_hostdemo_v1_hostdemo_proto_msgTypes = make([]protoimpl.MessageInfo, 12)
 var file_hostdemo_v1_hostdemo_proto_goTypes = []any{
 	(*HostServiceRequest)(nil),   // 0: hostdemo.v1.HostServiceRequest
 	(*HostServiceResponse)(nil),  // 1: hostdemo.v1.HostServiceResponse
@@ -561,23 +673,27 @@ var file_hostdemo_v1_hostdemo_proto_goTypes = []any{
 	(*TempDemoResp)(nil),         // 7: hostdemo.v1.TempDemoResp
 	(*ReadFrankensteinReq)(nil),  // 8: hostdemo.v1.ReadFrankensteinReq
 	(*ReadFrankensteinResp)(nil), // 9: hostdemo.v1.ReadFrankensteinResp
+	(*CreateDemoReq)(nil),        // 10: hostdemo.v1.CreateDemoReq
+	(*CreateDemoResp)(nil),       // 11: hostdemo.v1.CreateDemoResp
 }
 var file_hostdemo_v1_hostdemo_proto_depIdxs = []int32{
-	0, // 0: hostdemo.v1.HostDemo.EstablishHostServices:input_type -> hostdemo.v1.HostServiceRequest
-	2, // 1: hostdemo.v1.HostDemo.GetEnvDemo:input_type -> hostdemo.v1.GetEnvDemoReq
-	4, // 2: hostdemo.v1.HostDemo.EnvDemo:input_type -> hostdemo.v1.EnvDemoReq
-	6, // 3: hostdemo.v1.HostDemo.TempDemo:input_type -> hostdemo.v1.TempDemoReq
-	8, // 4: hostdemo.v1.HostDemo.ReadFrankenstein:input_type -> hostdemo.v1.ReadFrankensteinReq
-	1, // 5: hostdemo.v1.HostDemo.EstablishHostServices:output_type -> hostdemo.v1.HostServiceResponse
-	3, // 6: hostdemo.v1.HostDemo.GetEnvDemo:output_type -> hostdemo.v1.GetEnvDemoResp
-	5, // 7: hostdemo.v1.HostDemo.EnvDemo:output_type -> hostdemo.v1.EnvDemoResp
-	7, // 8: hostdemo.v1.HostDemo.TempDemo:output_type -> hostdemo.v1.TempDemoResp
-	9, // 9: hostdemo.v1.HostDemo.ReadFrankenstein:output_type -> hostdemo.v1.ReadFrankensteinResp
-	5, // [5:10] is the sub-list for method output_type
-	0, // [0:5] is the sub-list for method input_type
-	0, // [0:0] is the sub-list for extension type_name
-	0, // [0:0] is the sub-list for extension extendee
-	0, // [0:0] is the sub-list for field type_name
+	0,  // 0: hostdemo.v1.HostDemo.EstablishHostServices:input_type -> hostdemo.v1.HostServiceRequest
+	2,  // 1: hostdemo.v1.HostDemo.GetEnvDemo:input_type -> hostdemo.v1.GetEnvDemoReq
+	4,  // 2: hostdemo.v1.HostDemo.EnvDemo:input_type -> hostdemo.v1.EnvDemoReq
+	6,  // 3: hostdemo.v1.HostDemo.TempDemo:input_type -> hostdemo.v1.TempDemoReq
+	10, // 4: hostdemo.v1.HostDemo.CreateDirFileDemo:input_type -> hostdemo.v1.CreateDemoReq
+	8,  // 5: hostdemo.v1.HostDemo.ReadFrankenstein:input_type -> hostdemo.v1.ReadFrankensteinReq
+	1,  // 6: hostdemo.v1.HostDemo.EstablishHostServices:output_type -> hostdemo.v1.HostServiceResponse
+	3,  // 7: hostdemo.v1.HostDemo.GetEnvDemo:output_type -> hostdemo.v1.GetEnvDemoResp
+	5,  // 8: hostdemo.v1.HostDemo.EnvDemo:output_type -> hostdemo.v1.EnvDemoResp
+	7,  // 9: hostdemo.v1.HostDemo.TempDemo:output_type -> hostdemo.v1.TempDemoResp
+	11, // 10: hostdemo.v1.HostDemo.CreateDirFileDemo:output_type -> hostdemo.v1.CreateDemoResp
+	9,  // 11: hostdemo.v1.HostDemo.ReadFrankenstein:output_type -> hostdemo.v1.ReadFrankensteinResp
+	6,  // [6:12] is the sub-list for method output_type
+	0,  // [0:6] is the sub-list for method input_type
+	0,  // [0:0] is the sub-list for extension type_name
+	0,  // [0:0] is the sub-list for extension extendee
+	0,  // [0:0] is the sub-list for field type_name
 }
 
 func init() { file_hostdemo_v1_hostdemo_proto_init() }
@@ -590,13 +706,14 @@ func file_hostdemo_v1_hostdemo_proto_init() {
 	file_hostdemo_v1_hostdemo_proto_msgTypes[5].OneofWrappers = []any{}
 	file_hostdemo_v1_hostdemo_proto_msgTypes[7].OneofWrappers = []any{}
 	file_hostdemo_v1_hostdemo_proto_msgTypes[9].OneofWrappers = []any{}
+	file_hostdemo_v1_hostdemo_proto_msgTypes[11].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_hostdemo_v1_hostdemo_proto_rawDesc), len(file_hostdemo_v1_hostdemo_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   10,
+			NumMessages:   12,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

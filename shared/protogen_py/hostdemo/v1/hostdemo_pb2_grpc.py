@@ -34,6 +34,11 @@ class HostDemoStub(object):
                 request_serializer=hostdemo_dot_v1_dot_hostdemo__pb2.TempDemoReq.SerializeToString,
                 response_deserializer=hostdemo_dot_v1_dot_hostdemo__pb2.TempDemoResp.FromString,
                 _registered_method=True)
+        self.CreateDirFileDemo = channel.unary_unary(
+                '/hostdemo.v1.HostDemo/CreateDirFileDemo',
+                request_serializer=hostdemo_dot_v1_dot_hostdemo__pb2.CreateDemoReq.SerializeToString,
+                response_deserializer=hostdemo_dot_v1_dot_hostdemo__pb2.CreateDemoResp.FromString,
+                _registered_method=True)
         self.ReadFrankenstein = channel.unary_unary(
                 '/hostdemo.v1.HostDemo/ReadFrankenstein',
                 request_serializer=hostdemo_dot_v1_dot_hostdemo__pb2.ReadFrankensteinReq.SerializeToString,
@@ -68,6 +73,12 @@ class HostDemoServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def CreateDirFileDemo(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
     def ReadFrankenstein(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
@@ -96,6 +107,11 @@ def add_HostDemoServicer_to_server(servicer, server):
                     servicer.TempDemo,
                     request_deserializer=hostdemo_dot_v1_dot_hostdemo__pb2.TempDemoReq.FromString,
                     response_serializer=hostdemo_dot_v1_dot_hostdemo__pb2.TempDemoResp.SerializeToString,
+            ),
+            'CreateDirFileDemo': grpc.unary_unary_rpc_method_handler(
+                    servicer.CreateDirFileDemo,
+                    request_deserializer=hostdemo_dot_v1_dot_hostdemo__pb2.CreateDemoReq.FromString,
+                    response_serializer=hostdemo_dot_v1_dot_hostdemo__pb2.CreateDemoResp.SerializeToString,
             ),
             'ReadFrankenstein': grpc.unary_unary_rpc_method_handler(
                     servicer.ReadFrankenstein,
@@ -211,6 +227,33 @@ class HostDemo(object):
             '/hostdemo.v1.HostDemo/TempDemo',
             hostdemo_dot_v1_dot_hostdemo__pb2.TempDemoReq.SerializeToString,
             hostdemo_dot_v1_dot_hostdemo__pb2.TempDemoResp.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def CreateDirFileDemo(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/hostdemo.v1.HostDemo/CreateDirFileDemo',
+            hostdemo_dot_v1_dot_hostdemo__pb2.CreateDemoReq.SerializeToString,
+            hostdemo_dot_v1_dot_hostdemo__pb2.CreateDemoResp.FromString,
             options,
             channel_credentials,
             insecure,

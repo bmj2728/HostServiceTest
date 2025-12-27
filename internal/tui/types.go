@@ -93,6 +93,14 @@ func GetHostDemoFunctions() []PluginFunction {
 			},
 		},
 		{
+			Name:        "CreateDirFileDemo",
+			DisplayName: "Directory/File Creation Demo",
+			Inputs: []FunctionInput{
+				{Name: "dirToCreate", DisplayName: "Directory to Create", Value: "host/service/test"},
+				{Name: "fileToCreate", DisplayName: "File to Create", Value: "test_file.txt"},
+			},
+		},
+		{
 			Name:        "ReadFrankenstein",
 			DisplayName: "Read Frankenstein",
 			Inputs:      []FunctionInput{},
@@ -159,6 +167,16 @@ func ExecutePluginFunction(plugin *PluginInfo, function PluginFunction) Executio
 			pattern := function.Inputs[0].Value
 			textToWrite := function.Inputs[1].Value
 			output, err := demo.TempDemo(pattern, textToWrite)
+			if err != nil {
+				result.Error = err
+				return result
+			}
+			result.Output = output
+
+		case "CreateDirFileDemo":
+			dirToCreate := function.Inputs[0].Value
+			fileToCreate := function.Inputs[1].Value
+			output, err := demo.CreateDirFileDemo(dirToCreate, fileToCreate)
 			if err != nil {
 				result.Error = err
 				return result

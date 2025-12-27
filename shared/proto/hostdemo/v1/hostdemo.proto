@@ -7,6 +7,7 @@ service HostDemo {
   rpc GetEnvDemo(GetEnvDemoReq) returns (GetEnvDemoResp);
   rpc EnvDemo(EnvDemoReq) returns (EnvDemoResp);
   rpc TempDemo(TempDemoReq) returns (TempDemoResp);
+  rpc CreateDirFileDemo(CreateDemoReq) returns (CreateDemoResp);
   rpc ReadFrankenstein(ReadFrankensteinReq) returns (ReadFrankensteinResp);
 }
 
@@ -52,5 +53,15 @@ message ReadFrankensteinReq {
 
 message ReadFrankensteinResp {
   string frank = 1;
+  optional string error = 2;
+}
+
+message CreateDemoReq {
+  string dir_to_create = 1;
+  string file_to_create = 2;
+}
+
+message CreateDemoResp {
+  string demo_resp = 1;
   optional string error = 2;
 }

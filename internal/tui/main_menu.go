@@ -153,11 +153,11 @@ func (m Model) runConcurrencyDemo() tea.Cmd {
 
 				// Set default values for file listers
 				function := p.Functions[0]
-				if p.Type == PluginFileLister || p.Type == PluginColorLister || p.Type == PluginPyLister {
+				if p.Type == PluginFileLister {
 					function.Inputs[0].Value = cwd
 					function.Inputs[1].Value = "."
 				} else if p.Type == PluginHostDemo {
-					function.Inputs[0].Value = "GOPATH"
+					function.Inputs[0].Value = "USER"
 				}
 
 				result := ExecutePluginFunction(&p, function)

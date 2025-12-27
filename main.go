@@ -98,14 +98,14 @@ func main() {
 		},
 		{
 			Name:      "Color Lister (Go)",
-			Type:      tui.PluginColorLister,
+			Type:      tui.PluginFileLister,
 			Client:    clClient,
 			Interface: colorLister,
 			Functions: tui.GetFileListerFunctions(),
 		},
 		{
 			Name:      "Python Lister",
-			Type:      tui.PluginPyLister,
+			Type:      tui.PluginFileLister,
 			Client:    pyClient,
 			Interface: pyLister,
 			Functions: tui.GetFileListerFunctions(),

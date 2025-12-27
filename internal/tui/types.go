@@ -20,10 +20,8 @@ const (
 type PluginType string
 
 const (
-	PluginFileLister  PluginType = "filelister"
-	PluginColorLister PluginType = "colorlister"
-	PluginPyLister    PluginType = "pylelister"
-	PluginHostDemo    PluginType = "hostdemo"
+	PluginFileLister PluginType = "filelister"
+	PluginHostDemo   PluginType = "hostdemo"
 )
 
 // PluginInfo holds information about a loaded plugin
@@ -46,7 +44,7 @@ type PluginFunction struct {
 type FunctionInput struct {
 	Name        string
 	DisplayName string
-	Value       string
+	Value       any
 }
 
 // ExecutionResult holds the result of plugin execution
@@ -105,7 +103,7 @@ func ExecutePluginFunction(plugin *PluginInfo, function PluginFunction) Executio
 	}
 
 	switch plugin.Type {
-	case PluginFileLister, PluginColorLister, PluginPyLister:
+	case PluginFileLister:
 		lister, ok := plugin.Interface.(filelister.FileLister)
 		if !ok {
 			result.Error = ErrInvalidPluginType
@@ -113,8 +111,8 @@ func ExecutePluginFunction(plugin *PluginInfo, function PluginFunction) Executio
 		}
 
 		if function.Name == "ListFiles" {
-			rootDir := function.Inputs[0].Value
-			path := function.Inputs[1].Value
+			rootDir := function.Inputs[0].Value.(string)
+			path := function.Inputs[1].Value.(string)
 			entries, err := lister.ListFiles(rootDir, path)
 			if err != nil {
 				result.Error = err
@@ -136,7 +134,7 @@ func ExecutePluginFunction(plugin *PluginInfo, function PluginFunction) Executio
 
 		switch function.Name {
 		case "GetEnvDemo":
-			key := function.Inputs[0].Value
+			key := function.Inputs[0].Value.(string)
 			output, err := demo.GetEnvDemo(key)
 			if err != nil {
 				result.Error = err
@@ -153,8 +151,8 @@ func ExecutePluginFunction(plugin *PluginInfo, function PluginFunction) Executio
 			result.Output = output
 
 		case "TempDemo":
-			pattern := function.Inputs[0].Value
-			textToWrite := function.Inputs[1].Value
+			pattern := function.Inputs[0].Value.(string)
+			textToWrite := function.Inputs[1].Value.(string)
 			output, err := demo.TempDemo(pattern, textToWrite)
 			if err != nil {
 				result.Error = err

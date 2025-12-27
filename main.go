@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"os/exec"
@@ -9,6 +10,7 @@ import (
 
 	"github.com/bmj2728/hst/shared/pkg/filelister"
 	"github.com/bmj2728/hst/shared/pkg/hostconn"
+	"github.com/bmj2728/hst/shared/pkg/hostdemo"
 	"github.com/bmj2728/hst/shared/pkg/hostserve"
 	"github.com/hashicorp/go-hclog"
 	"github.com/hashicorp/go-plugin"
@@ -24,6 +26,7 @@ var pluginMap = map[string]plugin.Plugin{
 	"fl-plugin": &filelister.FileListerGRPCPlugin{},
 	"cl-plugin": &filelister.FileListerGRPCPlugin{},
 	"pl-plugin": &filelister.FileListerGRPCPlugin{},
+	"hd-plugin": &hostdemo.HostDemoGRPCPlugin{},
 }
 
 // used for testing nonlocal project paths
@@ -250,20 +253,71 @@ func main() {
 	// Coerce the raw interface to the FileLister type
 	pythonlister := rawPython.(filelister.FileLister)
 
-	//// Setup host services for the plugin (if supported)
-	//cid3, err := hostconn.EstablishHostServiceConnection(rawPython, hostServices, logger)
-	//if err != nil {
-	//	logger.Error("Failed to establish host services", "err", err)
-	//	os.Exit(1)
-	//}
-	//if cid3 != "" {
-	//	err = hostServices.ActiveClients().AddClient(cid3, plBin)
-	//	if err != nil {
-	//		logger.Error("Failed to add client", "err", err)
-	//		os.Exit(1)
-	//	}
-	//	logger.Info("Host services established", "bin", plBin, "cid", cid3)
-	//}
+	// Setup host services for the plugin (if supported)
+	cid3, err := hostconn.EstablishHostServiceConnection(rawPython, hostServices, logger)
+	if err != nil {
+		logger.Error("Failed to establish host services", "err", err)
+		os.Exit(1)
+	}
+	if cid3 != "" {
+		err = hostServices.ActiveClients().AddClient(cid3, plBin)
+		if err != nil {
+			logger.Error("Failed to add client", "err", err)
+			os.Exit(1)
+		}
+		logger.Info("Host services established", "bin", plBin, "cid", cid3)
+	}
+
+	// End plugin 3
+
+	////Start plugin Host Demo
+	hdAbspath, err := filepath.Abs("./plugins/hostdemo/hostdemo")
+	if err != nil {
+		logger.Error("Failed to get absolute path", "err", err)
+		hdAbspath = "./plugins/hd/hd"
+	}
+	hdDir, hdBin := filepath.Split(hdAbspath)
+	logger.Info("Starting plugin", "dir", hdDir, "bin", hdBin)
+	hd := plugin.NewClient(&plugin.ClientConfig{
+		HandshakeConfig:  handshakeConfig,
+		Plugins:          pluginMap,
+		Cmd:              exec.Command(hdAbspath),
+		AllowedProtocols: []plugin.Protocol{plugin.ProtocolGRPC},
+		Logger:           logger,
+	})
+	defer hd.Kill()
+
+	// Connect via gRPC - porcelain
+	rpcClientHostDemo, err := hd.Client()
+	if err != nil {
+		logger.Error("Failed to get RPC client", "err", err)
+		os.Exit(1)
+	}
+
+	// Request the FileLister plugin - the raw interface
+	rawHD, err := rpcClientHostDemo.Dispense("hd-plugin")
+	if err != nil {
+		logger.Error("Failed to dispense plugin", "err", err)
+		os.Exit(1)
+	}
+
+	// Coerce the raw interface to the FileLister type
+	demo := rawHD.(hostdemo.HostDemo)
+
+	// Setup host services for the plugin (if supported)
+	cid4, err := hostconn.EstablishHostServiceConnection(rawHD, hostServices, logger)
+	if err != nil {
+		logger.Error("Failed to establish host services", "err", err)
+		os.Exit(1)
+	}
+	if cid4 != "" {
+		err = hostServices.ActiveClients().AddClient(cid4, clBin)
+		if err != nil {
+			logger.Error("Failed to add client", "err", err)
+			os.Exit(1)
+		}
+		logger.Info("Host services established", "bin", clBin, "cid", cid2)
+	}
 
 	// End plugin 2
 
@@ -303,6 +357,22 @@ func main() {
 		for _, entry := range pythonEntries {
 			fmt.Println(entry)
 		}
+	}()
+
+	go func() {
+		val, err := demo.GetEnvDemo(context.Background(), "GOPATH")
+		if err != nil {
+			logger.Error("Failed get env demo", "err", err)
+		}
+		fmt.Println(val)
+	}()
+
+	go func() {
+		envDat, err := demo.EnvDemo(context.Background())
+		if err != nil {
+			logger.Error("Failed env demo", "err", err)
+		}
+		fmt.Println(envDat)
 	}()
 
 	time.Sleep(1 * time.Second)

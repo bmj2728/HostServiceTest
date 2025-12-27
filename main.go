@@ -3,8 +3,8 @@ package main
 import (
 	"fmt"
 	"os"
-	"time"
 
+	"github.com/bmj2728/hst/internal/tui"
 	"github.com/bmj2728/hst/internal/utils"
 	"github.com/bmj2728/hst/shared/pkg/filelister"
 	"github.com/bmj2728/hst/shared/pkg/hostdemo"
@@ -20,13 +20,25 @@ func main() {
 	err := utils.ResetDemoState()
 	if err != nil {
 		hclog.Default().Error("Failed to reset state", "err", err)
-		return
 	}
 
 	// Set up logging
+
+	logFile, err := os.OpenFile("hst-demo.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
+	if err != nil {
+		fmt.Printf("Failed to open log file: %v\n", err)
+		return
+	}
+	defer func(logFile *os.File) {
+		err := logFile.Close()
+		if err != nil {
+			fmt.Printf("Failed to close log file: %v\n", err)
+		}
+	}(logFile)
+
 	logger := hclog.New(&hclog.LoggerOptions{
 		Name:   "host",
-		Output: os.Stdout,
+		Output: logFile,
 		Level:  hclog.Info,
 		Color:  hclog.ForceColor,
 	})
@@ -75,71 +87,43 @@ func main() {
 
 	//END SETUP
 
-	// Run some demos - to be replaced with interactive TUI
-	cwd, err := os.Getwd()
+	// Build plugin info for TUI
+	plugins := []tui.PluginInfo{
+		{
+			Name:      "File Lister (Go)",
+			Type:      tui.PluginFileLister,
+			Client:    flClient,
+			Interface: fileLister,
+			Functions: tui.GetFileListerFunctions(),
+		},
+		{
+			Name:      "Color Lister (Go)",
+			Type:      tui.PluginColorLister,
+			Client:    clClient,
+			Interface: colorLister,
+			Functions: tui.GetFileListerFunctions(),
+		},
+		{
+			Name:      "Python Lister",
+			Type:      tui.PluginPyLister,
+			Client:    pyClient,
+			Interface: pyLister,
+			Functions: tui.GetFileListerFunctions(),
+		},
+		{
+			Name:      "Host Demo",
+			Type:      tui.PluginHostDemo,
+			Client:    hdClient,
+			Interface: demo,
+			Functions: tui.GetHostDemoFunctions(),
+		},
+	}
 
-	go func() {
-
-		entries, err := fileLister.ListFiles(cwd, "plugins/filelister")
-		if err != nil {
-			logger.Error("Failed to list files", "err", err)
-			os.Exit(1)
-		}
-		logger.Info("Successfully listed files - no color")
-		for _, entry := range entries {
-			fmt.Println(entry)
-		}
-	}()
-
-	go func() {
-		colorEntries, err := colorLister.ListFiles(cwd, cwd)
-		if err != nil {
-			logger.Error("Failed to list files", "err", err)
-			os.Exit(1)
-		}
-		logger.Info("Successfully listed files - with color")
-		for _, entry := range colorEntries {
-			fmt.Println(entry)
-		}
-	}()
-
-	go func() {
-		pythonEntries, err := pyLister.ListFiles(cwd, cwd)
-		if err != nil {
-			logger.Error("Failed to list files", "err", err)
-			os.Exit(1)
-		}
-		logger.Info("Successfully listed files - with color")
-		for _, entry := range pythonEntries {
-			fmt.Println(entry)
-		}
-	}()
-
-	go func() {
-		val, err := demo.GetEnvDemo("GOPATH")
-		if err != nil {
-			logger.Error("Failed get env demo", "err", err)
-		}
-		fmt.Println(val)
-	}()
-
-	go func() {
-		envDat, err := demo.EnvDemo()
-		if err != nil {
-			logger.Error("Failed env demo", "err", err)
-		}
-		fmt.Println(envDat)
-	}()
-
-	go func() {
-		tempDemo, err := demo.TempDemo("Host-Demo-*-Temp", "This is a temp file")
-		if err != nil {
-			logger.Error("Failed temp demo", "err", err)
-		}
-		fmt.Println(tempDemo)
-	}()
-
-	// Clean up and shutdown
-	utils.Shutdown(200*time.Millisecond, hostServices, logger)
+	// Launch the TUI
+	err = tui.Launch(plugins, hostServices, logger)
+	if err != nil {
+		logger.Error("TUI error", "err", err)
+		os.Exit(1)
+	}
 
 }

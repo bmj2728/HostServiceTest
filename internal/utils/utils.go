@@ -84,6 +84,16 @@ func ResetDemoState() error {
 		return fmt.Errorf("failed to rename file: %w", err)
 	}
 	_, err = os.Create("./deleteme.txt")
+	info, err := os.Stat("./hst-demo.log")
+	if err != nil {
+		return fmt.Errorf("failed to stat log file: %w", err)
+	}
+	if info.Size() > 1024*1024*2 {
+		err = os.Truncate("./hst-demo.log", 0)
+		if err != nil {
+			return fmt.Errorf("failed to truncate log file: %w", err)
+		}
+	}
 	return err
 }
 

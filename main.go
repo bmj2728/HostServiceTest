@@ -168,10 +168,11 @@ func main() {
 	demo := hdRaw.(hostdemo.HostDemo)
 
 	// Run some demos
+	cwd, err := os.Getwd()
 
 	go func() {
-		// Test the plugin by listing files in the current directory
-		entries, err := fileLister.ListFiles("/home/brian/GolandProjects/HostServiceTest", "plugins/filelister")
+
+		entries, err := fileLister.ListFiles(cwd, "plugins/filelister")
 		if err != nil {
 			logger.Error("Failed to list files", "err", err)
 			os.Exit(1)
@@ -183,7 +184,7 @@ func main() {
 	}()
 
 	go func() {
-		colorEntries, err := colorlister.ListFiles("/home/brian/GolandProjects/HostServiceTest", "/home/brian/GolandProjects/HostServiceTest")
+		colorEntries, err := colorlister.ListFiles(cwd, cwd)
 		if err != nil {
 			logger.Error("Failed to list files", "err", err)
 			os.Exit(1)
@@ -195,7 +196,7 @@ func main() {
 	}()
 
 	go func() {
-		pythonEntries, err := pythonlister.ListFiles("/home/brian/GolandProjects/HostServiceTest", "/home/brian/GolandProjects/HostServiceTest")
+		pythonEntries, err := pythonlister.ListFiles(cwd, cwd)
 		if err != nil {
 			logger.Error("Failed to list files", "err", err)
 			os.Exit(1)

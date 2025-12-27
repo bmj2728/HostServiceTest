@@ -1,0 +1,35 @@
+syntax = "proto3";
+package hostdemo.v1;
+option go_package = "github.com/bmj2728/HostServiceTest/shared/protogen/hostdemo/v1;hostdemov1";
+
+service HostDemo {
+  rpc EstablishHostServices(HostServiceRequest) returns (HostServiceResponse);
+  rpc GetEnvDemo(GetEnvDemoReq) returns (GetEnvDemoResp);
+  rpc EnvDemo(EnvDemoReq) returns (EnvDemoResp);
+}
+
+message HostServiceRequest {
+  uint32 host_service = 1;
+}
+
+message HostServiceResponse {
+  string client_id = 1;
+  optional string error = 2;
+}
+
+message GetEnvDemoReq {
+  string key = 1;
+}
+
+message GetEnvDemoResp {
+  string resp = 1;
+  optional string error = 2;
+}
+
+message EnvDemoReq {
+}
+
+message EnvDemoResp {
+  string resp = 1;
+  optional string error = 2;
+}

@@ -3,6 +3,7 @@ package hostserve
 import (
 	"context"
 	"fmt"
+	"log"
 	"os"
 	"path/filepath"
 	"testing"
@@ -30,7 +31,10 @@ func CreateTempTestDir(t *testing.T) string {
 		t.Fatalf("Failed to create temp dir: %v", err)
 	}
 	t.Cleanup(func() {
-		os.RemoveAll(dir)
+		err := os.RemoveAll(dir)
+		if err != nil {
+			log.Default().Printf("Failed to remove temp dir %s: %v", dir, err)
+		}
 	})
 	return dir
 }

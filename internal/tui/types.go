@@ -92,6 +92,11 @@ func GetHostDemoFunctions() []PluginFunction {
 				{Name: "textToWrite", DisplayName: "Text to Write", Value: "This is a temp file"},
 			},
 		},
+		{
+			Name:        "ReadFrankenstein",
+			DisplayName: "Read Frankenstein",
+			Inputs:      []FunctionInput{},
+		},
 	}
 }
 
@@ -154,6 +159,14 @@ func ExecutePluginFunction(plugin *PluginInfo, function PluginFunction) Executio
 			pattern := function.Inputs[0].Value
 			textToWrite := function.Inputs[1].Value
 			output, err := demo.TempDemo(pattern, textToWrite)
+			if err != nil {
+				result.Error = err
+				return result
+			}
+			result.Output = output
+
+		case "ReadFrankenstein":
+			output, err := demo.ReadFrankenstein()
 			if err != nil {
 				result.Error = err
 				return result

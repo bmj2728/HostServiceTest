@@ -13,6 +13,7 @@ package hostserve
 // HostServices provides functionalities for interacting with the host file system and environment variables.
 type HostServices struct {
 	activeClients *ActiveClients
+	rawPlugins    []interface{}
 	IHostFS
 	IHostEnv
 }
@@ -21,6 +22,7 @@ type HostServices struct {
 func NewHostServices(fs IHostFS, env IHostEnv) *HostServices {
 	return &HostServices{
 		activeClients: newActiveClients(),
+		rawPlugins:    make([]interface{}, 0),
 		IHostFS:       fs,
 		IHostEnv:      env,
 	}
@@ -31,4 +33,15 @@ func (hs *HostServices) ActiveClients() *ActiveClients {
 		return newActiveClients()
 	}
 	return hs.activeClients
+}
+
+func (hs *HostServices) RawPlugins() []interface{} {
+	return hs.rawPlugins
+}
+
+func (hs *HostServices) AddRawPlugin(plugin interface{}) {
+	if hs.rawPlugins == nil {
+		hs.rawPlugins = make([]interface{}, 0)
+	}
+	hs.rawPlugins = append(hs.rawPlugins, plugin)
 }

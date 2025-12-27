@@ -3,114 +3,21 @@ package main
 import (
 	"fmt"
 	"os"
-	"os/exec"
-	"path/filepath"
 	"time"
 
+	"github.com/bmj2728/hst/internal/utils"
 	"github.com/bmj2728/hst/shared/pkg/filelister"
-	"github.com/bmj2728/hst/shared/pkg/hostconn"
 	"github.com/bmj2728/hst/shared/pkg/hostdemo"
 	"github.com/bmj2728/hst/shared/pkg/hostserve"
 	"github.com/hashicorp/go-hclog"
-	"github.com/hashicorp/go-plugin"
 )
-
-var handshakeConfig = plugin.HandshakeConfig{
-	ProtocolVersion:  1,
-	MagicCookieKey:   "TEST_KEY",
-	MagicCookieValue: "TEST_VALUE",
-}
-
-var pluginMap = map[string]plugin.Plugin{
-	"file-lister":  &filelister.FileListerGRPCPlugin{},
-	"color-lister": &filelister.FileListerGRPCPlugin{},
-	"py-lister":    &filelister.FileListerGRPCPlugin{},
-	"host-demo":    &hostdemo.HostDemoGRPCPlugin{},
-}
-
-func startPluginClient(pluginPath string, dispenseName string, hostServices *hostserve.HostServices, logger hclog.Logger) (interface{}, *plugin.Client, error) {
-	absPath, err := filepath.Abs(pluginPath)
-	if err != nil {
-		logger.Error("Failed to get absolute path", "err", err)
-		return nil, nil, fmt.Errorf("failed to get absolute path: %w", err)
-	}
-	_, bin := filepath.Split(absPath)
-	client := plugin.NewClient(&plugin.ClientConfig{
-		HandshakeConfig:  handshakeConfig,
-		Plugins:          pluginMap,
-		Cmd:              exec.Command(absPath),
-		AllowedProtocols: []plugin.Protocol{plugin.ProtocolGRPC},
-		Logger:           logger,
-	})
-	rpcClient, err := client.Client()
-	if err != nil {
-		logger.Error("Failed to get RPC client", "err", err)
-		return nil, client, err
-	}
-	raw, err := rpcClient.Dispense(dispenseName)
-	if err != nil {
-		logger.Error("Failed to get RPC client", "err", err)
-		return nil, client, err
-	}
-	cid, err := hostconn.EstablishHostServiceConnection(raw, hostServices, logger)
-	if err != nil {
-		logger.Error("Failed to establish host services", "err", err)
-		return nil, client, fmt.Errorf("failed to establish host services: %w", err)
-	}
-	if cid != "" {
-		err = hostServices.ActiveClients().AddClient(cid, bin)
-		if err != nil {
-			logger.Error("Failed to add client", "err", err)
-			return nil, client, fmt.Errorf("failed to add client: %w", err)
-		}
-		logger.Info("Host services established", "bin", bin, "cid", cid)
-		hostServices.AddRawPlugin(raw)
-	}
-	return raw, client, nil
-}
-
-func resetState() error {
-	err := os.RemoveAll("./created_dir")
-	if err != nil {
-		return fmt.Errorf("failed to remove created_dir: %w", err)
-	}
-	err = os.RemoveAll("./nested")
-	if err != nil {
-		return fmt.Errorf("failed to remove nested: %w", err)
-	}
-	err = os.Rename("./rename_works.md",
-		"./renameme.md")
-	if err != nil {
-		return fmt.Errorf("failed to rename file: %w", err)
-	}
-	_, err = os.Create("./deleteme.txt")
-	return err
-}
-
-func shutdown(delay time.Duration, hostServices *hostserve.HostServices, logger hclog.Logger) {
-	time.Sleep(delay)
-	logger.Info("Shutting down plugins")
-	for _, rawPlugin := range hostServices.RawPlugins() {
-		hostconn.DisconnectHostServices(rawPlugin, logger)
-	}
-
-	hfs, ok := hostServices.IHostFS.(*hostserve.HostFS)
-	if !ok {
-		logger.Error("Failed to cast host services to HostFS")
-		return
-	}
-	hfs.Cleanup()
-	hostServices.ActiveClients().Clear()
-
-	plugin.CleanupClients() //make sure we actually shutdown the plugins
-
-	os.Exit(0)
-}
 
 func main() {
 
+	//SETUP
+
 	// Cleanup prior runs
-	err := resetState()
+	err := utils.ResetDemoState()
 	if err != nil {
 		hclog.Default().Error("Failed to reset state", "err", err)
 		return
@@ -129,7 +36,7 @@ func main() {
 	hostServices := hostserve.NewHostServices(hostserve.NewHostFS(), hostserve.NewHostEnv())
 
 	//Start File Lister
-	flRaw, flClient, err := startPluginClient("./plugins/filelister/filelister", "file-lister", hostServices, logger)
+	flRaw, flClient, err := utils.LaunchPluginClient("./plugins/filelister/filelister", "file-lister", hostServices, logger)
 	if err != nil {
 		logger.Error("Failed to start plugin", "err", err)
 		return
@@ -138,7 +45,7 @@ func main() {
 	fileLister := flRaw.(filelister.FileLister)
 
 	//Start Color Lister
-	clRaw, clClient, err := startPluginClient("./plugins/colorlister/colorlister", "color-lister", hostServices, logger)
+	clRaw, clClient, err := utils.LaunchPluginClient("./plugins/colorlister/colorlister", "color-lister", hostServices, logger)
 	if err != nil {
 		logger.Error("Failed to start plugin", "err", err)
 		return
@@ -146,9 +53,9 @@ func main() {
 	defer clClient.Kill()
 	colorLister := clRaw.(filelister.FileLister)
 
-	////Start Python Lister
+	//Start Python Lister
 
-	pyRaw, pyClient, err := startPluginClient("./plugins/pylelister/dist/pylelister", "py-lister", hostServices, logger)
+	pyRaw, pyClient, err := utils.LaunchPluginClient("./plugins/pylelister/dist/pylelister", "py-lister", hostServices, logger)
 	if err != nil {
 		logger.Error("Failed to start plugin", "err", err)
 		return
@@ -158,7 +65,7 @@ func main() {
 
 	//Start Host Demo
 
-	hdRaw, hdClient, err := startPluginClient("./plugins/hostdemo/hostdemo", "host-demo", hostServices, logger)
+	hdRaw, hdClient, err := utils.LaunchPluginClient("./plugins/hostdemo/hostdemo", "host-demo", hostServices, logger)
 	if err != nil {
 		logger.Error("Failed to start plugin", "err", err)
 		return
@@ -166,7 +73,9 @@ func main() {
 	defer hdClient.Kill()
 	demo := hdRaw.(hostdemo.HostDemo)
 
-	// Run some demos
+	//END SETUP
+
+	// Run some demos - to be replaced with interactive TUI
 	cwd, err := os.Getwd()
 
 	go func() {
@@ -230,6 +139,7 @@ func main() {
 		fmt.Println(tempDemo)
 	}()
 
-	shutdown(200*time.Millisecond, hostServices, logger)
+	// Clean up and shutdown
+	utils.Shutdown(200*time.Millisecond, hostServices, logger)
 
 }

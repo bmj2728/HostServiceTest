@@ -29,6 +29,62 @@ var pluginMap = map[string]plugin.Plugin{
 	"hd-plugin": &hostdemo.HostDemoGRPCPlugin{},
 }
 
+func startPluginClient(pluginPath string, logger hclog.Logger) (string, *plugin.Client, error) {
+	absPath, err := filepath.Abs(pluginPath)
+	if err != nil {
+		logger.Error("Failed to get absolute path", "err", err)
+		return "", nil, fmt.Errorf("failed to get absolute path: %w", err)
+	}
+	_, bin := filepath.Split(absPath)
+	client := plugin.NewClient(&plugin.ClientConfig{
+		HandshakeConfig:  handshakeConfig,
+		Plugins:          pluginMap,
+		Cmd:              exec.Command(absPath),
+		AllowedProtocols: []plugin.Protocol{plugin.ProtocolGRPC},
+		Logger:           logger,
+	})
+	return bin, client, nil
+}
+
+func connectToPlugin(client *plugin.Client, dispenseName string, logger hclog.Logger) (interface{}, error) {
+	rpcClient, err := client.Client()
+	if err != nil {
+		logger.Error("Failed to get RPC client", "err", err)
+		return nil, err
+	}
+	raw, err := rpcClient.Dispense(dispenseName)
+	if err != nil {
+		logger.Error("Failed to get RPC client", "err", err)
+		return nil, err
+	}
+	return raw, nil
+}
+
+func connectHost(plugin interface{}, plugBin string, hostServices *hostserve.HostServices, logger hclog.Logger) error {
+	if plugin == nil {
+		logger.Error("Plugin is nil")
+		return fmt.Errorf("plugin is nil")
+	}
+	if hostServices == nil {
+		logger.Error("Host services is nil")
+		return fmt.Errorf("host services is nil")
+	}
+	cid, err := hostconn.EstablishHostServiceConnection(plugin, hostServices, logger)
+	if err != nil {
+		logger.Error("Failed to establish host services", "err", err)
+		return fmt.Errorf("failed to establish host services: %w", err)
+	}
+	if cid != "" {
+		err = hostServices.ActiveClients().AddClient(cid, plugBin)
+		if err != nil {
+			logger.Error("Failed to add client", "err", err)
+			return fmt.Errorf("failed to add client: %w", err)
+		}
+		logger.Info("Host services established", "bin", plugBin, "cid", cid)
+	}
+	return nil
+}
+
 func main() {
 
 	//clean up
@@ -63,53 +119,20 @@ func main() {
 	hostServices := hostserve.NewHostServices(hostserve.NewHostFS(), hostserve.NewHostEnv())
 
 	//Start plugin 1
-	flAbspath, err := filepath.Abs("./plugins/filelister/filelister")
-	if err != nil {
-		logger.Error("Failed to get absolute path", "err", err)
-		flAbspath = "./plugins/filelister/filelister"
-	}
-	flDir, flBin := filepath.Split(flAbspath)
-	logger.Info("Starting plugin", "dir", flDir, "bin", flBin)
-	// Create the plugin client - plumbing
-	client := plugin.NewClient(&plugin.ClientConfig{
-		HandshakeConfig:  handshakeConfig,
-		Plugins:          pluginMap,
-		Cmd:              exec.Command(flAbspath),
-		AllowedProtocols: []plugin.Protocol{plugin.ProtocolGRPC},
-		Logger:           logger,
-	})
-	defer client.Kill()
 
-	// Connect via gRPC - porcelain
-	rpcClient, err := client.Client()
+	flBin, flClient, err := startPluginClient("./plugins/filelister/filelister", logger)
 	if err != nil {
-		logger.Error("Failed to get RPC client", "err", err)
-		os.Exit(1)
+		logger.Error("Failed to start plugin", "err", err)
 	}
-
-	// Request the FileLister plugin - the raw interface
-	raw, err := rpcClient.Dispense("fl-plugin")
+	raw, err := connectToPlugin(flClient, "fl-plugin", logger)
 	if err != nil {
-		logger.Error("Failed to dispense plugin", "err", err)
-		os.Exit(1)
+		logger.Error("Failed to connect to plugin", "err", err)
 	}
-
 	// Coerce the raw interface to the FileLister type
 	fileLister := raw.(filelister.FileLister)
-
-	// Setup host services for the plugin (if supported)
-	cid, err := hostconn.EstablishHostServiceConnection(raw, hostServices, logger)
+	err = connectHost(raw, flBin, hostServices, logger)
 	if err != nil {
-		logger.Error("Failed to establish host services", "err", err)
-		os.Exit(1)
-	}
-	if cid != "" {
-		err = hostServices.ActiveClients().AddClient(cid, flBin)
-		if err != nil {
-			logger.Error("Failed to add client", "err", err)
-			os.Exit(1)
-		}
-		logger.Info("Host services established", "bin", flBin, "cid", cid)
+		logger.Error("Failed to connect host", "err", err)
 	}
 
 	// End plugin 1

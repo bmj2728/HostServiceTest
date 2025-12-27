@@ -44,7 +44,7 @@ type PluginFunction struct {
 type FunctionInput struct {
 	Name        string
 	DisplayName string
-	Value       any
+	Value       string
 }
 
 // ExecutionResult holds the result of plugin execution
@@ -111,8 +111,8 @@ func ExecutePluginFunction(plugin *PluginInfo, function PluginFunction) Executio
 		}
 
 		if function.Name == "ListFiles" {
-			rootDir := function.Inputs[0].Value.(string)
-			path := function.Inputs[1].Value.(string)
+			rootDir := function.Inputs[0].Value
+			path := function.Inputs[1].Value
 			entries, err := lister.ListFiles(rootDir, path)
 			if err != nil {
 				result.Error = err
@@ -134,7 +134,7 @@ func ExecutePluginFunction(plugin *PluginInfo, function PluginFunction) Executio
 
 		switch function.Name {
 		case "GetEnvDemo":
-			key := function.Inputs[0].Value.(string)
+			key := function.Inputs[0].Value
 			output, err := demo.GetEnvDemo(key)
 			if err != nil {
 				result.Error = err
@@ -151,8 +151,8 @@ func ExecutePluginFunction(plugin *PluginInfo, function PluginFunction) Executio
 			result.Output = output
 
 		case "TempDemo":
-			pattern := function.Inputs[0].Value.(string)
-			textToWrite := function.Inputs[1].Value.(string)
+			pattern := function.Inputs[0].Value
+			textToWrite := function.Inputs[1].Value
 			output, err := demo.TempDemo(pattern, textToWrite)
 			if err != nil {
 				result.Error = err

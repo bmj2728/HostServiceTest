@@ -301,6 +301,110 @@ func (x *EnvDemoResp) GetError() string {
 	return ""
 }
 
+type TempDemoReq struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Pattern       string                 `protobuf:"bytes,1,opt,name=pattern,proto3" json:"pattern,omitempty"`
+	TextToWrite   string                 `protobuf:"bytes,2,opt,name=text_to_write,json=textToWrite,proto3" json:"text_to_write,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *TempDemoReq) Reset() {
+	*x = TempDemoReq{}
+	mi := &file_hostdemo_v1_hostdemo_proto_msgTypes[6]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *TempDemoReq) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*TempDemoReq) ProtoMessage() {}
+
+func (x *TempDemoReq) ProtoReflect() protoreflect.Message {
+	mi := &file_hostdemo_v1_hostdemo_proto_msgTypes[6]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use TempDemoReq.ProtoReflect.Descriptor instead.
+func (*TempDemoReq) Descriptor() ([]byte, []int) {
+	return file_hostdemo_v1_hostdemo_proto_rawDescGZIP(), []int{6}
+}
+
+func (x *TempDemoReq) GetPattern() string {
+	if x != nil {
+		return x.Pattern
+	}
+	return ""
+}
+
+func (x *TempDemoReq) GetTextToWrite() string {
+	if x != nil {
+		return x.TextToWrite
+	}
+	return ""
+}
+
+type TempDemoResp struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Resp          string                 `protobuf:"bytes,1,opt,name=resp,proto3" json:"resp,omitempty"`
+	Error         *string                `protobuf:"bytes,2,opt,name=error,proto3,oneof" json:"error,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *TempDemoResp) Reset() {
+	*x = TempDemoResp{}
+	mi := &file_hostdemo_v1_hostdemo_proto_msgTypes[7]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *TempDemoResp) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*TempDemoResp) ProtoMessage() {}
+
+func (x *TempDemoResp) ProtoReflect() protoreflect.Message {
+	mi := &file_hostdemo_v1_hostdemo_proto_msgTypes[7]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use TempDemoResp.ProtoReflect.Descriptor instead.
+func (*TempDemoResp) Descriptor() ([]byte, []int) {
+	return file_hostdemo_v1_hostdemo_proto_rawDescGZIP(), []int{7}
+}
+
+func (x *TempDemoResp) GetResp() string {
+	if x != nil {
+		return x.Resp
+	}
+	return ""
+}
+
+func (x *TempDemoResp) GetError() string {
+	if x != nil && x.Error != nil {
+		return *x.Error
+	}
+	return ""
+}
+
 var File_hostdemo_v1_hostdemo_proto protoreflect.FileDescriptor
 
 const file_hostdemo_v1_hostdemo_proto_rawDesc = "" +
@@ -323,12 +427,20 @@ const file_hostdemo_v1_hostdemo_proto_rawDesc = "" +
 	"\vEnvDemoResp\x12\x12\n" +
 	"\x04resp\x18\x01 \x01(\tR\x04resp\x12\x19\n" +
 	"\x05error\x18\x02 \x01(\tH\x00R\x05error\x88\x01\x01B\b\n" +
-	"\x06_error2\xeb\x01\n" +
+	"\x06_error\"K\n" +
+	"\vTempDemoReq\x12\x18\n" +
+	"\apattern\x18\x01 \x01(\tR\apattern\x12\"\n" +
+	"\rtext_to_write\x18\x02 \x01(\tR\vtextToWrite\"G\n" +
+	"\fTempDemoResp\x12\x12\n" +
+	"\x04resp\x18\x01 \x01(\tR\x04resp\x12\x19\n" +
+	"\x05error\x18\x02 \x01(\tH\x00R\x05error\x88\x01\x01B\b\n" +
+	"\x06_error2\xac\x02\n" +
 	"\bHostDemo\x12Z\n" +
 	"\x15EstablishHostServices\x12\x1f.hostdemo.v1.HostServiceRequest\x1a .hostdemo.v1.HostServiceResponse\x12E\n" +
 	"\n" +
 	"GetEnvDemo\x12\x1a.hostdemo.v1.GetEnvDemoReq\x1a\x1b.hostdemo.v1.GetEnvDemoResp\x12<\n" +
-	"\aEnvDemo\x12\x17.hostdemo.v1.EnvDemoReq\x1a\x18.hostdemo.v1.EnvDemoRespB\xb8\x01\n" +
+	"\aEnvDemo\x12\x17.hostdemo.v1.EnvDemoReq\x1a\x18.hostdemo.v1.EnvDemoResp\x12?\n" +
+	"\bTempDemo\x12\x18.hostdemo.v1.TempDemoReq\x1a\x19.hostdemo.v1.TempDemoRespB\xb8\x01\n" +
 	"\x0fcom.hostdemo.v1B\rHostdemoProtoP\x01ZIgithub.com/bmj2728/HostServiceTest/shared/protogen/hostdemo/v1;hostdemov1\xa2\x02\x03HXX\xaa\x02\vHostdemo.V1\xca\x02\vHostdemo\\V1\xe2\x02\x17Hostdemo\\V1\\GPBMetadata\xea\x02\fHostdemo::V1b\x06proto3"
 
 var (
@@ -343,7 +455,7 @@ func file_hostdemo_v1_hostdemo_proto_rawDescGZIP() []byte {
 	return file_hostdemo_v1_hostdemo_proto_rawDescData
 }
 
-var file_hostdemo_v1_hostdemo_proto_msgTypes = make([]protoimpl.MessageInfo, 6)
+var file_hostdemo_v1_hostdemo_proto_msgTypes = make([]protoimpl.MessageInfo, 8)
 var file_hostdemo_v1_hostdemo_proto_goTypes = []any{
 	(*HostServiceRequest)(nil),  // 0: hostdemo.v1.HostServiceRequest
 	(*HostServiceResponse)(nil), // 1: hostdemo.v1.HostServiceResponse
@@ -351,16 +463,20 @@ var file_hostdemo_v1_hostdemo_proto_goTypes = []any{
 	(*GetEnvDemoResp)(nil),      // 3: hostdemo.v1.GetEnvDemoResp
 	(*EnvDemoReq)(nil),          // 4: hostdemo.v1.EnvDemoReq
 	(*EnvDemoResp)(nil),         // 5: hostdemo.v1.EnvDemoResp
+	(*TempDemoReq)(nil),         // 6: hostdemo.v1.TempDemoReq
+	(*TempDemoResp)(nil),        // 7: hostdemo.v1.TempDemoResp
 }
 var file_hostdemo_v1_hostdemo_proto_depIdxs = []int32{
 	0, // 0: hostdemo.v1.HostDemo.EstablishHostServices:input_type -> hostdemo.v1.HostServiceRequest
 	2, // 1: hostdemo.v1.HostDemo.GetEnvDemo:input_type -> hostdemo.v1.GetEnvDemoReq
 	4, // 2: hostdemo.v1.HostDemo.EnvDemo:input_type -> hostdemo.v1.EnvDemoReq
-	1, // 3: hostdemo.v1.HostDemo.EstablishHostServices:output_type -> hostdemo.v1.HostServiceResponse
-	3, // 4: hostdemo.v1.HostDemo.GetEnvDemo:output_type -> hostdemo.v1.GetEnvDemoResp
-	5, // 5: hostdemo.v1.HostDemo.EnvDemo:output_type -> hostdemo.v1.EnvDemoResp
-	3, // [3:6] is the sub-list for method output_type
-	0, // [0:3] is the sub-list for method input_type
+	6, // 3: hostdemo.v1.HostDemo.TempDemo:input_type -> hostdemo.v1.TempDemoReq
+	1, // 4: hostdemo.v1.HostDemo.EstablishHostServices:output_type -> hostdemo.v1.HostServiceResponse
+	3, // 5: hostdemo.v1.HostDemo.GetEnvDemo:output_type -> hostdemo.v1.GetEnvDemoResp
+	5, // 6: hostdemo.v1.HostDemo.EnvDemo:output_type -> hostdemo.v1.EnvDemoResp
+	7, // 7: hostdemo.v1.HostDemo.TempDemo:output_type -> hostdemo.v1.TempDemoResp
+	4, // [4:8] is the sub-list for method output_type
+	0, // [0:4] is the sub-list for method input_type
 	0, // [0:0] is the sub-list for extension type_name
 	0, // [0:0] is the sub-list for extension extendee
 	0, // [0:0] is the sub-list for field type_name
@@ -374,13 +490,14 @@ func file_hostdemo_v1_hostdemo_proto_init() {
 	file_hostdemo_v1_hostdemo_proto_msgTypes[1].OneofWrappers = []any{}
 	file_hostdemo_v1_hostdemo_proto_msgTypes[3].OneofWrappers = []any{}
 	file_hostdemo_v1_hostdemo_proto_msgTypes[5].OneofWrappers = []any{}
+	file_hostdemo_v1_hostdemo_proto_msgTypes[7].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_hostdemo_v1_hostdemo_proto_rawDesc), len(file_hostdemo_v1_hostdemo_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   6,
+			NumMessages:   8,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

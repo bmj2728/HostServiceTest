@@ -262,9 +262,7 @@ class HostServiceServicer(object):
     """
 
     def ReadDir(self, request, context):
-        """TODO Implement ReadFileAt/FileReaderAt & WriteFileAt/FileWriterAt
-
-        FS Endpoints - Unary Calls
+        """FS Endpoints - Unary Calls
         """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')

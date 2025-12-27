@@ -29,6 +29,11 @@ class HostDemoStub(object):
                 request_serializer=hostdemo_dot_v1_dot_hostdemo__pb2.EnvDemoReq.SerializeToString,
                 response_deserializer=hostdemo_dot_v1_dot_hostdemo__pb2.EnvDemoResp.FromString,
                 _registered_method=True)
+        self.TempDemo = channel.unary_unary(
+                '/hostdemo.v1.HostDemo/TempDemo',
+                request_serializer=hostdemo_dot_v1_dot_hostdemo__pb2.TempDemoReq.SerializeToString,
+                response_deserializer=hostdemo_dot_v1_dot_hostdemo__pb2.TempDemoResp.FromString,
+                _registered_method=True)
 
 
 class HostDemoServicer(object):
@@ -52,6 +57,12 @@ class HostDemoServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def TempDemo(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_HostDemoServicer_to_server(servicer, server):
     rpc_method_handlers = {
@@ -69,6 +80,11 @@ def add_HostDemoServicer_to_server(servicer, server):
                     servicer.EnvDemo,
                     request_deserializer=hostdemo_dot_v1_dot_hostdemo__pb2.EnvDemoReq.FromString,
                     response_serializer=hostdemo_dot_v1_dot_hostdemo__pb2.EnvDemoResp.SerializeToString,
+            ),
+            'TempDemo': grpc.unary_unary_rpc_method_handler(
+                    servicer.TempDemo,
+                    request_deserializer=hostdemo_dot_v1_dot_hostdemo__pb2.TempDemoReq.FromString,
+                    response_serializer=hostdemo_dot_v1_dot_hostdemo__pb2.TempDemoResp.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -152,6 +168,33 @@ class HostDemo(object):
             '/hostdemo.v1.HostDemo/EnvDemo',
             hostdemo_dot_v1_dot_hostdemo__pb2.EnvDemoReq.SerializeToString,
             hostdemo_dot_v1_dot_hostdemo__pb2.EnvDemoResp.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def TempDemo(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/hostdemo.v1.HostDemo/TempDemo',
+            hostdemo_dot_v1_dot_hostdemo__pb2.TempDemoReq.SerializeToString,
+            hostdemo_dot_v1_dot_hostdemo__pb2.TempDemoResp.FromString,
             options,
             channel_credentials,
             insecure,

@@ -3,7 +3,10 @@ package main
 import (
 	"context"
 	"fmt"
+	"path/filepath"
+	"strings"
 	"sync"
+	"time"
 
 	"github.com/bmj2728/hst/shared/pkg/hostdemo"
 	"github.com/bmj2728/hst/shared/pkg/hostserve"
@@ -21,16 +24,19 @@ type HostDemo struct {
 }
 
 func (h *HostDemo) GetEnvDemo(ctx context.Context, env string) (string, error) {
+	start := time.Now()
 	val, err := h.hostServiceClient.GetEnv(ctx, env)
 	if err != nil {
 		return "", fmt.Errorf("failed to get env: %w", err)
 	}
-	response := fmt.Sprintf("***GetEnv Demo***\n\nRequested Env Var: '%s'\nValue: '%s'", env, val)
+	duration := time.Since(start)
+	response := fmt.Sprintf("***GetEnv Demo***\n\nRequested Env Var: '%s'\nValue: '%s'\nDuration: %v\n", env, val, duration)
 
 	return response, nil
 }
 
 func (h *HostDemo) EnvDemo(ctx context.Context) (string, error) {
+	start := time.Now()
 	uid, err := h.hostServiceClient.Getuid(ctx)
 	if err != nil {
 		return "", fmt.Errorf("failed to get uid: %w", err)
@@ -83,9 +89,77 @@ func (h *HostDemo) EnvDemo(ctx context.Context) (string, error) {
 			groupStr += fmt.Sprintf(" |  %d", group)
 		}
 	}
-	response := fmt.Sprintf("***Env Demo***\n\nUID: %d\nGID: %d\nEUID: %d\nEGID: %d\nGroups: %s\nPID: %d\nPPID: %dTemp Dir: %s\nUser Cache: %s\nUser Config: %s\nUser Home: %s\n",
-		uid, gid, euid, egid, groupStr, pid, ppid, td, uCache, uConfig, uHome)
+	duration := time.Since(start)
+	response := fmt.Sprintf("***Env Demo***\n\nUID: %d\nGID: %d\nEUID: %d\nEGID: %d\nGroups: %s\nPID: %d\nPPID: %dTemp Dir: %s\nUser Cache: %s\nUser Config: %s\nUser Home: %s\nDuration: %v\n",
+		uid, gid, euid, egid, groupStr, pid, ppid, td, uCache, uConfig, uHome, duration)
 	return response, nil
+}
+
+func (h *HostDemo) TempDemo(ctx context.Context, pattern, textToWrite string) (string, error) {
+	var sb strings.Builder
+	sb.WriteString("***Temp Demo***\n\n")
+	sb.WriteString("Pattern: " + pattern + "\n")
+	start := time.Now()
+	rd, err := h.hostServiceClient.TempDir(ctx)
+	if err != nil {
+		return "", fmt.Errorf("failed to get temp dir: %w", err)
+	}
+	td, err := h.hostServiceClient.MkdirTemp(ctx, rd, pattern)
+	if err != nil {
+		return "", fmt.Errorf("failed to create temp dir: %w", err)
+	}
+	mdtStr := fmt.Sprintf("%v Created Temp Dir: %s\n", time.Since(start), td)
+	sb.WriteString(mdtStr)
+
+	tf, err := h.hostServiceClient.FileCreateTemp(ctx, td, pattern+".txt")
+	if err != nil {
+		return "", fmt.Errorf("failed to create temp file: %w", err)
+	}
+	rfi, err := h.hostServiceClient.FileStat(ctx, tf)
+	if err != nil {
+		return "", fmt.Errorf("failed to stat temp file: %w", err)
+	}
+	mdfStr := fmt.Sprintf("%v Created Temp File: %s - %s\n", time.Since(start), tf, rfi.Name())
+	sb.WriteString(mdfStr)
+
+	writer, err := h.hostServiceClient.FileWriter(ctx, tf)
+	if err != nil {
+		return "", fmt.Errorf("failed to create file writer: %w", err)
+	}
+	b, err := writer.Write([]byte(textToWrite))
+	if err != nil {
+		return "", fmt.Errorf("failed to write to temp file: %w", err)
+	}
+	err = writer.Close()
+	if err != nil {
+		return "", fmt.Errorf("failed to close file writer: %w", err)
+	}
+	err = h.hostServiceClient.FileSync(ctx, tf)
+	if err != nil {
+		return "", fmt.Errorf("failed to sync temp file: %w", err)
+	}
+	rfi2, err := h.hostServiceClient.FileStat(ctx, tf)
+	if err != nil {
+		return "", fmt.Errorf("failed to stat temp file: %w", err)
+	}
+
+	wStr := fmt.Sprintf("%v Wrote %d bytes to File: %s - %s\nCurrent Size: %d\n", time.Since(start), b, tf, textToWrite, rfi2.Size())
+	sb.WriteString(wStr)
+
+	err = h.hostServiceClient.FileClose(ctx, tf)
+	if err != nil {
+		return "", fmt.Errorf("failed to close temp file: %w", err)
+	}
+	r, p := filepath.Split(td)
+	err = h.hostServiceClient.RemoveAll(ctx, r, p)
+	if err != nil {
+		return "", fmt.Errorf("failed to remove temp dir: %w", err)
+	}
+
+	duration := time.Since(start)
+	fStr := fmt.Sprintf("Cleaned up temp files.\nDuration: %v\n", duration)
+	sb.WriteString(fStr)
+	return sb.String(), nil
 }
 
 func (h *HostDemo) EstablishHostServices(hostServiceID uint32) (hostserve.ClientID, error) {

@@ -22,6 +22,7 @@ const (
 	HostDemo_EstablishHostServices_FullMethodName = "/hostdemo.v1.HostDemo/EstablishHostServices"
 	HostDemo_GetEnvDemo_FullMethodName            = "/hostdemo.v1.HostDemo/GetEnvDemo"
 	HostDemo_EnvDemo_FullMethodName               = "/hostdemo.v1.HostDemo/EnvDemo"
+	HostDemo_TempDemo_FullMethodName              = "/hostdemo.v1.HostDemo/TempDemo"
 )
 
 // HostDemoClient is the client API for HostDemo service.
@@ -31,6 +32,7 @@ type HostDemoClient interface {
 	EstablishHostServices(ctx context.Context, in *HostServiceRequest, opts ...grpc.CallOption) (*HostServiceResponse, error)
 	GetEnvDemo(ctx context.Context, in *GetEnvDemoReq, opts ...grpc.CallOption) (*GetEnvDemoResp, error)
 	EnvDemo(ctx context.Context, in *EnvDemoReq, opts ...grpc.CallOption) (*EnvDemoResp, error)
+	TempDemo(ctx context.Context, in *TempDemoReq, opts ...grpc.CallOption) (*TempDemoResp, error)
 }
 
 type hostDemoClient struct {
@@ -71,6 +73,16 @@ func (c *hostDemoClient) EnvDemo(ctx context.Context, in *EnvDemoReq, opts ...gr
 	return out, nil
 }
 
+func (c *hostDemoClient) TempDemo(ctx context.Context, in *TempDemoReq, opts ...grpc.CallOption) (*TempDemoResp, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(TempDemoResp)
+	err := c.cc.Invoke(ctx, HostDemo_TempDemo_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // HostDemoServer is the server API for HostDemo service.
 // All implementations must embed UnimplementedHostDemoServer
 // for forward compatibility.
@@ -78,6 +90,7 @@ type HostDemoServer interface {
 	EstablishHostServices(context.Context, *HostServiceRequest) (*HostServiceResponse, error)
 	GetEnvDemo(context.Context, *GetEnvDemoReq) (*GetEnvDemoResp, error)
 	EnvDemo(context.Context, *EnvDemoReq) (*EnvDemoResp, error)
+	TempDemo(context.Context, *TempDemoReq) (*TempDemoResp, error)
 	mustEmbedUnimplementedHostDemoServer()
 }
 
@@ -96,6 +109,9 @@ func (UnimplementedHostDemoServer) GetEnvDemo(context.Context, *GetEnvDemoReq) (
 }
 func (UnimplementedHostDemoServer) EnvDemo(context.Context, *EnvDemoReq) (*EnvDemoResp, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method EnvDemo not implemented")
+}
+func (UnimplementedHostDemoServer) TempDemo(context.Context, *TempDemoReq) (*TempDemoResp, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method TempDemo not implemented")
 }
 func (UnimplementedHostDemoServer) mustEmbedUnimplementedHostDemoServer() {}
 func (UnimplementedHostDemoServer) testEmbeddedByValue()                  {}
@@ -172,6 +188,24 @@ func _HostDemo_EnvDemo_Handler(srv interface{}, ctx context.Context, dec func(in
 	return interceptor(ctx, in, info, handler)
 }
 
+func _HostDemo_TempDemo_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(TempDemoReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(HostDemoServer).TempDemo(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: HostDemo_TempDemo_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(HostDemoServer).TempDemo(ctx, req.(*TempDemoReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // HostDemo_ServiceDesc is the grpc.ServiceDesc for HostDemo service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -190,6 +224,10 @@ var HostDemo_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "EnvDemo",
 			Handler:    _HostDemo_EnvDemo_Handler,
+		},
+		{
+			MethodName: "TempDemo",
+			Handler:    _HostDemo_TempDemo_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

@@ -375,6 +375,14 @@ func main() {
 		fmt.Println(envDat)
 	}()
 
+	go func() {
+		tempDemo, err := demo.TempDemo(context.Background(), "Host-Demo-*-Temp", "This is a temp file")
+		if err != nil {
+			logger.Error("Failed temp demo", "err", err)
+		}
+		fmt.Println(tempDemo)
+	}()
+
 	time.Sleep(1 * time.Second)
 	// Clean shutdown - disconnect from host services
 	logger.Info("Shutting down plugins")

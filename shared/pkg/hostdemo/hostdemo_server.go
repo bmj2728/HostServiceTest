@@ -52,3 +52,17 @@ func (s *GRPCServer) EnvDemo(ctx context.Context, request *hostdemov1.EnvDemoReq
 	}
 	return &hostdemov1.EnvDemoResp{Resp: demo}, nil
 }
+
+func (s *GRPCServer) TempDemo(ctx context.Context, request *hostdemov1.TempDemoReq) (*hostdemov1.TempDemoResp, error) {
+	if request == nil {
+		return nil, fmt.Errorf("nil request for TempDemo")
+	}
+	if request.Pattern == "" {
+		return nil, fmt.Errorf("pattern cannot be empty")
+	}
+	demo, err := s.Impl.TempDemo(ctx, request.Pattern, request.TextToWrite)
+	if err != nil {
+		return nil, fmt.Errorf("failed temp demo: %w", err)
+	}
+	return &hostdemov1.TempDemoResp{Resp: demo}, nil
+}

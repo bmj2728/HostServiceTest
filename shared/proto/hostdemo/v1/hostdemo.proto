@@ -6,6 +6,7 @@ service HostDemo {
   rpc EstablishHostServices(HostServiceRequest) returns (HostServiceResponse);
   rpc GetEnvDemo(GetEnvDemoReq) returns (GetEnvDemoResp);
   rpc EnvDemo(EnvDemoReq) returns (EnvDemoResp);
+  rpc TempDemo(TempDemoReq) returns (TempDemoResp);
 }
 
 message HostServiceRequest {
@@ -30,6 +31,16 @@ message EnvDemoReq {
 }
 
 message EnvDemoResp {
+  string resp = 1;
+  optional string error = 2;
+}
+
+message TempDemoReq {
+  string pattern = 1;
+  string text_to_write = 2;
+}
+
+message TempDemoResp {
   string resp = 1;
   optional string error = 2;
 }

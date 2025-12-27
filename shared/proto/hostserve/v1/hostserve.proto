@@ -32,8 +32,6 @@ enum OpenFileFlags {
 // access to the plugin process
 service HostService {
 
-  // TODO Implement ReadFileAt/FileReaderAt & WriteFileAt/FileWriterAt
-
   // FS Endpoints - Unary Calls
   rpc ReadDir(ReadDirRequest) returns (ReadDirResponse);
   rpc ReadFile(ReadFileRequest) returns (ReadFileResponse);

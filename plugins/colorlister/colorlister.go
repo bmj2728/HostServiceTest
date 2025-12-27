@@ -5,7 +5,6 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"path/filepath"
 	"sync"
 	"time"
 
@@ -32,68 +31,6 @@ type ColorLister struct {
 
 func (f *ColorLister) ListFiles(rootDir, path string) ([]string, error) {
 	ctx := context.Background()
-
-	uid, err := f.hostServiceClient.Getuid(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get uid: %w", err)
-	}
-	hclog.Default().Info("Got uid", "uid", uid)
-
-	gid, err := f.hostServiceClient.Getgid(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get gid: %w", err)
-	}
-	hclog.Default().Info("Got gid", "gid", gid)
-
-	euid, err := f.hostServiceClient.Geteuid(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get euid: %w", err)
-	}
-	hclog.Default().Info("Got euid", "euid", euid)
-
-	egid, err := f.hostServiceClient.Getegid(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get egid: %w", err)
-	}
-	hclog.Default().Info("Got egid", "egid", egid)
-
-	groups, err := f.hostServiceClient.GetGroups(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get groups: %w", err)
-	}
-	hclog.Default().Info("Got groups", "groups", groups)
-
-	pid, err := f.hostServiceClient.Getpid(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get pid: %w", err)
-	}
-	hclog.Default().Info("Got pid", "pid", pid)
-
-	ppid, err := f.hostServiceClient.Getppid(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get ppid: %w", err)
-	}
-	hclog.Default().Info("Got ppid", "ppid", ppid)
-
-	td, err := f.hostServiceClient.MkdirTemp(ctx, rootDir, "ng-*-test")
-	if err != nil {
-		return nil, fmt.Errorf("failed to create temp dir: %w", err)
-	}
-	hclog.Default().Info("Created temp dir", "dir", td)
-
-	tf, err := f.hostServiceClient.FileCreateTemp(ctx, td, "ng-*-test.txt")
-	if err != nil {
-		return nil, fmt.Errorf("failed to create temp file: %w", err)
-	}
-	hclog.Default().Info("Created temp file", "file", tf)
-
-	r, p := filepath.Split(td)
-	defer func(ctx context.Context, rootDir, path string) {
-		err := f.hostServiceClient.RemoveAll(ctx, rootDir, path)
-		if err != nil {
-			hclog.Default().Error("Failed to remove temp dir", "err", err)
-		}
-	}(ctx, r, p)
 
 	dirEntries, err := f.hostServiceClient.ReadDir(ctx, rootDir, path)
 	if err != nil {
@@ -150,18 +87,6 @@ func (f *ColorLister) ListFiles(rootDir, path string) ([]string, error) {
 		return nil, err
 	}
 	hclog.Default().Info("File seeked", "offset", newOff)
-
-	rfi, err := f.hostServiceClient.FileStat(ctx, fh)
-	if err != nil {
-		hclog.Default().Error("Failed to stat file via host service", "dir", rootDir, "err", err)
-	}
-	hclog.Default().Info("File stat", "file", rfi.Name(), "size", rfi.Size(), "mode", rfi.Mode(), "modTime", rfi.ModTime(), "isDir", rfi.IsDir())
-
-	convRFI, err := f.hostServiceClient.Stat(ctx, rootDir, "README.md")
-	if err != nil {
-		hclog.Default().Error("Failed to stat file via host service", "dir", rootDir, "err", err)
-	}
-	hclog.Default().Info("File stat", "file", convRFI.Name(), "size", convRFI.Size(), "mode", convRFI.Mode(), "modTime", convRFI.ModTime(), "isDir", convRFI.IsDir())
 
 	err = f.hostServiceClient.Chmod(ctx, rootDir, "mode_change.txt", 0644)
 	if err != nil {

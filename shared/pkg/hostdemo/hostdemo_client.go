@@ -87,3 +87,17 @@ func (c *GRPCClient) EnvDemo(ctx context.Context) (string, error) {
 	}
 	return resp.Resp, nil
 }
+
+func (c *GRPCClient) TempDemo(ctx context.Context, pattern, textToWrite string) (string, error) {
+	resp, err := c.client.TempDemo(ctx, &hostdemov1.TempDemoReq{Pattern: pattern, TextToWrite: textToWrite})
+	if err != nil {
+		return "", fmt.Errorf("gRPC call failed: %w", err)
+	}
+	if resp == nil {
+		return "", fmt.Errorf("nil response from TempDemo")
+	}
+	if resp.Error != nil {
+		return "", fmt.Errorf("gRPC call failed: %v", resp.Error)
+	}
+	return resp.Resp, nil
+}

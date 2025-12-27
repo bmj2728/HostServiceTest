@@ -7,6 +7,7 @@ service HostDemo {
   rpc GetEnvDemo(GetEnvDemoReq) returns (GetEnvDemoResp);
   rpc EnvDemo(EnvDemoReq) returns (EnvDemoResp);
   rpc TempDemo(TempDemoReq) returns (TempDemoResp);
+  rpc ReadFrankenstein(ReadFrankensteinReq) returns (ReadFrankensteinResp);
 }
 
 message HostServiceRequest {
@@ -42,5 +43,14 @@ message TempDemoReq {
 
 message TempDemoResp {
   string resp = 1;
+  optional string error = 2;
+}
+
+message ReadFrankensteinReq {
+
+}
+
+message ReadFrankensteinResp {
+  string frank = 1;
   optional string error = 2;
 }

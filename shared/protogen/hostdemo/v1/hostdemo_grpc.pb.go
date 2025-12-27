@@ -23,6 +23,7 @@ const (
 	HostDemo_GetEnvDemo_FullMethodName            = "/hostdemo.v1.HostDemo/GetEnvDemo"
 	HostDemo_EnvDemo_FullMethodName               = "/hostdemo.v1.HostDemo/EnvDemo"
 	HostDemo_TempDemo_FullMethodName              = "/hostdemo.v1.HostDemo/TempDemo"
+	HostDemo_ReadFrankenstein_FullMethodName      = "/hostdemo.v1.HostDemo/ReadFrankenstein"
 )
 
 // HostDemoClient is the client API for HostDemo service.
@@ -33,6 +34,7 @@ type HostDemoClient interface {
 	GetEnvDemo(ctx context.Context, in *GetEnvDemoReq, opts ...grpc.CallOption) (*GetEnvDemoResp, error)
 	EnvDemo(ctx context.Context, in *EnvDemoReq, opts ...grpc.CallOption) (*EnvDemoResp, error)
 	TempDemo(ctx context.Context, in *TempDemoReq, opts ...grpc.CallOption) (*TempDemoResp, error)
+	ReadFrankenstein(ctx context.Context, in *ReadFrankensteinReq, opts ...grpc.CallOption) (*ReadFrankensteinResp, error)
 }
 
 type hostDemoClient struct {
@@ -83,6 +85,16 @@ func (c *hostDemoClient) TempDemo(ctx context.Context, in *TempDemoReq, opts ...
 	return out, nil
 }
 
+func (c *hostDemoClient) ReadFrankenstein(ctx context.Context, in *ReadFrankensteinReq, opts ...grpc.CallOption) (*ReadFrankensteinResp, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ReadFrankensteinResp)
+	err := c.cc.Invoke(ctx, HostDemo_ReadFrankenstein_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // HostDemoServer is the server API for HostDemo service.
 // All implementations must embed UnimplementedHostDemoServer
 // for forward compatibility.
@@ -91,6 +103,7 @@ type HostDemoServer interface {
 	GetEnvDemo(context.Context, *GetEnvDemoReq) (*GetEnvDemoResp, error)
 	EnvDemo(context.Context, *EnvDemoReq) (*EnvDemoResp, error)
 	TempDemo(context.Context, *TempDemoReq) (*TempDemoResp, error)
+	ReadFrankenstein(context.Context, *ReadFrankensteinReq) (*ReadFrankensteinResp, error)
 	mustEmbedUnimplementedHostDemoServer()
 }
 
@@ -112,6 +125,9 @@ func (UnimplementedHostDemoServer) EnvDemo(context.Context, *EnvDemoReq) (*EnvDe
 }
 func (UnimplementedHostDemoServer) TempDemo(context.Context, *TempDemoReq) (*TempDemoResp, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method TempDemo not implemented")
+}
+func (UnimplementedHostDemoServer) ReadFrankenstein(context.Context, *ReadFrankensteinReq) (*ReadFrankensteinResp, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ReadFrankenstein not implemented")
 }
 func (UnimplementedHostDemoServer) mustEmbedUnimplementedHostDemoServer() {}
 func (UnimplementedHostDemoServer) testEmbeddedByValue()                  {}
@@ -206,6 +222,24 @@ func _HostDemo_TempDemo_Handler(srv interface{}, ctx context.Context, dec func(i
 	return interceptor(ctx, in, info, handler)
 }
 
+func _HostDemo_ReadFrankenstein_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ReadFrankensteinReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(HostDemoServer).ReadFrankenstein(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: HostDemo_ReadFrankenstein_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(HostDemoServer).ReadFrankenstein(ctx, req.(*ReadFrankensteinReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // HostDemo_ServiceDesc is the grpc.ServiceDesc for HostDemo service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -228,6 +262,10 @@ var HostDemo_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "TempDemo",
 			Handler:    _HostDemo_TempDemo_Handler,
+		},
+		{
+			MethodName: "ReadFrankenstein",
+			Handler:    _HostDemo_ReadFrankenstein_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

@@ -30,36 +30,6 @@ type FileLister struct {
 func (f *FileLister) ListFiles(rootDir, path string) ([]string, error) {
 	ctx := context.Background() //this is needed for the host service calls
 
-	// simple env check
-	home, err := f.hostServiceClient.GetEnv(ctx, "HOME")
-	if err != nil {
-		hclog.Default().Error("Failed to get env variable", "err", err)
-	}
-
-	tempDir, err := f.hostServiceClient.TempDir(ctx)
-	if err != nil {
-		hclog.Default().Error("Failed to get temp dir", "err", err)
-	}
-	hclog.Default().Info("Temp dir retrieved", "dir", tempDir)
-
-	ucd, err := f.hostServiceClient.UserCacheDir(ctx)
-	if err != nil {
-		hclog.Default().Error("Failed to get user cache dir", "err", err)
-	}
-	hclog.Default().Info("User cache dir retrieved", "dir", ucd)
-
-	uconf, err := f.hostServiceClient.UserConfigDir(ctx)
-	if err != nil {
-		hclog.Default().Error("Failed to get user config dir", "err", err)
-	}
-	hclog.Default().Info("User config dir retrieved", "dir", uconf)
-
-	uhd, err := f.hostServiceClient.UserHomeDir(ctx)
-	if err != nil {
-		hclog.Default().Error("Failed to get user home dir", "err", err)
-	}
-	hclog.Default().Info("User home dir retrieved", "dir", uhd)
-
 	// Read Dir
 	dirEntries, err := f.hostServiceClient.ReadDir(ctx, rootDir, path)
 	if err != nil {
@@ -69,7 +39,6 @@ func (f *FileLister) ListFiles(rootDir, path string) ([]string, error) {
 
 	var entries []string
 	var buf bytes.Buffer
-	entries = append(entries, home)
 	for _, entry := range dirEntries {
 		if entry.IsDir() {
 			entries = append(entries, entry.Name())
@@ -84,6 +53,7 @@ func (f *FileLister) ListFiles(rootDir, path string) ([]string, error) {
 	err = f.hostServiceClient.WriteFile(ctx, rootDir, "listed_files.txt", buf.Bytes(), 0644)
 	if err != nil {
 		hclog.Default().Error("Failed to write file via host service", "dir", rootDir, "err", err)
+		return nil, err
 	}
 
 	// Open file

@@ -166,6 +166,24 @@ func (h *HostDemo) TempDemo(pattern, textToWrite string) (string, error) {
 	return sb.String(), nil
 }
 
+func (h *HostDemo) ReadFrankenstein() (string, error) {
+	frank := "./demo/frankenstein.txt"
+	absFrank, err := filepath.Abs(frank)
+	if err != nil {
+		return "", fmt.Errorf("failed to get absolute path for frankenstein.txt: %w", err)
+	}
+	r, d := filepath.Split(absFrank)
+	ctx := context.Background()
+	start := time.Now()
+	data, err := h.hostServiceClient.ReadFile(ctx, r, d)
+	if err != nil {
+		return "", fmt.Errorf("failed to read frankenstein.txt: %w", err)
+	}
+	duration := time.Since(start)
+	fStr := fmt.Sprintf("Read Frankenstein.txt in %v\n\n%s", duration, string(data))
+	return fStr, nil
+}
+
 func (h *HostDemo) EstablishHostServices(hostServiceID uint32) (hostserve.ClientID, error) {
 	h.connMutex.Lock()
 	defer h.connMutex.Unlock()

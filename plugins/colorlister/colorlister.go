@@ -46,14 +46,8 @@ func (f *ColorLister) ListFiles(rootDir, path string) ([]string, error) {
 			if entry.Name() == "renameme.md" {
 				continue
 			}
-			data, err := f.hostServiceClient.ReadFile(ctx, rootDir, entry.Name())
-			if err != nil {
-				hclog.Default().Error("Failed to read file via host service", "root", rootDir, "path", path,
-					"file", entry.Name(), "err", err)
-				continue
-			}
-			contents := len(string(data))
-			entries = append(entries, fileFormat.Wrap(entry.Name(), true)+fmt.Sprintf(" Size: %d bytes", contents))
+
+			entries = append(entries, fileFormat.Wrap(entry.Name(), true))
 		}
 	}
 

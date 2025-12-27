@@ -76,7 +76,7 @@ func GetHostDemoFunctions() []PluginFunction {
 			Name:        "GetEnvDemo",
 			DisplayName: "GetEnv Demo",
 			Inputs: []FunctionInput{
-				{Name: "key", DisplayName: "Environment Variable", Value: ""},
+				{Name: "key", DisplayName: "Environment Variable", Value: "HOME"},
 			},
 		},
 		{

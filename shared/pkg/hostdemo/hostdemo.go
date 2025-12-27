@@ -13,6 +13,7 @@ type HostDemo interface {
 	GetEnvDemo(key string) (string, error)
 	EnvDemo() (string, error)
 	TempDemo(pattern, textToWrite string) (string, error)
+	ReadFrankenstein() (string, error)
 }
 
 type HostDemoGRPCPlugin struct {

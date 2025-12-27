@@ -66,3 +66,14 @@ func (s *GRPCServer) TempDemo(_ context.Context, request *hostdemov1.TempDemoReq
 	}
 	return &hostdemov1.TempDemoResp{Resp: demo}, nil
 }
+
+func (s *GRPCServer) ReadFrankenstein(_ context.Context, request *hostdemov1.ReadFrankensteinReq) (*hostdemov1.ReadFrankensteinResp, error) {
+	if request == nil {
+		return nil, fmt.Errorf("nil request for ReadFrankenstein")
+	}
+	demo, err := s.Impl.ReadFrankenstein()
+	if err != nil {
+		return nil, fmt.Errorf("failed read frankenstein: %w", err)
+	}
+	return &hostdemov1.ReadFrankensteinResp{Frank: demo}, nil
+}

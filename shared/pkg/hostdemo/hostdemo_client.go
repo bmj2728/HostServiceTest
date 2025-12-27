@@ -101,3 +101,17 @@ func (c *GRPCClient) TempDemo(pattern, textToWrite string) (string, error) {
 	}
 	return resp.Resp, nil
 }
+
+func (c *GRPCClient) ReadFrankenstein() (string, error) {
+	resp, err := c.client.ReadFrankenstein(context.Background(), &hostdemov1.ReadFrankensteinReq{})
+	if err != nil {
+		return "", fmt.Errorf("gRPC call failed: %w", err)
+	}
+	if resp == nil {
+		return "", fmt.Errorf("nil response from ReadFrankenstein")
+	}
+	if resp.Error != nil {
+		return "", fmt.Errorf("gRPC call failed: %v", resp.Error)
+	}
+	return resp.Frank, nil
+}
